@@ -6,6 +6,7 @@ const projectRoot = process.cwd();
 const inputPath =
   process.argv[2] ?? "/Users/huseyinemanet/Downloads/author-quote.txt";
 const outputPath = path.join(projectRoot, "assets", "quotes.json");
+const maxQuotes = Number(process.argv[3] ?? "5000");
 
 const topicRules = [
   {
@@ -84,6 +85,10 @@ const seen = new Set();
 const quotes = [];
 
 for (const line of lines) {
+  if (quotes.length >= maxQuotes) {
+    break;
+  }
+
   const [rawAuthor, ...rest] = line.split("\t");
   const rawQuote = rest.join("\t");
   const author = normalize(rawAuthor ?? "");

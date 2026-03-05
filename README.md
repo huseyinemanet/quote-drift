@@ -49,7 +49,7 @@ The bundled corpus is generated from:
 To rebuild `assets/quotes.json` from that source:
 
 ```bash
-npm run build:quotes -- "/Users/huseyinemanet/Downloads/author-quote.txt"
+npm run build:quotes -- "/Users/huseyinemanet/Downloads/author-quote.txt" 5000
 ```
 
 The generator:
@@ -57,6 +57,7 @@ The generator:
 - removes exact duplicates
 - creates stable IDs from author + quote text
 - derives fallback topic tags from content keywords
+- caps the bundled app corpus to a configurable size so first-launch import stays responsive
 
 ## Getting Started
 
