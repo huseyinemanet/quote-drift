@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import type { ComponentType } from "react";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import { ThemeTokens, useTheme } from "@/ui/theme";
@@ -10,11 +10,12 @@ import type { AdBannerState } from "./useAdBanner";
 
 const BANNER_VERTICAL_PADDING = 6;
 const CLOSE_BUTTON_WIDTH = 32;
+const BANNER_HEIGHT = 50;
+const BANNER_WIDTH = 320;
 
 export function AdBanner({ state }: { state: AdBannerState }) {
   const { colors } = useTheme();
   const styles = createStyles(colors);
-  const [bannerWidth, setBannerWidth] = useState(0);
   const googleMobileAds = getGoogleMobileAdsModule();
 
   const BannerAdComponent = googleMobileAds?.BannerAd as
@@ -49,16 +50,7 @@ export function AdBanner({ state }: { state: AdBannerState }) {
   }
 
   return (
-    <View
-      testID="ad-banner-root"
-      style={containerStyle}
-      onLayout={(event) => {
-        const nextWidth = event.nativeEvent.layout.width;
-        if (nextWidth !== bannerWidth) {
-          setBannerWidth(nextWidth);
-        }
-      }}
-    >
+    <View testID="ad-banner-root" style={containerStyle}>
       <View style={styles.row}>
         <View
           style={[
@@ -66,16 +58,18 @@ export function AdBanner({ state }: { state: AdBannerState }) {
             state.bannerHeight === 0 ? styles.collapsed : null,
           ]}
         >
-          {canRenderBanner && bannerWidth > 0 ? (
-            <ResolvedBannerAd
-              unitId={unitId!}
-              size={BannerAdSize!.ANCHORED_ADAPTIVE_BANNER}
-              requestOptions={{ requestNonPersonalizedAdsOnly: true }}
-              onAdLoaded={({ height }: { width: number; height: number }) => {
-                state.onLoaded(height + BANNER_VERTICAL_PADDING * 2);
-              }}
-              onAdFailedToLoad={state.onError}
-            />
+          {canRenderBanner ? (
+            <View style={styles.bannerFrame}>
+              <ResolvedBannerAd
+                unitId={unitId!}
+                size={BannerAdSize!.BANNER}
+                requestOptions={{ requestNonPersonalizedAdsOnly: true }}
+                onAdLoaded={() => {
+                  state.onLoaded(BANNER_HEIGHT + BANNER_VERTICAL_PADDING * 2);
+                }}
+                onAdFailedToLoad={state.onError}
+              />
+            </View>
           ) : null}
         </View>
         <Pressable
@@ -121,6 +115,12 @@ const createStyles = (colors: ThemeTokens) =>
       minHeight: 0,
       overflow: "hidden",
       justifyContent: "center",
+      alignItems: "center",
+    },
+    bannerFrame: {
+      width: BANNER_WIDTH,
+      height: BANNER_HEIGHT,
+      overflow: "hidden",
     },
     closeButton: {
       width: CLOSE_BUTTON_WIDTH,

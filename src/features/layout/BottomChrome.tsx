@@ -1,4 +1,5 @@
 import { BottomTabBar, type BottomTabBarProps } from "@react-navigation/bottom-tabs";
+import { useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
 
 import { AdBanner } from "@/core/ads/AdBanner";
@@ -17,16 +18,25 @@ export function BottomChrome({
 }) {
   const { colors } = useTheme();
   const styles = createStyles(colors);
+  const [tabBarHeight, setTabBarHeight] = useState(0);
   const showBannerGap = adBannerState.bannerHeight > 0;
+  const chromeHeight =
+    tabBarHeight + (showBannerGap ? adBannerState.bannerHeight + AD_GAP : 0);
+
+  useEffect(() => {
+    onInsetChange(chromeHeight);
+  }, [chromeHeight, onInsetChange]);
 
   return (
-    <View
-      style={styles.container}
-      onLayout={(event) => onInsetChange(event.nativeEvent.layout.height)}
-    >
+    <View style={styles.container}>
       <AdBanner state={adBannerState} />
       {showBannerGap ? <View style={styles.gap} /> : null}
-      <BottomTabBar {...tabBarProps} />
+      <View
+        testID="bottom-chrome-tab-bar"
+        onLayout={(event) => setTabBarHeight(event.nativeEvent.layout.height)}
+      >
+        <BottomTabBar {...tabBarProps} />
+      </View>
     </View>
   );
 }
@@ -35,7 +45,6 @@ const createStyles = (colors: ThemeTokens) =>
   StyleSheet.create({
     container: {
       backgroundColor: colors.background,
-      paddingTop: 4,
     },
     gap: {
       height: AD_GAP,

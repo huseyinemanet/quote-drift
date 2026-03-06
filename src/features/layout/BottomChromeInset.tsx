@@ -1,6 +1,6 @@
 import { createContext, useContext } from "react";
 
-const BottomChromeInsetContext = createContext(88);
+const BottomChromeInsetContext = createContext(0);
 
 export function BottomChromeInsetProvider({
   value,

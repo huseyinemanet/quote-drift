@@ -31,7 +31,7 @@ function TabIcon({
 
 export default function TabLayout() {
   const { colors } = useTheme();
-  const [bottomInset, setBottomInset] = useState(88);
+  const [bottomInset, setBottomInset] = useState(0);
   const adBannerState = useAdBanner();
 
   return (
