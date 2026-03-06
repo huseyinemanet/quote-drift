@@ -1,8 +1,8 @@
 # Quote Drift
 
-Quote Drift is an offline-first daily quote app built with Expo, TypeScript, Expo Router, and SQLite.
+Quote Drift is an offline-first daily quote app built with Expo, TypeScript, Expo Router, SQLite, and an iOS home screen widget.
 
-It is designed to stay App Store review-safe:
+The product is intentionally App Store review-safe:
 - the daily quote is always free
 - library, search, saved quotes, and sharing are always free
 - notifications are optional
@@ -14,9 +14,10 @@ It is designed to stay App Store review-safe:
 Quote Drift ships with a bundled quote corpus and works without a network connection for its core experience.
 
 The main product surfaces are:
-- `Today`: one daily quote, save, share as image, and an optional `One more` bonus quote
+- `Today`: one primary quote per local calendar day, save, share as image, and an optional `One more` bonus quote
 - `Library`: local search, saved quotes, and topic filtering
-- `Settings`: optional local reminders, pause controls, About, Support, Privacy Policy, and app version
+- `Settings`: reminders, pause controls, About, Support, Privacy Policy, widget-compatible app metadata, and version info
+- `iOS widget`: small and medium home screen surfaces that mirror today's quote and deep-link into the app
 
 ## Core Product Rules
 
@@ -24,6 +25,7 @@ The main product surfaces are:
 - Optional reminders: the app remains fully usable if notification permission is denied.
 - Rewarded-only monetization: `One more` is optional, has a `Not now` exit, and never blocks the core app.
 - No repeats until exhausted: Today quotes and scheduled reminders share the same transactional claim engine.
+- Local-day correctness: day keys and widget refresh timing follow local calendar boundaries instead of UTC day rollover.
 
 ## Feature Overview
 
@@ -47,10 +49,18 @@ The main product surfaces are:
 
 ### Notifications
 - Optional local-only reminders
-- 1–3 reminders per day
-- Default active hours `09:30–20:30`
+- 1-3 reminders per day
+- Default active hours `09:30-20:30`
 - Quiet-hour-safe scheduling
 - Pre-reserved unique quotes so reminders also respect no-repeat rules
+
+### iOS Widget
+- Built with `expo-widgets`
+- Supports `systemSmall` and `systemMedium`
+- Uses light and dark payload variants
+- Truncates long quotes deterministically to protect layout
+- Syncs from app bootstrap and refreshes again at the next local midnight
+- Deep-links into `quotedrift://today`, which redirects to `/(app)/today`
 
 ### Sharing
 - Story image generation at `1080x1920`
@@ -59,24 +69,27 @@ The main product surfaces are:
 
 ## Tech Stack
 
-- Expo (managed)
+- Expo (managed workflow)
 - TypeScript
 - Expo Router
 - expo-sqlite
 - expo-notifications
+- expo-widgets
 - react-native-google-mobile-ads
 - react-native-view-shot
 - expo-sharing
 - zod
+- Jest + React Native Testing Library
 
 ## Project Structure
 
 ```text
-app/                    Expo Router routes
-src/core/               DB, quote engine, ads, notifications, bootstrap
+app/                    Expo Router routes and deep-link entrypoints
+src/core/               DB, quote engine, ads, notifications, bootstrap, widgets
 src/features/           Today, Library, Settings, onboarding, layout
 src/ui/                 Presentational components and theme system
 assets/                 Static assets and bundled quotes.json
+widgets/                Native widget entrypoint(s)
 docs/                   Architecture, ads, sharing, QA, submission notes
 scripts/                Corpus generation and utility scripts
 __tests__/              Unit and integration-style tests
@@ -141,11 +154,22 @@ npm run android
 Rewarded ads require a native build or dev client. They do not work in Expo Go.
 
 Relevant docs:
-- [Ads](/Users/huseyinemanet/Projects/Quote%20Drift/docs/ads.md)
+- [Ads](/Users/huseyinemanet/Projects/Quote Drift/docs/ads.md)
 
 ### Notifications
 
 Notifications are local only and optional. The app must still work if permission is never granted.
+
+### Widgets
+
+The home screen widget requires a native iOS build. It does not run inside Expo Go.
+
+Current widget behavior:
+- widget target name: `DailyQuoteWidget`
+- supported families: `systemSmall`, `systemMedium`
+- default deep link: `quotedrift://today`
+- placeholder payload is used whenever today's quote is unavailable
+- timeline includes an immediate entry and a second refresh entry at next local midnight
 
 ### Real Device Testing
 
@@ -154,8 +178,8 @@ For real iPhone testing, use a signed iOS build. Release builds embed the JS bun
 ## Environment Configuration
 
 App metadata and public URLs live in:
-- [app.json](/Users/huseyinemanet/Projects/Quote%20Drift/app.json)
-- [app.config.ts](/Users/huseyinemanet/Projects/Quote%20Drift/app.config.ts)
+- [app.json](/Users/huseyinemanet/Projects/Quote Drift/app.json)
+- [app.config.ts](/Users/huseyinemanet/Projects/Quote Drift/app.config.ts)
 
 Before release, replace default values with real production values:
 - `expo.extra.supportUrl`
@@ -166,9 +190,17 @@ For rewarded ads, configure:
 - `EXPO_PUBLIC_ADS_ENV`
 - `EXPO_PUBLIC_ADMOB_IOS_APP_ID`
 - `EXPO_PUBLIC_ADMOB_ANDROID_APP_ID`
+- `EXPO_PUBLIC_ADMOB_IOS_BANNER_UNIT_ID`
+- `EXPO_PUBLIC_ADMOB_ANDROID_BANNER_UNIT_ID`
 - `EXPO_PUBLIC_ADMOB_IOS_REWARDED_UNIT_ID`
 - `EXPO_PUBLIC_ADMOB_ANDROID_REWARDED_UNIT_ID`
 - `EXPO_PUBLIC_ADMOB_TEST_DEVICE_IDS`
+
+For widget builds, confirm these native identifiers stay aligned:
+- `expo.ios.bundleIdentifier`
+- `expo.android.package`
+- generated widget bundle identifier: `<ios bundle id>.widgets`
+- generated app group identifier: `group.<ios bundle id>`
 
 ## Quality Checks
 
@@ -190,14 +222,20 @@ Export app bundles:
 npx expo export --platform ios --platform android
 ```
 
+High-signal automated coverage currently includes:
+- quote engine and notification scheduling
+- share-to-story rendering flow
+- widget payload truncation and timeline sync
+- local day helpers for midnight rollover behavior
+
 ## Important Docs
 
-- [Architecture](/Users/huseyinemanet/Projects/Quote%20Drift/docs/architecture.md)
-- [Submission Checklist](/Users/huseyinemanet/Projects/Quote%20Drift/docs/submission.md)
-- [Ads](/Users/huseyinemanet/Projects/Quote%20Drift/docs/ads.md)
-- [Sharing](/Users/huseyinemanet/Projects/Quote%20Drift/docs/sharing.md)
-- [QA Checklist](/Users/huseyinemanet/Projects/Quote%20Drift/docs/qa-checklist.md)
-- [Review Notes](/Users/huseyinemanet/Projects/Quote%20Drift/docs/review-notes.md)
+- [Architecture](/Users/huseyinemanet/Projects/Quote Drift/docs/architecture.md)
+- [Submission Checklist](/Users/huseyinemanet/Projects/Quote Drift/docs/submission.md)
+- [Ads](/Users/huseyinemanet/Projects/Quote Drift/docs/ads.md)
+- [Sharing](/Users/huseyinemanet/Projects/Quote Drift/docs/sharing.md)
+- [QA Checklist](/Users/huseyinemanet/Projects/Quote Drift/docs/qa-checklist.md)
+- [Review Notes](/Users/huseyinemanet/Projects/Quote Drift/docs/review-notes.md)
 
 ## App Store Safety Notes
 
@@ -209,20 +247,6 @@ npx expo export --platform ios --platform android
 - Notifications are optional and local-only.
 - Privacy Policy and Support links are exposed in Settings > About.
 
-## Current State
+## Repository
 
-The repo includes:
-- offline corpus import with Zod validation
-- transactional no-repeat quote claiming
-- rewarded-ad-gated `One more`
-- story image sharing
-- optional local notifications
-- dark mode support
-- iOS and Android native build support
-
-Before final App Store submission, still do a full real-device smoke pass on:
-- iPhone dev/release build
-- Android dev/release build
-- notification denial flow
-- rewarded ad unavailable flow
-- corpus exhausted flow
+- GitHub: [yabastudio/quote-drift](https://github.com/yabastudio/quote-drift)
