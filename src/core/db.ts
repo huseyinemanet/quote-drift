@@ -1,7 +1,7 @@
 import * as SQLite from "expo-sqlite";
 import type { SQLiteDatabase } from "expo-sqlite";
 
-const DATABASE_NAME = "quote-drift.db";
+const DATABASE_NAME = "quotify.db";
 
 let databasePromise: Promise<SQLiteDatabase> | null = null;
 

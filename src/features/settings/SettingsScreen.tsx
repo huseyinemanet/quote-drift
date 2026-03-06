@@ -25,7 +25,7 @@ export function SettingsScreen() {
 
   const version = useMemo(
     () =>
-      `${Application.applicationName ?? "Quote Drift"} ${Application.nativeApplicationVersion ?? "1.0.0"} (${Application.nativeBuildVersion ?? "1"})`,
+      `${Application.applicationName ?? "Quotify"} ${Application.nativeApplicationVersion ?? "1.0.0"} (${Application.nativeBuildVersion ?? "1"})`,
     []
   );
 

@@ -16,7 +16,7 @@ describe("StoryCard", () => {
       />
     );
 
-    expect(getByText("Quote Drift")).toBeTruthy();
+    expect(getByText("Quotify")).toBeTruthy();
     expect(getByText("Stay close to what sharpens your mind.")).toBeTruthy();
     expect(getByText("Seneca")).toBeTruthy();
     expect(getByText("#clarity")).toBeTruthy();

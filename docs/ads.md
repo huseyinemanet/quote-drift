@@ -1,6 +1,6 @@
 # Ads
 
-Quote Drift uses two optional AdMob surfaces:
+Quotify uses two optional AdMob surfaces:
 - a sticky banner above the bottom tab bar on Today, Library, and Settings
 - a rewarded ad for the optional `One more` bonus quote on Today
 

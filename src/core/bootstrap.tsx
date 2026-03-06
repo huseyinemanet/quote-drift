@@ -1,11 +1,13 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import type { PropsWithChildren } from "react";
+import { useColorScheme } from "react-native";
 
 import { APP_STATE_KEYS } from "./constants";
 import { getDayKey } from "./date";
 import { getAppState, getDb, runMigrations, setAppState } from "./db";
 import { importQuotesIfNeeded } from "./importQuotes";
 import { cleanupTempFiles } from "./sharecard/cleanupTempFiles";
+import { syncTodayWidgetTimeline } from "./widget/sync";
 import { initializeMobileAds } from "./ads/admob";
 import {
   getNotificationPermissionStatus,
@@ -111,6 +113,7 @@ async function readSnapshot(): Promise<AppBootstrapSnapshot> {
 }
 
 export function AppProvider({ children }: PropsWithChildren) {
+  const systemScheme = useColorScheme();
   const [snapshot, setSnapshot] = useState<AppBootstrapSnapshot>({
     state: "loading",
     hasLibraryContent: false,
@@ -133,7 +136,7 @@ export function AppProvider({ children }: PropsWithChildren) {
   const [selectedTopics, setSelectedTopicsState] = useState<string[]>([]);
   const [savedCount, setSavedCount] = useState(0);
 
-  const refreshAll = async () => {
+  const refreshAllInternal = async (shouldSyncWidget: boolean) => {
     const nextSnapshot = await readSnapshot();
     setSnapshot(nextSnapshot);
     setTopics(await getAvailableTopics());
@@ -147,15 +150,37 @@ export function AppProvider({ children }: PropsWithChildren) {
       const primary = await getOrCreateTodayQuote(getDayKey());
       if (primary.type === "success") {
         setTodayQuote(primary.data);
+        if (shouldSyncWidget) {
+          syncTodayWidgetTimeline({
+            quote: primary.data,
+            scheme: systemScheme === "dark" ? "dark" : "light",
+          });
+        }
       } else {
         setTodayQuote(null);
         setSnapshot((current) => ({ ...current, state: "exhausted" }));
+        if (shouldSyncWidget) {
+          syncTodayWidgetTimeline({
+            quote: null,
+            scheme: systemScheme === "dark" ? "dark" : "light",
+          });
+        }
       }
       setExtraQuote(await getExtraTodayQuote(getDayKey()));
     } else {
       setTodayQuote(null);
       setExtraQuote(null);
+      if (shouldSyncWidget) {
+        syncTodayWidgetTimeline({
+          quote: null,
+          scheme: systemScheme === "dark" ? "dark" : "light",
+        });
+      }
     }
+  };
+
+  const refreshAll = async () => {
+    await refreshAllInternal(true);
   };
 
   useEffect(() => {
@@ -223,7 +248,7 @@ export function AppProvider({ children }: PropsWithChildren) {
       },
       toggleSave: async (quoteId) => {
         await toggleSavedQuote(quoteId);
-        await refreshAll();
+        await refreshAllInternal(false);
       },
       loadLibrary: (filters) => getLibraryQuotes(filters),
       sendTestReminder: async () => {
@@ -239,7 +264,16 @@ export function AppProvider({ children }: PropsWithChildren) {
         setSnapshot((current) => ({ ...current, state }));
       },
     }),
-    [snapshot, todayQuote, extraQuote, streak, topics, selectedTopics, savedCount]
+    [
+      snapshot,
+      todayQuote,
+      extraQuote,
+      streak,
+      topics,
+      selectedTopics,
+      savedCount,
+      systemScheme,
+    ]
   );
 
   useEffect(() => {

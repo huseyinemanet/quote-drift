@@ -13,7 +13,7 @@ export function StoryCard({ quote }: { quote: ShareableQuote }) {
   return (
     <View style={styles.frame}>
       <View style={styles.card}>
-        <Text style={styles.eyebrow}>Quote Drift</Text>
+        <Text style={styles.eyebrow}>Quotify</Text>
         <View style={styles.content}>
           <Text
             style={[

@@ -45,11 +45,33 @@ const testDeviceIdentifiers = rawTestDeviceIds
   .split(",")
   .map((value: string) => value.trim())
   .filter(Boolean);
+const iosBundleIdentifier = baseConfig.ios?.bundleIdentifier;
+const widgetBundleIdentifier = iosBundleIdentifier
+  ? `${iosBundleIdentifier}.widgets`
+  : undefined;
+const widgetGroupIdentifier = iosBundleIdentifier
+  ? `group.${iosBundleIdentifier}`
+  : undefined;
 
 export default (): ExpoConfig => ({
   ...baseConfig,
   plugins: [
     ...(baseConfig.plugins ?? []),
+    [
+      "expo-widgets",
+      {
+        bundleIdentifier: widgetBundleIdentifier,
+        groupIdentifier: widgetGroupIdentifier,
+        widgets: [
+          {
+            name: "DailyQuoteWidget",
+            displayName: "Daily Quote",
+            description: "See today's Quotify reflection on your Home Screen.",
+            supportedFamilies: ["systemSmall", "systemMedium"],
+          },
+        ],
+      },
+    ],
     [
       "react-native-google-mobile-ads",
       {

@@ -12,7 +12,7 @@ export function WelcomeScreen() {
   return (
     <Screen>
       <View style={styles.hero}>
-        <Text style={styles.kicker}>Quote Drift</Text>
+        <Text style={styles.kicker}>Quotify</Text>
         <Text style={styles.title}>An offline quote ritual that still works when reminders are off.</Text>
         <Text style={styles.body}>
           Choose your topics, keep a personal library, and let local reminders stay

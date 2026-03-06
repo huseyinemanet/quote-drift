@@ -24,6 +24,6 @@ export async function shareImage(uri: string, dialogTitle = "Share image") {
 
   await Share.share({
     url: uri,
-    message: "Quote Drift story image",
+    message: "Quotify story image",
   });
 }

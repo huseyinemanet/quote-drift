@@ -1,7 +1,7 @@
 import * as FileSystem from "expo-file-system/legacy";
 
-const SHARECARD_DIR = `${FileSystem.cacheDirectory ?? ""}quote-drift-sharecards`;
-const FILE_PREFIX = "quote-drift-story-";
+const SHARECARD_DIR = `${FileSystem.cacheDirectory ?? ""}quotify-sharecards`;
+const FILE_PREFIX = "quotify-story-";
 const DEFAULT_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
 export function getSharecardDirectory() {

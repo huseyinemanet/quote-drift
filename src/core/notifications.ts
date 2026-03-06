@@ -183,7 +183,7 @@ export async function syncNotificationSchedule(
         identifier: reservation.notificationId,
         content: {
           title: "A quiet quote for today",
-          body: "Open Quote Drift for your reserved reflection.",
+          body: "Open Quotify for your reserved reflection.",
           sound: false,
         },
         trigger: {

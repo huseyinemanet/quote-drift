@@ -8,7 +8,7 @@
 - The sticky banner is non-blocking, collapses when unavailable, and never covers content or navigation.
 
 ## Functional Checks
-- Quote Drift launches into a real loading/import screen, not a blank screen.
+- Quotify launches into a real loading/import screen, not a blank screen.
 - The bundled quote corpus validates on boot or shows the fatal-data recovery screen.
 - Today, Library, favourites, and About work fully with notifications disabled or denied.
 - Support URL and Privacy Policy URL open correctly from Settings > About.

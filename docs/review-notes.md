@@ -1,6 +1,6 @@
 # Review Notes Template
 
-Quote Drift is an offline-first daily quote app.
+Quotify is an offline-first daily quote app.
 
 - The daily quote is always free.
 - Library browsing, search, saved quotes, and sharing are always free.

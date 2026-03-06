@@ -1,6 +1,6 @@
-# Quote Drift
+# Quotify
 
-Quote Drift is an offline-first daily quote app built with Expo, TypeScript, Expo Router, SQLite, and an iOS home screen widget.
+Quotify is an offline-first daily quote app built with Expo, TypeScript, Expo Router, SQLite, and an iOS home screen widget.
 
 The product is intentionally App Store review-safe:
 - the daily quote is always free
@@ -11,7 +11,7 @@ The product is intentionally App Store review-safe:
 
 ## What The App Does
 
-Quote Drift ships with a bundled quote corpus and works without a network connection for its core experience.
+Quotify ships with a bundled quote corpus and works without a network connection for its core experience.
 
 The main product surfaces are:
 - `Today`: one primary quote per local calendar day, save, share as image, and an optional `One more` bonus quote
@@ -60,7 +60,7 @@ The main product surfaces are:
 - Uses light and dark payload variants
 - Truncates long quotes deterministically to protect layout
 - Syncs from app bootstrap and refreshes again at the next local midnight
-- Deep-links into `quotedrift://today`, which redirects to `/(app)/today`
+- Deep-links into `quotify://today`, which redirects to `/(app)/today`
 
 ### Sharing
 - Story image generation at `1080x1920`
@@ -167,7 +167,7 @@ The home screen widget requires a native iOS build. It does not run inside Expo 
 Current widget behavior:
 - widget target name: `DailyQuoteWidget`
 - supported families: `systemSmall`, `systemMedium`
-- default deep link: `quotedrift://today`
+- default deep link: `quotify://today`
 - placeholder payload is used whenever today's quote is unavailable
 - timeline includes an immediate entry and a second refresh entry at next local midnight
 
@@ -249,4 +249,5 @@ High-signal automated coverage currently includes:
 
 ## Repository
 
-- GitHub: [yabastudio/quote-drift](https://github.com/yabastudio/quote-drift)
+- GitHub: [yabastudio/Quotify](https://github.com/yabastudio/Quotify)
+- Clone URL: [https://github.com/yabastudio/Quotify.git](https://github.com/yabastudio/Quotify.git)

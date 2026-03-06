@@ -1,7 +1,7 @@
-# Quote Drift Architecture
+# Quotify Architecture
 
 ## Overview
-Quote Drift is a managed Expo app with Expo Router for navigation, `expo-sqlite` for durable state, `expo-notifications` for optional local reminders, and Zod-based validation for the bundled corpus at `assets/quotes.json`.
+Quotify is a managed Expo app with Expo Router for navigation, `expo-sqlite` for durable state, `expo-notifications` for optional local reminders, and Zod-based validation for the bundled corpus at `assets/quotes.json`.
 
 The app is intentionally offline-first. The quote corpus ships with the app, browsing works without network access, and the core product remains usable when notification permissions are denied or disabled.
 

@@ -33,6 +33,6 @@ export const TOPIC_OPTIONS = [
 ] as const;
 
 export const TEST_NOTIFICATION_COPY = {
-  title: "Quote Drift test",
+  title: "Quotify test",
   body: "Notifications are working. Your quote collection remains untouched.",
 };

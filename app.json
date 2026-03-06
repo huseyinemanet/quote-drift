@@ -1,12 +1,12 @@
 {
   "expo": {
-    "name": "Quote Drift",
-    "slug": "quote-drift",
+    "name": "Quotify",
+    "slug": "quotify",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "scheme": "quotedrift",
+    "scheme": "quotify",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -18,12 +18,12 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.huseyinemanet.quotedrift"
+      "bundleIdentifier": "com.huseyinemanet.quotify"
     },
     "android": {
-      "package": "com.huseyinemanet.quotedrift",
+      "package": "com.huseyinemanet.quotify",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#ECE0CD",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"

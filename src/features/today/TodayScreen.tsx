@@ -61,7 +61,7 @@ export function TodayScreen() {
       {reminderOff ? (
         <Banner
           title="Reminders are currently off"
-          body="That is fine. Quote Drift works fully without them, and you can enable local reminders anytime in Settings."
+          body="That is fine. Quotify works fully without them, and you can enable local reminders anytime in Settings."
         />
       ) : null}
       <QuoteCard
