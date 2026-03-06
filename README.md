@@ -1,118 +1,72 @@
 # Quotify
 
-Quotify is an offline-first daily quote app built with Expo, TypeScript, Expo Router, SQLite, and an iOS home screen widget.
+Quotify is an offline-first daily quote app built with Expo, React Native, TypeScript, Expo Router, SQLite, local notifications, rewarded ads for a single optional extra quote, and an iOS home screen widget.
 
-The product is intentionally App Store review-safe:
+The core product is intentionally simple:
+
+- one quote of the day
+- local library search and topic filtering
+- saved quotes
+- optional reminders
+- one optional extra quote gated by a rewarded ad
+- no required account
+
+## Product Overview
+
+Quotify is designed around a calm daily reading ritual instead of an infinite feed.
+
+Main surfaces:
+
+- `Today`: the primary quote for the local calendar day, save/share actions, and one optional extra quote
+- `Library`: browse-first archive with search, topic filters, and saved-only mode
+- `Settings`: reminder controls, pause state, support/privacy/source links, and version info
+- `Widget`: small and medium iOS home screen widgets for today’s quote
+
+Core product rules:
+
 - the daily quote is always free
-- library, search, saved quotes, and sharing are always free
+- the library and saved quotes are always free
 - notifications are optional
-- ads are optional and only unlock one bonus quote for the current day
-- quotes do not repeat until the collection is exhausted
-
-## What The App Does
-
-Quotify ships with a bundled quote corpus and works without a network connection for its core experience.
-
-The main product surfaces are:
-- `Today`: one primary quote per local calendar day, save, share as image, and an optional `One more` bonus quote
-- `Library`: local search, saved quotes, and topic filtering
-- `Settings`: reminders, pause controls, About, Support, Privacy Policy, widget-compatible app metadata, and version info
-- `iOS widget`: small and medium home screen surfaces that mirror today's quote and deep-link into the app
-
-## Core Product Rules
-
-- Offline-first: core browsing and quote reading do not depend on network access.
-- Optional reminders: the app remains fully usable if notification permission is denied.
-- Rewarded-only monetization: `One more` is optional, has a `Not now` exit, and never blocks the core app.
-- No repeats until exhausted: Today quotes and scheduled reminders share the same transactional claim engine.
-- Local-day correctness: day keys and widget refresh timing follow local calendar boundaries instead of UTC day rollover.
-
-## Feature Overview
-
-### Daily Quote
-- One primary quote per calendar day
-- Serif quote presentation
-- Save / unsave
-- Native share flow with generated Instagram Story-sized image
-- Small read streak
-
-### One More
-- Exactly one extra quote per day
-- Gated by a rewarded ad in v1
-- Unlock occurs only after the rewarded callback fires
-- If ad fails, closes early, or is unavailable, nothing breaks and no quote is unlocked
-
-### Library
-- Offline search across quote text and author
-- Saved-only filtering
-- Topic chips for local exploration
-
-### Notifications
-- Optional local-only reminders
-- 1-3 reminders per day
-- Default active hours `09:30-20:30`
-- Quiet-hour-safe scheduling
-- Pre-reserved unique quotes so reminders also respect no-repeat rules
-
-### iOS Widget
-- Built with `expo-widgets`
-- Supports `systemSmall` and `systemMedium`
-- Uses light and dark payload variants
-- Truncates long quotes deterministically to protect layout
-- Syncs from app bootstrap and refreshes again at the next local midnight
-- Deep-links into `quotify://today`, which redirects to `/(app)/today`
-
-### Sharing
-- Story image generation at `1080x1920`
-- Native OS share sheet
-- Temporary file cleanup after sharing
+- one extra quote is optional
+- quote selection avoids repeats until the local collection is exhausted
+- core reading and browsing work offline
 
 ## Tech Stack
 
-- Expo (managed workflow)
+- Expo 55
+- React Native 0.83
+- React 19
 - TypeScript
 - Expo Router
-- expo-sqlite
-- expo-notifications
-- expo-widgets
-- react-native-google-mobile-ads
-- react-native-view-shot
-- expo-sharing
-- zod
+- `expo-sqlite`
+- `expo-notifications`
+- `expo-sharing`
+- `expo-widgets`
+- `react-native-google-mobile-ads`
+- `react-native-view-shot`
 - Jest + React Native Testing Library
+
+## Repository
+
+- GitHub: [yabastudio/Quotify](https://github.com/yabastudio/Quotify)
+- Clone URL: [https://github.com/yabastudio/Quotify.git](https://github.com/yabastudio/Quotify.git)
 
 ## Project Structure
 
 ```text
-app/                    Expo Router routes and deep-link entrypoints
-src/core/               DB, quote engine, ads, notifications, bootstrap, widgets
+app/                    Expo Router routes
+src/core/               DB, quote engine, ads, notifications, bootstrap, widget sync
 src/features/           Today, Library, Settings, onboarding, layout
-src/ui/                 Presentational components and theme system
-assets/                 Static assets and bundled quotes.json
-widgets/                Native widget entrypoint(s)
+src/ui/                 Theme, primitives, presentational components
+assets/                 App assets and bundled quotes.json
+widgets/                Widget entrypoints
 docs/                   Architecture, ads, sharing, QA, submission notes
-scripts/                Corpus generation and utility scripts
-__tests__/              Unit and integration-style tests
+scripts/                Quote corpus build utilities
+__tests__/              Tests
+ios/                    Native iOS project and widget target
 ```
 
-## Quote Corpus
-
-The bundled corpus is generated from a local `author<TAB>quote` source file and written to `assets/quotes.json`.
-
-The current generator:
-- reads tab-separated rows
-- removes exact duplicates
-- creates stable IDs from author + quote text
-- derives fallback topic tags from content heuristics
-- supports limiting corpus size for faster local iteration
-
-Rebuild the bundled quotes file:
-
-```bash
-npm run build:quotes -- "/Users/huseyinemanet/Downloads/author-quote.txt" 5000
-```
-
-## Getting Started
+## Local Development
 
 ### Prerequisites
 
@@ -127,66 +81,72 @@ Install dependencies:
 npm install
 ```
 
-### Start Metro
+Start Metro:
 
 ```bash
 npm start
 ```
 
-### Run Native Builds
-
-iOS:
+Run iOS:
 
 ```bash
 npm run ios
 ```
 
-Android:
+Run Android:
 
 ```bash
 npm run android
 ```
 
-## Development Notes
+Start web:
 
-### Ads
+```bash
+npm run web
+```
 
-Rewarded ads require a native build or dev client. They do not work in Expo Go.
+## Scripts
 
-Relevant docs:
-- [Ads](/Users/huseyinemanet/Projects/Quote Drift/docs/ads.md)
+```bash
+npm start
+npm run ios
+npm run android
+npm run web
+npm run build:quotes -- "/absolute/path/to/author-quote.txt" 5000
+npm run typecheck
+npm test
+```
 
-### Notifications
+## Environment and Config
 
-Notifications are local only and optional. The app must still work if permission is never granted.
+Primary app config lives in:
 
-### Widgets
+- [app.json](/Users/huseyinemanet/Projects/Quote%20Drift/app.json)
+- [app.config.ts](/Users/huseyinemanet/Projects/Quote%20Drift/app.config.ts)
 
-The home screen widget requires a native iOS build. It does not run inside Expo Go.
+Current app identity:
 
-Current widget behavior:
-- widget target name: `DailyQuoteWidget`
-- supported families: `systemSmall`, `systemMedium`
-- default deep link: `quotify://today`
-- placeholder payload is used whenever today's quote is unavailable
-- timeline includes an immediate entry and a second refresh entry at next local midnight
+- app name: `Quotify`
+- scheme: `quotify`
+- iOS bundle id: `com.huseyinemanet.quotify`
+- Android package: `com.huseyinemanet.quotify`
 
-### Real Device Testing
+Public URLs are currently read from Expo config:
 
-For real iPhone testing, use a signed iOS build. Release builds embed the JS bundle and do not depend on Metro.
-
-## Environment Configuration
-
-App metadata and public URLs live in:
-- [app.json](/Users/huseyinemanet/Projects/Quote Drift/app.json)
-- [app.config.ts](/Users/huseyinemanet/Projects/Quote Drift/app.config.ts)
-
-Before release, replace default values with real production values:
 - `expo.extra.supportUrl`
 - `expo.extra.privacyUrl`
 - `expo.extra.sourcesUrl`
 
-For rewarded ads, configure:
+Replace placeholder values before release.
+
+## Ads
+
+Rewarded ads unlock only one optional extra quote for the current day.
+
+Banner ads are intentionally kept away from the most sensitive product surfaces. Rewarded ads require a native build or dev client and do not work in Expo Go.
+
+Relevant public env vars:
+
 - `EXPO_PUBLIC_ADS_ENV`
 - `EXPO_PUBLIC_ADMOB_IOS_APP_ID`
 - `EXPO_PUBLIC_ADMOB_ANDROID_APP_ID`
@@ -196,11 +156,53 @@ For rewarded ads, configure:
 - `EXPO_PUBLIC_ADMOB_ANDROID_REWARDED_UNIT_ID`
 - `EXPO_PUBLIC_ADMOB_TEST_DEVICE_IDS`
 
-For widget builds, confirm these native identifiers stay aligned:
-- `expo.ios.bundleIdentifier`
-- `expo.android.package`
-- generated widget bundle identifier: `<ios bundle id>.widgets`
-- generated app group identifier: `group.<ios bundle id>`
+In non-production ads mode, the app falls back to Google test IDs from [app.config.ts](/Users/huseyinemanet/Projects/Quote%20Drift/app.config.ts).
+
+## Notifications
+
+Notifications are local-only.
+
+Current reminder model:
+
+- reminders can be enabled or disabled
+- frequency is 1-3 per day
+- default active hours are `09:30` to `20:30`
+- reminders can be paused temporarily
+- quote reservations share the same no-repeat logic as the Today surface
+
+The app remains fully usable if notification permission is denied.
+
+## Widget
+
+The iOS widget is configured through `expo-widgets` in [app.config.ts](/Users/huseyinemanet/Projects/Quote%20Drift/app.config.ts).
+
+Current widget setup:
+
+- target name: `DailyQuoteWidget`
+- supported families: `systemSmall`, `systemMedium`
+- deep link: `quotify://today`
+- widget bundle id: `<ios bundle id>.widgets`
+- app group id: `group.<ios bundle id>`
+
+The widget mirrors today’s quote and refreshes again at the next local midnight.
+
+## Quote Corpus
+
+Quotify ships with a bundled local quote corpus in `assets/quotes.json`.
+
+The corpus build script:
+
+- reads tab-separated `author<TAB>quote` rows
+- removes exact duplicates
+- creates stable IDs
+- derives fallback tags
+- supports limiting the output size for iteration
+
+Example:
+
+```bash
+npm run build:quotes -- "/Users/huseyinemanet/Downloads/author-quote.txt" 5000
+```
 
 ## Quality Checks
 
@@ -210,44 +212,34 @@ Typecheck:
 npm run typecheck
 ```
 
-Run tests:
+Tests:
 
 ```bash
-npm test -- --runInBand
+npm test
 ```
 
-Export app bundles:
+Optional export check:
 
 ```bash
 npx expo export --platform ios --platform android
 ```
 
-High-signal automated coverage currently includes:
-- quote engine and notification scheduling
-- share-to-story rendering flow
-- widget payload truncation and timeline sync
-- local day helpers for midnight rollover behavior
+## Release Notes
 
-## Important Docs
+Before shipping:
 
-- [Architecture](/Users/huseyinemanet/Projects/Quote Drift/docs/architecture.md)
-- [Submission Checklist](/Users/huseyinemanet/Projects/Quote Drift/docs/submission.md)
-- [Ads](/Users/huseyinemanet/Projects/Quote Drift/docs/ads.md)
-- [Sharing](/Users/huseyinemanet/Projects/Quote Drift/docs/sharing.md)
-- [QA Checklist](/Users/huseyinemanet/Projects/Quote Drift/docs/qa-checklist.md)
-- [Review Notes](/Users/huseyinemanet/Projects/Quote Drift/docs/review-notes.md)
+- replace placeholder support/privacy/source URLs
+- configure production AdMob IDs
+- verify widget identifiers remain aligned with the iOS bundle id
+- test reminder permission flow on a real device
+- test rewarded ads on a native build
+- test widget timeline refresh and deep linking
 
-## App Store Safety Notes
+## Docs
 
-- The app is not ads-only.
-- The daily quote is always free.
-- The library and saved quotes are always free.
-- `One more` is optional and never mandatory.
-- The rewarded gate always includes `Not now`.
-- Notifications are optional and local-only.
-- Privacy Policy and Support links are exposed in Settings > About.
-
-## Repository
-
-- GitHub: [yabastudio/Quotify](https://github.com/yabastudio/Quotify)
-- Clone URL: [https://github.com/yabastudio/Quotify.git](https://github.com/yabastudio/Quotify.git)
+- [Architecture](/Users/huseyinemanet/Projects/Quote%20Drift/docs/architecture.md)
+- [Ads](/Users/huseyinemanet/Projects/Quote%20Drift/docs/ads.md)
+- [Sharing](/Users/huseyinemanet/Projects/Quote%20Drift/docs/sharing.md)
+- [QA Checklist](/Users/huseyinemanet/Projects/Quote%20Drift/docs/qa-checklist.md)
+- [Review Notes](/Users/huseyinemanet/Projects/Quote%20Drift/docs/review-notes.md)
+- [Submission Checklist](/Users/huseyinemanet/Projects/Quote%20Drift/docs/submission.md)
