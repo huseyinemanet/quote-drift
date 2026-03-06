@@ -37,8 +37,9 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 30,
     lineHeight: 42,
+    letterSpacing: -0.45,
     color: colors.text,
-    fontFamily: "Times New Roman",
+    fontFamily: "SourceSerif4_400Regular",
   },
   author: {
     fontSize: 17,

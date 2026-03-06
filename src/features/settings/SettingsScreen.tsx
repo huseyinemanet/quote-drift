@@ -15,6 +15,7 @@ import { colors } from "@/ui/theme";
 export function SettingsScreen() {
   const {
     notificationSettings,
+    requestNotifications,
     updateNotificationSettings,
     pauseNotificationsForDays,
     sendTestReminder,
@@ -27,6 +28,20 @@ export function SettingsScreen() {
   );
 
   const denied = notificationSettings.permission_status === "denied";
+
+  const handleToggleNotifications = async () => {
+    if (notificationSettings.enabled) {
+      await updateNotificationSettings({ enabled: false });
+      return;
+    }
+
+    if (notificationSettings.permission_status === "granted") {
+      await updateNotificationSettings({ enabled: true });
+      return;
+    }
+
+    await requestNotifications();
+  };
 
   return (
     <Screen>
@@ -41,9 +56,7 @@ export function SettingsScreen() {
         <Text style={styles.sectionTitle}>Reminders</Text>
         <Button
           label={notificationSettings.enabled ? "Turn reminders off" : "Turn reminders on"}
-          onPress={() =>
-            updateNotificationSettings({ enabled: !notificationSettings.enabled })
-          }
+          onPress={handleToggleNotifications}
         />
         <View style={styles.inline}>
           {[1, 2, 3].map((value) => (

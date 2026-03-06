@@ -31,6 +31,7 @@ import {
 import type {
   AppBootstrapSnapshot,
   BootstrapState,
+  NotificationPermissionStatus,
   NotificationSettings,
   QuoteFeedback,
   QuoteView,
@@ -45,7 +46,7 @@ type AppContextValue = AppBootstrapSnapshot & {
   savedCount: number;
   refreshAll: () => Promise<void>;
   completeOnboarding: (topics: string[]) => Promise<void>;
-  requestNotifications: () => Promise<void>;
+  requestNotifications: () => Promise<NotificationPermissionStatus>;
   updateNotificationSettings: (
     patch: Partial<NotificationSettings>
   ) => Promise<void>;
@@ -182,9 +183,11 @@ export function AppProvider({ children }: PropsWithChildren) {
         const permission = await requestNotificationPermission();
         const settings = await persistNotificationSettings({
           permission_status: permission,
+          enabled: permission === "granted",
         });
         await syncNotificationSchedule(settings);
         await refreshAll();
+        return permission;
       },
       updateNotificationSettings: async (patch) => {
         const merged = await persistNotificationSettings(patch);

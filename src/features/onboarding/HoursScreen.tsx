@@ -14,18 +14,25 @@ export function HoursScreen() {
     frequency?: string;
     skipNotifications?: string;
   }>();
-  const { completeOnboarding, updateNotificationSettings } = useAppState();
+  const { completeOnboarding, requestNotifications, updateNotificationSettings } =
+    useAppState();
   const [startMinute, setStartMinute] = useState(570);
   const [endMinute, setEndMinute] = useState(1230);
+  const shouldEnableNotifications = params.skipNotifications !== "true";
 
   const finish = async () => {
     const topics = params.topics ? (JSON.parse(params.topics) as string[]) : [];
     await updateNotificationSettings({
-      enabled: params.skipNotifications !== "true",
+      enabled: shouldEnableNotifications,
       frequency_per_day: Number(params.frequency ?? "1") as 1 | 2 | 3,
       active_start_minute: startMinute,
       active_end_minute: endMinute,
     });
+
+    if (shouldEnableNotifications) {
+      await requestNotifications();
+    }
+
     await completeOnboarding(topics);
     router.replace("/(app)/today");
   };
@@ -62,7 +69,14 @@ export function HoursScreen() {
           ))}
         </View>
       </View>
-      <Button label="Finish setup" onPress={finish} />
+      <Button
+        label={
+          shouldEnableNotifications
+            ? "Finish and enable reminders"
+            : "Finish setup"
+        }
+        onPress={finish}
+      />
     </Screen>
   );
 }
