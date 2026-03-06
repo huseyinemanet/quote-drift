@@ -6,20 +6,34 @@ export function ChoiceChip({
   label,
   selected,
   onPress,
+  disabled = false,
 }: {
   label: string;
   selected: boolean;
   onPress: () => void;
+  disabled?: boolean;
 }) {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
   return (
     <Pressable
+      accessibilityRole="button"
+      disabled={disabled}
       onPress={onPress}
-      style={[styles.chip, selected ? styles.selected : null]}
+      style={[
+        styles.chip,
+        selected ? styles.selected : null,
+        disabled ? styles.disabled : null,
+      ]}
     >
-      <Text style={[styles.label, selected ? styles.selectedLabel : null]}>
+      <Text
+        style={[
+          styles.label,
+          selected ? styles.selectedLabel : null,
+          disabled ? styles.disabledLabel : null,
+        ]}
+      >
         {label}
       </Text>
     </Pressable>
@@ -40,11 +54,17 @@ const createStyles = (colors: ThemeTokens) =>
       backgroundColor: colors.text,
       borderColor: colors.text,
     },
+    disabled: {
+      opacity: 0.4,
+    },
     label: {
       color: colors.text,
       fontWeight: "600",
     },
     selectedLabel: {
       color: colors.background,
+    },
+    disabledLabel: {
+      color: colors.textMuted,
     },
   });

@@ -8,10 +8,12 @@ import { ThemeTokens, useTheme } from "./theme";
 type Props = {
   quote: QuoteView;
   onToggleSave: () => void;
-  onShare: () => void;
+  onShare?: () => void;
   onCopy?: () => void;
   onPressAuthor?: () => void;
   showAuthor?: boolean;
+  showShare?: boolean;
+  compact?: boolean;
 };
 
 export function QuoteListItem({
@@ -21,6 +23,8 @@ export function QuoteListItem({
   onCopy,
   onPressAuthor,
   showAuthor = true,
+  showShare = true,
+  compact = false,
 }: Props) {
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -30,7 +34,9 @@ export function QuoteListItem({
 
   return (
     <View style={styles.quoteRow}>
-      <Text style={styles.quoteText}>{quote.text}</Text>
+      <Text numberOfLines={compact ? 3 : 4} style={[styles.quoteText, compact ? styles.quoteTextCompact : null]}>
+        {quote.text}
+      </Text>
       {showAuthor ? (
         onPressAuthor ? (
           <Pressable accessibilityRole="button" onPress={onPressAuthor}>
@@ -45,8 +51,8 @@ export function QuoteListItem({
       </View>
       <View style={styles.actions}>
         <Button
-          label={quote.saved ? "Unsave" : "Save"}
-          variant="secondary"
+          label={quote.saved ? "Saved" : "Save"}
+          variant="ghost"
           onPress={onToggleSave}
         />
         {onCopy ? (
@@ -56,11 +62,13 @@ export function QuoteListItem({
             onPress={onCopy}
           />
         ) : null}
-        <Button
-          label="Share"
-          variant="ghost"
-          onPress={onShare}
-        />
+        {showShare && onShare ? (
+          <Button
+            label="Share"
+            variant="ghost"
+            onPress={onShare}
+          />
+        ) : null}
       </View>
     </View>
   );
@@ -74,12 +82,16 @@ const createStyles = (colors: ThemeTokens) =>
       borderColor: colors.border,
       borderRadius: 20,
       padding: 16,
-      gap: 8,
+      gap: 10,
     },
     quoteText: {
-      fontSize: 18,
-      lineHeight: 26,
+      fontSize: 17,
+      lineHeight: 25,
       color: colors.text,
+    },
+    quoteTextCompact: {
+      fontSize: 16,
+      lineHeight: 23,
     },
     quoteAuthor: {
       fontSize: 15,
@@ -90,12 +102,19 @@ const createStyles = (colors: ThemeTokens) =>
       gap: 2,
     },
     meta: {
+      alignSelf: "flex-start",
       color: colors.textMuted,
-      fontSize: 13,
+      fontSize: 12,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 999,
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      backgroundColor: colors.background,
     },
     actions: {
       flexDirection: "row",
-      gap: 12,
+      gap: 10,
       flexWrap: "wrap",
     },
   });

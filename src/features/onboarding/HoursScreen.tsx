@@ -8,6 +8,9 @@ import { Button } from "@/ui/Button";
 import { Screen } from "@/ui/Screen";
 import { ThemeTokens, useTheme } from "@/ui/theme";
 
+const START_OPTIONS = [510, 570, 630] as const;
+const END_OPTIONS = [1170, 1230, 1290] as const;
+
 export function HoursScreen() {
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -21,6 +24,7 @@ export function HoursScreen() {
   const [startMinute, setStartMinute] = useState(570);
   const [endMinute, setEndMinute] = useState(1230);
   const shouldEnableNotifications = params.skipNotifications !== "true";
+  const summary = `${minutesToLabel(startMinute)} to ${minutesToLabel(endMinute)}`;
 
   const finish = async () => {
     const topics = params.topics ? (JSON.parse(params.topics) as string[]) : [];
@@ -41,40 +45,61 @@ export function HoursScreen() {
 
   return (
     <Screen>
+      <View style={styles.progressRow}>
+        <View style={styles.progressDots}>
+          <View style={[styles.progressDot, styles.progressDotComplete]} />
+          <View style={[styles.progressDot, styles.progressDotComplete]} />
+          <View style={[styles.progressDot, styles.progressDotActive]} />
+        </View>
+        <Text style={styles.progressLabel}>Step 3 of 3</Text>
+      </View>
       <View style={styles.header}>
-        <Text style={styles.title}>Choose your reminder window.</Text>
+        <Text style={styles.title}>Set your reminder hours.</Text>
         <Text style={styles.body}>
-          Notifications will only be scheduled inside this range.
+          Reminders will only appear during the hours you choose.
+        </Text>
+        <Text style={styles.helper}>Recommended: 9:30 AM to 8:30 PM for a calm default.</Text>
+      </View>
+      <View style={styles.summaryCard}>
+        <Text style={styles.summaryLabel}>Reminder window</Text>
+        <Text style={styles.summaryValue}>From {summary}</Text>
+        <Text style={styles.summaryBody}>
+          Choose one start time and one end time. End time must stay later than start.
         </Text>
       </View>
       <View style={styles.card}>
         <Text style={styles.label}>Start</Text>
         <View style={styles.row}>
-          {[510, 570, 630].map((value) => (
+          {START_OPTIONS.map((value) => (
             <Button
               key={value}
               label={minutesToLabel(value)}
               variant={value === startMinute ? "primary" : "secondary"}
               onPress={() => setStartMinute(value)}
+              disabled={value >= endMinute}
             />
           ))}
         </View>
         <Text style={styles.label}>End</Text>
         <View style={styles.row}>
-          {[1170, 1230, 1290].map((value) => (
+          {END_OPTIONS.map((value) => (
             <Button
               key={value}
               label={minutesToLabel(value)}
               variant={value === endMinute ? "primary" : "secondary"}
               onPress={() => setEndMinute(value)}
+              disabled={value <= startMinute}
             />
           ))}
         </View>
       </View>
+      <Text style={styles.footerText}>
+        You can change this later. We&apos;ll ask for notification permission when you enable reminders.
+      </Text>
       <Button
         label={
           shouldEnableNotifications
-            ? "Finish and enable reminders"
+            ? "Enable reminders"
             : "Finish setup"
         }
         onPress={finish}
@@ -85,7 +110,36 @@ export function HoursScreen() {
 
 const createStyles = (colors: ThemeTokens) =>
   StyleSheet.create({
+    progressRow: {
+      marginTop: 8,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+    },
+    progressDots: {
+      flexDirection: "row",
+      gap: 8,
+    },
+    progressDot: {
+      width: 8,
+      height: 8,
+      borderRadius: 999,
+      backgroundColor: colors.border,
+    },
+    progressDotComplete: {
+      backgroundColor: colors.accent,
+    },
+    progressDotActive: {
+      width: 26,
+      backgroundColor: colors.text,
+    },
+    progressLabel: {
+      fontSize: 13,
+      fontWeight: "600",
+      color: colors.textMuted,
+    },
     header: {
+      marginTop: 24,
       gap: 10,
     },
     title: {
@@ -99,8 +153,40 @@ const createStyles = (colors: ThemeTokens) =>
       lineHeight: 22,
       color: colors.textMuted,
     },
+    helper: {
+      fontSize: 14,
+      lineHeight: 20,
+      color: colors.accent,
+      fontWeight: "600",
+    },
+    summaryCard: {
+      gap: 6,
+      backgroundColor: colors.surface,
+      borderRadius: 20,
+      padding: 16,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    summaryLabel: {
+      fontSize: 13,
+      fontWeight: "700",
+      letterSpacing: 1,
+      textTransform: "uppercase",
+      color: colors.accent,
+    },
+    summaryValue: {
+      fontSize: 18,
+      lineHeight: 24,
+      fontWeight: "700",
+      color: colors.text,
+    },
+    summaryBody: {
+      fontSize: 14,
+      lineHeight: 20,
+      color: colors.textMuted,
+    },
     card: {
-      gap: 14,
+      gap: 18,
       backgroundColor: colors.surface,
       borderRadius: 22,
       padding: 18,
@@ -114,5 +200,11 @@ const createStyles = (colors: ThemeTokens) =>
     },
     row: {
       gap: 10,
+    },
+    footerText: {
+      fontSize: 13,
+      lineHeight: 19,
+      textAlign: "center",
+      color: colors.textMuted,
     },
   });

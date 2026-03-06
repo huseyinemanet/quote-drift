@@ -6,7 +6,7 @@ import {
   NOTIFICATION_CHANNEL_ID,
 } from "./constants";
 import { addDays, getDayKey } from "./date";
-import { getDb } from "./db";
+import { enqueueDbWrite, getDb } from "./db";
 import {
   cancelFailedNotificationReservation,
   clearFutureNotificationReservations,
@@ -107,30 +107,32 @@ export async function getNotificationSettings(): Promise<NotificationSettings> {
 export async function persistNotificationSettings(
   patch: Partial<NotificationSettings>
 ) {
-  const current = await getNotificationSettings();
-  const next = {
-    ...current,
-    ...patch,
-    updated_at: Date.now(),
-  };
-  const db = await getDb();
-  await db.runAsync(
-    `UPDATE notification_settings
-     SET enabled = ?, frequency_per_day = ?, active_start_minute = ?,
-         active_end_minute = ?, pause_until = ?, permission_status = ?, updated_at = ?
-     WHERE id = 1`,
-    [
-      next.enabled ? 1 : 0,
-      next.frequency_per_day,
-      next.active_start_minute,
-      next.active_end_minute,
-      next.pause_until,
-      next.permission_status,
-      next.updated_at,
-    ]
-  );
+  return enqueueDbWrite(async () => {
+    const current = await getNotificationSettings();
+    const next = {
+      ...current,
+      ...patch,
+      updated_at: Date.now(),
+    };
+    const db = await getDb();
+    await db.runAsync(
+      `UPDATE notification_settings
+       SET enabled = ?, frequency_per_day = ?, active_start_minute = ?,
+           active_end_minute = ?, pause_until = ?, permission_status = ?, updated_at = ?
+       WHERE id = 1`,
+      [
+        next.enabled ? 1 : 0,
+        next.frequency_per_day,
+        next.active_start_minute,
+        next.active_end_minute,
+        next.pause_until,
+        next.permission_status,
+        next.updated_at,
+      ]
+    );
 
-  return next;
+    return next;
+  });
 }
 
 export async function syncNotificationSchedule(

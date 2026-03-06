@@ -1,5 +1,5 @@
 import { APP_STATE_KEYS, DEFAULT_NOTIFICATION_SETTINGS } from "./constants";
-import { getAppState, getDb, setAppState } from "./db";
+import { enqueueDbWrite, getAppState, getDb, setAppState } from "./db";
 import { digestString } from "./hash";
 import { getBundledQuotes, validateBundledQuotes } from "./quoteData";
 import type { InvalidCorpusResult } from "./types";
@@ -78,19 +78,21 @@ export async function ensureNotificationSettings() {
     return;
   }
 
-  await db.runAsync(
-    `INSERT INTO notification_settings(
-      id, enabled, frequency_per_day, active_start_minute, active_end_minute,
-      pause_until, permission_status, updated_at
-    ) VALUES(1, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      DEFAULT_NOTIFICATION_SETTINGS.enabled,
-      DEFAULT_NOTIFICATION_SETTINGS.frequency_per_day,
-      DEFAULT_NOTIFICATION_SETTINGS.active_start_minute,
-      DEFAULT_NOTIFICATION_SETTINGS.active_end_minute,
-      DEFAULT_NOTIFICATION_SETTINGS.pause_until,
-      DEFAULT_NOTIFICATION_SETTINGS.permission_status,
-      Date.now(),
-    ]
-  );
+  await enqueueDbWrite(async () => {
+    await db.runAsync(
+      `INSERT INTO notification_settings(
+        id, enabled, frequency_per_day, active_start_minute, active_end_minute,
+        pause_until, permission_status, updated_at
+      ) VALUES(1, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        DEFAULT_NOTIFICATION_SETTINGS.enabled,
+        DEFAULT_NOTIFICATION_SETTINGS.frequency_per_day,
+        DEFAULT_NOTIFICATION_SETTINGS.active_start_minute,
+        DEFAULT_NOTIFICATION_SETTINGS.active_end_minute,
+        DEFAULT_NOTIFICATION_SETTINGS.pause_until,
+        DEFAULT_NOTIFICATION_SETTINGS.permission_status,
+        Date.now(),
+      ]
+    );
+  });
 }

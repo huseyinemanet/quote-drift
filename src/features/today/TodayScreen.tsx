@@ -1,4 +1,5 @@
 import { router } from "expo-router";
+import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { useAppState } from "@/core/bootstrap";
@@ -32,6 +33,8 @@ export function TodayScreen() {
     onExhausted: () => router.push("/exhausted"),
   });
   const openAuthor = (authorId: string) => router.push(`/author/${authorId}`);
+  const [isTodayExpanded, setIsTodayExpanded] = useState(false);
+  const [isExtraExpanded, setIsExtraExpanded] = useState(false);
 
   if (!todayQuote) {
     return (
@@ -51,12 +54,14 @@ export function TodayScreen() {
   const reminderOff =
     !notificationSettings.enabled ||
     notificationSettings.permission_status !== "granted";
+  const streakLabel =
+    streak > 0 ? `${streak} day read streak` : "Day 1 starts today";
 
   return (
     <Screen>
       <View style={styles.header}>
         <Text style={styles.title}>Today</Text>
-        <Text style={styles.subtitle}>{streak} day read streak</Text>
+        <Text style={styles.subtitle}>{streakLabel}</Text>
       </View>
       {reminderOff ? (
         <Banner
@@ -67,45 +72,61 @@ export function TodayScreen() {
       <QuoteCard
         quote={todayQuote}
         eyebrow="Quote of the day"
+        isExpanded={isTodayExpanded}
+        onToggleExpanded={() => setIsTodayExpanded((current) => !current)}
         onPressAuthor={() => openAuthor(todayQuote.authorId)}
       />
-      <View style={styles.row}>
-        <Button
-          label={todayQuote.saved ? "Unsave" : "Save"}
-          variant="secondary"
-          onPress={() => toggleSave(todayQuote.id)}
-        />
-        <Button
-          label={todayShare.isPreparing ? "Preparing..." : "Share"}
-          variant="ghost"
-          disabled={todayShare.isPreparing}
-          onPress={todayShare.share}
-        />
+      <View style={styles.actionsBlock}>
+        <View style={styles.row}>
+          <Button
+            label={todayQuote.saved ? "Saved" : "Save"}
+            variant="secondary"
+            onPress={() => toggleSave(todayQuote.id)}
+          />
+          <Button
+            label={todayShare.isPreparing ? "Preparing..." : "Share"}
+            variant="ghost"
+            disabled={todayShare.isPreparing}
+            onPress={todayShare.share}
+          />
+        </View>
       </View>
-      <Button
-        label={oneMore.isAlreadyUnlocked ? "Already unlocked today" : "One more"}
-        disabled={oneMore.isAlreadyUnlocked}
-        onPress={oneMore.handleOneMorePress}
-      />
+      <View style={styles.exploreBlock}>
+        <Button
+          label={
+            oneMore.isAlreadyUnlocked ? "Extra quote unlocked" : "One more for today"
+          }
+          variant="secondary"
+          disabled={oneMore.isAlreadyUnlocked}
+          onPress={oneMore.handleOneMorePress}
+        />
+        <Text style={styles.exploreHint}>
+          Unlock one extra quote if you want more today.
+        </Text>
+      </View>
       {extraQuote ? (
         <View style={styles.extraSection}>
           <QuoteCard
             quote={extraQuote}
             eyebrow="One more for today"
+            isExpanded={isExtraExpanded}
+            onToggleExpanded={() => setIsExtraExpanded((current) => !current)}
             onPressAuthor={() => openAuthor(extraQuote.authorId)}
           />
-          <View style={styles.row}>
-            <Button
-              label={extraQuote.saved ? "Unsave" : "Save"}
-              variant="secondary"
-              onPress={() => toggleSave(extraQuote.id)}
-            />
-            <Button
-              label={extraShare.isPreparing ? "Preparing..." : "Share"}
-              variant="ghost"
-              disabled={extraShare.isPreparing}
-              onPress={extraShare.share}
-            />
+          <View style={styles.actionsBlock}>
+            <View style={styles.row}>
+              <Button
+                label={extraQuote.saved ? "Saved" : "Save"}
+                variant="secondary"
+                onPress={() => toggleSave(extraQuote.id)}
+              />
+              <Button
+                label={extraShare.isPreparing ? "Preparing..." : "Share"}
+                variant="ghost"
+                disabled={extraShare.isPreparing}
+                onPress={extraShare.share}
+              />
+            </View>
           </View>
         </View>
       ) : null}
@@ -142,6 +163,18 @@ const createStyles = (colors: ThemeTokens) =>
     row: {
       flexDirection: "row",
       gap: 12,
+    },
+    actionsBlock: {
+      gap: 12,
+      marginTop: 4,
+    },
+    exploreBlock: {
+      gap: 10,
+    },
+    exploreHint: {
+      fontSize: 14,
+      lineHeight: 20,
+      color: colors.textMuted,
     },
     extraSection: {
       gap: 12,

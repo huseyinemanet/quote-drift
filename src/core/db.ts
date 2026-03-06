@@ -4,13 +4,31 @@ import type { SQLiteDatabase } from "expo-sqlite";
 const DATABASE_NAME = "quotify.db";
 
 let databasePromise: Promise<SQLiteDatabase> | null = null;
+let writeQueue: Promise<void> = Promise.resolve();
 
 export async function getDb() {
   if (!databasePromise) {
-    databasePromise = SQLite.openDatabaseAsync(DATABASE_NAME);
+    databasePromise = (async () => {
+      const db = await SQLite.openDatabaseAsync(DATABASE_NAME);
+      await db.execAsync(`
+        PRAGMA journal_mode = WAL;
+        PRAGMA foreign_keys = ON;
+        PRAGMA busy_timeout = 5000;
+      `);
+      return db;
+    })();
   }
 
   return databasePromise;
+}
+
+export async function enqueueDbWrite<T>(task: () => Promise<T>) {
+  const next = writeQueue.then(task, task);
+  writeQueue = next.then(
+    () => undefined,
+    () => undefined
+  );
+  return next;
 }
 
 export async function runMigrations() {
@@ -104,17 +122,19 @@ export async function getAppState(key: string) {
 }
 
 export async function setAppState(key: string, value: string | null) {
-  const db = await getDb();
+  await enqueueDbWrite(async () => {
+    const db = await getDb();
 
-  if (value === null) {
-    await db.runAsync("DELETE FROM app_state WHERE key = ?", [key]);
-    return;
-  }
+    if (value === null) {
+      await db.runAsync("DELETE FROM app_state WHERE key = ?", [key]);
+      return;
+    }
 
-  await db.runAsync(
-    "INSERT INTO app_state(key, value) VALUES(?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value",
-    [key, value]
-  );
+    await db.runAsync(
+      "INSERT INTO app_state(key, value) VALUES(?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+      [key, value]
+    );
+  });
 }
 
 export type DbTransaction = Parameters<
@@ -126,10 +146,12 @@ export type DbTransaction = Parameters<
 export async function withExclusiveTransaction<T>(
   task: (tx: SQLiteDatabase) => Promise<T>
 ) {
-  const db = await getDb();
   let result: T | undefined;
-  await db.withExclusiveTransactionAsync(async (tx) => {
-    result = await task(tx);
+  await enqueueDbWrite(async () => {
+    const db = await getDb();
+    await db.withExclusiveTransactionAsync(async (tx) => {
+      result = await task(tx);
+    });
   });
   return result as T;
 }

@@ -19,7 +19,13 @@ export function BottomChrome({
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const [tabBarHeight, setTabBarHeight] = useState(0);
-  const showBannerGap = adBannerState.bannerHeight > 0;
+  const currentRouteName =
+    tabBarProps.state.routes[tabBarProps.state.index]?.name ?? "";
+  const shouldShowBanner =
+    currentRouteName !== "today" &&
+    currentRouteName !== "library" &&
+    currentRouteName !== "settings";
+  const showBannerGap = shouldShowBanner && adBannerState.bannerHeight > 0;
   const chromeHeight =
     tabBarHeight + (showBannerGap ? adBannerState.bannerHeight + AD_GAP : 0);
 
@@ -29,7 +35,7 @@ export function BottomChrome({
 
   return (
     <View style={styles.container}>
-      <AdBanner state={adBannerState} />
+      {shouldShowBanner ? <AdBanner state={adBannerState} /> : null}
       {showBannerGap ? <View style={styles.gap} /> : null}
       <View
         testID="bottom-chrome-tab-bar"
