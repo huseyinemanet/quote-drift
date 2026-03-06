@@ -5,7 +5,7 @@
 - Library, search, favourites, and sharing are always free.
 - `One more` is optional and gated only behind a rewarded ad after an explicit modal with a `Not now` exit.
 - The app remains fully usable when ads fail or when notification permission is denied.
-- No banner ads are present in v1, which reduces “ads-only” perception risk for guideline 4.2.
+- The sticky banner is non-blocking, collapses when unavailable, and never covers content or navigation.
 
 ## Functional Checks
 - Quote Drift launches into a real loading/import screen, not a blank screen.
@@ -18,6 +18,8 @@
 - Test notification uses fixed copy and does not consume a quote.
 
 ## Monetization Checks
+- Sticky banner appears above the tab bar only when loaded.
+- Sticky banner failure or dismissal leaves no empty gap.
 - `One more` opens a modal with `Watch ad` and `Not now`.
 - Rewarded ad success grants exactly one extra quote for that day.
 - Skipping, closing, or ad failure grants nothing and does not block app use.

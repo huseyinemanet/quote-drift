@@ -3,6 +3,7 @@ export const APP_STATE_KEYS = {
   corpusInvalidIssues: "corpus_invalid_issues",
   onboardingComplete: "onboarding_complete",
   selectedTopics: "selected_topics",
+  adBannerHiddenUntil: "ad_banner_hidden_until",
 } as const;
 
 export const DEFAULT_NOTIFICATION_SETTINGS = {

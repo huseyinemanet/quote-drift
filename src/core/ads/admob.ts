@@ -5,12 +5,16 @@ type GoogleMobileAdsModule = typeof import("react-native-google-mobile-ads");
 
 const TEST_IOS_APP_ID = "ca-app-pub-3940256099942544~1458002511";
 const TEST_ANDROID_APP_ID = "ca-app-pub-3940256099942544~3347511713";
+const TEST_IOS_BANNER_UNIT_ID = "ca-app-pub-3940256099942544/2435281174";
+const TEST_ANDROID_BANNER_UNIT_ID = "ca-app-pub-3940256099942544/6300978111";
 const TEST_IOS_REWARDED_UNIT_ID = "ca-app-pub-3940256099942544/1712485313";
 const TEST_ANDROID_REWARDED_UNIT_ID = "ca-app-pub-3940256099942544/5224354917";
 
 type AdMobExtraConfig = {
   iosAppId?: string;
   androidAppId?: string;
+  iosBannerUnitId?: string | null;
+  androidBannerUnitId?: string | null;
   iosRewardedUnitId?: string | null;
   androidRewardedUnitId?: string | null;
   isTestEnv?: boolean;
@@ -23,6 +27,9 @@ export const admobConfig = {
   isTestEnv: extraConfig.isTestEnv ?? true,
   iosAppId: extraConfig.iosAppId ?? TEST_IOS_APP_ID,
   androidAppId: extraConfig.androidAppId ?? TEST_ANDROID_APP_ID,
+  iosBannerUnitId: extraConfig.iosBannerUnitId ?? TEST_IOS_BANNER_UNIT_ID,
+  androidBannerUnitId:
+    extraConfig.androidBannerUnitId ?? TEST_ANDROID_BANNER_UNIT_ID,
   iosRewardedUnitId:
     extraConfig.iosRewardedUnitId ?? TEST_IOS_REWARDED_UNIT_ID,
   androidRewardedUnitId:
@@ -54,8 +61,18 @@ export function getRewardedUnitId() {
     : admobConfig.androidRewardedUnitId;
 }
 
+export function getBannerUnitId() {
+  return Platform.OS === "ios"
+    ? admobConfig.iosBannerUnitId
+    : admobConfig.androidBannerUnitId;
+}
+
 export function hasRewardedRuntimeConfig() {
   return Boolean(getRewardedUnitId());
+}
+
+export function hasBannerRuntimeConfig() {
+  return Boolean(getBannerUnitId());
 }
 
 export async function initializeMobileAds() {
@@ -66,7 +83,10 @@ export async function initializeMobileAds() {
   initPromise = (async () => {
     const googleMobileAds = getGoogleMobileAdsModule();
 
-    if (!googleMobileAds || !hasRewardedRuntimeConfig()) {
+    if (
+      !googleMobileAds ||
+      (!hasRewardedRuntimeConfig() && !hasBannerRuntimeConfig())
+    ) {
       return;
     }
 

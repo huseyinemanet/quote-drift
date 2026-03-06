@@ -15,6 +15,13 @@
 - Skip/close/error/unavailable ad grants nothing and shows a friendly message when appropriate.
 - After unlock, `One more` is no longer available for that day.
 
+## Sticky Banner
+- Banner appears above the tab bar on Today, Library, and Settings.
+- There is visible spacing between the banner and tab bar.
+- Content is never hidden behind the banner or tab bar.
+- Failed banner loads leave no empty gap.
+- Closing the banner hides it for 24 hours and removes the gap immediately.
+
 ## Notifications
 - App works with notifications denied.
 - Optional reminder scheduling respects active hours.
@@ -22,5 +29,4 @@
 
 ## Submission Safety
 - Privacy Policy and Support links open correctly.
-- No banner ads appear anywhere in v1.
 - The app remains usable with ads failing and with notifications disabled.

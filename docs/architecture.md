@@ -7,10 +7,13 @@ The app is intentionally offline-first. The quote corpus ships with the app, bro
 
 ## Monetization
 - The core app is free: the daily quote, library, search, saved quotes, and sharing do not depend on ads.
-- Monetization v1 uses rewarded ads only for the optional `One more` action on Today.
+- Monetization v1 uses two optional ad surfaces:
+  - a sticky banner above the tab bar across Today, Library, and Settings
+  - rewarded ads only for the optional `One more` action on Today
 - `One more` can unlock exactly one bonus quote per calendar day.
 - The rewarded modal always includes a `Not now` exit, so ads never block app use.
 - No quote is unlocked unless the rewarded ad completes and the reward is earned.
+- The sticky banner collapses to zero height when not loaded, hidden, or unavailable.
 - If ads are unavailable or fail, the app remains fully usable and the user stays on Today.
 
 ## Data Model

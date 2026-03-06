@@ -1,9 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
-import { BottomTabBar } from "@react-navigation/bottom-tabs";
 import { Tabs } from "expo-router";
 import { useState } from "react";
-import { View } from "react-native";
 
+import { useAdBanner } from "@/core/ads/useAdBanner";
+import { BottomChrome } from "@/features/layout/BottomChrome";
 import { BottomChromeInsetProvider } from "@/features/layout/BottomChromeInset";
 import { useTheme } from "@/ui/theme";
 
@@ -32,14 +32,17 @@ function TabIcon({
 export default function TabLayout() {
   const { colors } = useTheme();
   const [bottomInset, setBottomInset] = useState(88);
+  const adBannerState = useAdBanner();
 
   return (
     <BottomChromeInsetProvider value={bottomInset}>
       <Tabs
         tabBar={(props) => (
-          <View onLayout={(event) => setBottomInset(event.nativeEvent.layout.height)}>
-            <BottomTabBar {...props} />
-          </View>
+          <BottomChrome
+            {...props}
+            adBannerState={adBannerState}
+            onInsetChange={setBottomInset}
+          />
         )}
         screenOptions={{
           headerShown: false,
