@@ -5,6 +5,14 @@ Quote Drift is a managed Expo app with Expo Router for navigation, `expo-sqlite`
 
 The app is intentionally offline-first. The quote corpus ships with the app, browsing works without network access, and the core product remains usable when notification permissions are denied or disabled.
 
+## Monetization
+- The core app is free: the daily quote, library, search, saved quotes, and sharing do not depend on ads.
+- Monetization v1 uses rewarded ads only for the optional `One more` action on Today.
+- `One more` can unlock exactly one bonus quote per calendar day.
+- The rewarded modal always includes a `Not now` exit, so ads never block app use.
+- No quote is unlocked unless the rewarded ad completes and the reward is earned.
+- If ads are unavailable or fail, the app remains fully usable and the user stays on Today.
+
 ## Data Model
 - `quotes`: bundled quote content plus normalized search fields.
 - `quote_tags`: tag join table for filtering and topic-based weighting.
@@ -12,7 +20,6 @@ The app is intentionally offline-first. The quote corpus ships with the app, bro
 - `scheduled_notifications`: future local reminder reservations. `quote_id` is unique so future mappings cannot reserve the same quote twice.
 - `today_state`: stores the primary quote and optional one-extra quote for each calendar day.
 - `saved_quotes`: favourites.
-- `quote_feedback`: local reaction state that influences weighting after filtering.
 - `notification_settings`: reminder preferences and permission snapshot.
 - `app_state`: bootstrap metadata such as onboarding completion, selected topics, and corpus hash.
 
@@ -20,8 +27,6 @@ The app is intentionally offline-first. The quote corpus ships with the app, bro
 1. Build the candidate set as `quotes - quote_usage - future scheduled_notifications`.
 2. Apply local weighting only after filtering:
    - onboarding topics boost matching tags
-   - `loved` boosts matching tags and authors
-   - `not_for_me` suppresses matching tags and authors
 3. Inside a single exclusive SQLite transaction:
    - select a candidate from the filtered pool
    - insert into `quote_usage` as the definitive claim

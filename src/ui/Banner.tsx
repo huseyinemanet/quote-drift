@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
 
-import { colors } from "./theme";
+import { ThemeTokens, useTheme } from "./theme";
 
 export function Banner({
   title,
@@ -9,6 +9,9 @@ export function Banner({
   title: string;
   body: string;
 }) {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>
@@ -17,23 +20,24 @@ export function Banner({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: colors.surfaceMuted,
-    borderRadius: 18,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: colors.border,
-    gap: 6,
-  },
-  title: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: colors.text,
-  },
-  body: {
-    fontSize: 14,
-    color: colors.textMuted,
-    lineHeight: 20,
-  },
-});
+const createStyles = (colors: ThemeTokens) =>
+  StyleSheet.create({
+    container: {
+      backgroundColor: colors.surfaceMuted,
+      borderRadius: 18,
+      padding: 16,
+      borderWidth: 1,
+      borderColor: colors.border,
+      gap: 6,
+    },
+    title: {
+      fontSize: 15,
+      fontWeight: "700",
+      color: colors.text,
+    },
+    body: {
+      fontSize: 14,
+      color: colors.textMuted,
+      lineHeight: 20,
+    },
+  });

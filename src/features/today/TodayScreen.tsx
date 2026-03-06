@@ -1,23 +1,21 @@
 import { router } from "expo-router";
-import { Share, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
-import { FEEDBACK_OPTIONS } from "@/core/constants";
 import { useAppState } from "@/core/bootstrap";
+import { useShareQuote } from "@/features/today/share/useShareQuote";
+import { useOneMoreGate } from "@/features/today/useOneMoreGate";
 import { Button } from "@/ui/Button";
 import { Banner } from "@/ui/Banner";
-import { ChoiceChip } from "@/ui/ChoiceChip";
 import { EmptyState } from "@/ui/EmptyState";
 import { QuoteCard } from "@/ui/QuoteCard";
 import { Screen } from "@/ui/Screen";
-import { colors } from "@/ui/theme";
-
-async function shareQuote(text: string, author: string) {
-  await Share.share({
-    message: `"${text}" — ${author}`,
-  });
-}
+import { RewardedGateModal } from "@/ui/components/RewardedGateModal";
+import { ToastMessage } from "@/ui/components/ToastMessage";
+import { ThemeTokens, useTheme } from "@/ui/theme";
 
 export function TodayScreen() {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   const {
     todayQuote,
     extraQuote,
@@ -25,8 +23,14 @@ export function TodayScreen() {
     notificationSettings,
     claimExtraQuote,
     toggleSave,
-    saveFeedback,
   } = useAppState();
+  const todayShare = useShareQuote(todayQuote);
+  const extraShare = useShareQuote(extraQuote);
+  const oneMore = useOneMoreGate({
+    extraQuote,
+    claimExtraQuote,
+    onExhausted: () => router.push("/exhausted"),
+  });
 
   if (!todayQuote) {
     return (
@@ -67,29 +71,16 @@ export function TodayScreen() {
           onPress={() => toggleSave(todayQuote.id)}
         />
         <Button
-          label="Share"
+          label={todayShare.isPreparing ? "Preparing..." : "Share"}
           variant="ghost"
-          onPress={() => shareQuote(todayQuote.text, todayQuote.author)}
+          disabled={todayShare.isPreparing}
+          onPress={todayShare.share}
         />
       </View>
-      <View style={styles.feedbackRow}>
-        {FEEDBACK_OPTIONS.map((option) => (
-          <ChoiceChip
-            key={option.key}
-            label={option.label}
-            selected={todayQuote.feedback === option.key}
-            onPress={() => saveFeedback(todayQuote.id, option.key)}
-          />
-        ))}
-      </View>
       <Button
-        label="One more"
-        onPress={async () => {
-          const result = await claimExtraQuote();
-          if (result === "exhausted") {
-            router.push("/exhausted");
-          }
-        }}
+        label={oneMore.isAlreadyUnlocked ? "Already unlocked today" : "One more"}
+        disabled={oneMore.isAlreadyUnlocked}
+        onPress={oneMore.handleOneMorePress}
       />
       {extraQuote ? (
         <View style={styles.extraSection}>
@@ -101,40 +92,49 @@ export function TodayScreen() {
               onPress={() => toggleSave(extraQuote.id)}
             />
             <Button
-              label="Share"
+              label={extraShare.isPreparing ? "Preparing..." : "Share"}
               variant="ghost"
-              onPress={() => shareQuote(extraQuote.text, extraQuote.author)}
+              disabled={extraShare.isPreparing}
+              onPress={extraShare.share}
             />
           </View>
         </View>
       ) : null}
+      {todayShare.captureTarget}
+      {extraShare.captureTarget}
+      <RewardedGateModal
+        visible={oneMore.isOpen}
+        status={oneMore.modalStatus}
+        isSubmitting={oneMore.isSubmitting}
+        onWatchAd={oneMore.handleWatchAd}
+        onClose={oneMore.handleClose}
+      />
+      {todayShare.toastMessage ? <ToastMessage message={todayShare.toastMessage} /> : null}
+      {extraShare.toastMessage ? <ToastMessage message={extraShare.toastMessage} /> : null}
+      {oneMore.toastMessage ? <ToastMessage message={oneMore.toastMessage} /> : null}
     </Screen>
   );
 }
 
-const styles = StyleSheet.create({
-  header: {
-    gap: 4,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: "700",
-    color: colors.text,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: colors.textMuted,
-  },
-  row: {
-    flexDirection: "row",
-    gap: 12,
-  },
-  feedbackRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12,
-  },
-  extraSection: {
-    gap: 12,
-  },
-});
+const createStyles = (colors: ThemeTokens) =>
+  StyleSheet.create({
+    header: {
+      gap: 4,
+    },
+    title: {
+      fontSize: 32,
+      fontWeight: "700",
+      color: colors.text,
+    },
+    subtitle: {
+      fontSize: 14,
+      color: colors.textMuted,
+    },
+    row: {
+      flexDirection: "row",
+      gap: 12,
+    },
+    extraSection: {
+      gap: 12,
+    },
+  });

@@ -6,9 +6,11 @@ import { useAppState } from "@/core/bootstrap";
 import { minutesToLabel } from "@/core/date";
 import { Button } from "@/ui/Button";
 import { Screen } from "@/ui/Screen";
-import { colors } from "@/ui/theme";
+import { ThemeTokens, useTheme } from "@/ui/theme";
 
 export function HoursScreen() {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   const params = useLocalSearchParams<{
     topics?: string;
     frequency?: string;
@@ -81,35 +83,36 @@ export function HoursScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  header: {
-    gap: 10,
-  },
-  title: {
-    fontSize: 28,
-    lineHeight: 34,
-    fontWeight: "700",
-    color: colors.text,
-  },
-  body: {
-    fontSize: 15,
-    lineHeight: 22,
-    color: colors.textMuted,
-  },
-  card: {
-    gap: 14,
-    backgroundColor: colors.surface,
-    borderRadius: 22,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  label: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: colors.text,
-  },
-  row: {
-    gap: 10,
-  },
-});
+const createStyles = (colors: ThemeTokens) =>
+  StyleSheet.create({
+    header: {
+      gap: 10,
+    },
+    title: {
+      fontSize: 28,
+      lineHeight: 34,
+      fontWeight: "700",
+      color: colors.text,
+    },
+    body: {
+      fontSize: 15,
+      lineHeight: 22,
+      color: colors.textMuted,
+    },
+    card: {
+      gap: 14,
+      backgroundColor: colors.surface,
+      borderRadius: 22,
+      padding: 18,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    label: {
+      fontSize: 15,
+      fontWeight: "700",
+      color: colors.text,
+    },
+    row: {
+      gap: 10,
+    },
+  });

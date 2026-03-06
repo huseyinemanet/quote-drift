@@ -16,12 +16,6 @@ export const DEFAULT_NOTIFICATION_SETTINGS = {
 
 export const NOTIFICATION_CHANNEL_ID = "daily-quotes";
 
-export const FEEDBACK_OPTIONS = [
-  { key: "loved", label: "Loved" },
-  { key: "neutral", label: "Neutral" },
-  { key: "not_for_me", label: "Not for me" },
-] as const;
-
 export const TOPIC_OPTIONS = [
   "resilience",
   "creativity",

@@ -5,9 +5,12 @@ import { useAppState } from "@/core/bootstrap";
 import { Button } from "@/ui/Button";
 import { EmptyState } from "@/ui/EmptyState";
 import { Screen } from "@/ui/Screen";
-import { colors } from "@/ui/theme";
+import { ThemeTokens, useTheme } from "@/ui/theme";
 
 export function LoadingScreen() {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
+
   return (
     <Screen scroll={false}>
       <View style={styles.center}>
@@ -22,6 +25,8 @@ export function LoadingScreen() {
 }
 
 export function FatalCorpusScreen() {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   const { invalidIssues, hasLibraryContent } = useAppState();
 
   return (
@@ -43,6 +48,8 @@ export function FatalCorpusScreen() {
 }
 
 export function ExhaustedScreen() {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   const { restartQuoteCollection, updateNotificationSettings } = useAppState();
 
   return (
@@ -70,29 +77,30 @@ export function ExhaustedScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  center: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 28,
-    gap: 16,
-  },
-  title: {
-    fontSize: 28,
-    lineHeight: 34,
-    fontWeight: "700",
-    color: colors.text,
-    textAlign: "center",
-  },
-  body: {
-    fontSize: 15,
-    lineHeight: 22,
-    color: colors.textMuted,
-    textAlign: "center",
-  },
-  issue: {
-    color: colors.textMuted,
-    lineHeight: 22,
-  },
-});
+const createStyles = (colors: ThemeTokens) =>
+  StyleSheet.create({
+    center: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      paddingHorizontal: 28,
+      gap: 16,
+    },
+    title: {
+      fontSize: 28,
+      lineHeight: 34,
+      fontWeight: "700",
+      color: colors.text,
+      textAlign: "center",
+    },
+    body: {
+      fontSize: 15,
+      lineHeight: 22,
+      color: colors.textMuted,
+      textAlign: "center",
+    },
+    issue: {
+      color: colors.textMuted,
+      lineHeight: 22,
+    },
+  });

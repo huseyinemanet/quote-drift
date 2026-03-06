@@ -5,6 +5,8 @@ import { APP_STATE_KEYS } from "./constants";
 import { getDayKey } from "./date";
 import { getAppState, getDb, runMigrations, setAppState } from "./db";
 import { importQuotesIfNeeded } from "./importQuotes";
+import { cleanupTempFiles } from "./sharecard/cleanupTempFiles";
+import { initializeMobileAds } from "./ads/admob";
 import {
   getNotificationPermissionStatus,
   getNotificationSettings,
@@ -24,7 +26,6 @@ import {
   getRemainingQuoteCount,
   getSavedCount,
   restartCollection,
-  setQuoteFeedback,
   setSelectedTopics,
   toggleSavedQuote,
 } from "./quoteEngine";
@@ -33,7 +34,6 @@ import type {
   BootstrapState,
   NotificationPermissionStatus,
   NotificationSettings,
-  QuoteFeedback,
   QuoteView,
 } from "./types";
 
@@ -53,7 +53,6 @@ type AppContextValue = AppBootstrapSnapshot & {
   pauseNotificationsForDays: (days: number) => Promise<void>;
   claimExtraQuote: () => Promise<"success" | "already-claimed" | "exhausted">;
   toggleSave: (quoteId: string) => Promise<void>;
-  saveFeedback: (quoteId: string, feedback: QuoteFeedback) => Promise<void>;
   loadLibrary: (filters: {
     query: string;
     topic: string | null;
@@ -163,6 +162,14 @@ export function AppProvider({ children }: PropsWithChildren) {
     void refreshAll();
   }, []);
 
+  useEffect(() => {
+    void cleanupTempFiles();
+  }, []);
+
+  useEffect(() => {
+    void initializeMobileAds();
+  }, []);
+
   const value = useMemo<AppContextValue>(
     () => ({
       ...snapshot,
@@ -203,6 +210,7 @@ export function AppProvider({ children }: PropsWithChildren) {
         if (result.type === "success") {
           setExtraQuote(result.data);
           setSnapshot((current) => ({ ...current, state: "ready" }));
+          setSavedCount(await getSavedCount());
           return "success";
         }
 
@@ -215,10 +223,6 @@ export function AppProvider({ children }: PropsWithChildren) {
       },
       toggleSave: async (quoteId) => {
         await toggleSavedQuote(quoteId);
-        await refreshAll();
-      },
-      saveFeedback: async (quoteId, feedback) => {
-        await setQuoteFeedback(quoteId, feedback);
         await refreshAll();
       },
       loadLibrary: (filters) => getLibraryQuotes(filters),

@@ -10,9 +10,11 @@ import { Banner } from "@/ui/Banner";
 import { Button } from "@/ui/Button";
 import { ChoiceChip } from "@/ui/ChoiceChip";
 import { Screen } from "@/ui/Screen";
-import { colors } from "@/ui/theme";
+import { ThemeTokens, useTheme } from "@/ui/theme";
 
 export function SettingsScreen() {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   const {
     notificationSettings,
     requestNotifications,
@@ -120,32 +122,33 @@ export function SettingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  title: {
-    fontSize: 32,
-    fontWeight: "700",
-    color: colors.text,
-  },
-  section: {
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 22,
-    padding: 18,
-    gap: 12,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: colors.text,
-  },
-  inline: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-  },
-  caption: {
-    fontSize: 14,
-    color: colors.textMuted,
-  },
-});
+const createStyles = (colors: ThemeTokens) =>
+  StyleSheet.create({
+    title: {
+      fontSize: 32,
+      fontWeight: "700",
+      color: colors.text,
+    },
+    section: {
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 22,
+      padding: 18,
+      gap: 12,
+    },
+    sectionTitle: {
+      fontSize: 20,
+      fontWeight: "700",
+      color: colors.text,
+    },
+    inline: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10,
+    },
+    caption: {
+      fontSize: 14,
+      color: colors.textMuted,
+    },
+  });

@@ -4,9 +4,11 @@ import { StyleSheet, Text, View } from "react-native";
 import { Banner } from "@/ui/Banner";
 import { Button } from "@/ui/Button";
 import { Screen } from "@/ui/Screen";
-import { colors } from "@/ui/theme";
+import { ThemeTokens, useTheme } from "@/ui/theme";
 
 export function NotificationPrimerScreen() {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   const params = useLocalSearchParams<{ topics?: string }>();
 
   return (
@@ -20,7 +22,7 @@ export function NotificationPrimerScreen() {
       </View>
       <Banner
         title="What changes if you say no?"
-        body="Nothing essential. Today, Library, favourites, feedback, and About stay available."
+        body="Nothing essential. Today, Library, favourites, and About stay available."
       />
       <Button
         label="Set reminder frequency"
@@ -45,19 +47,20 @@ export function NotificationPrimerScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  header: {
-    gap: 10,
-  },
-  title: {
-    fontSize: 28,
-    lineHeight: 34,
-    fontWeight: "700",
-    color: colors.text,
-  },
-  body: {
-    fontSize: 15,
-    lineHeight: 22,
-    color: colors.textMuted,
-  },
-});
+const createStyles = (colors: ThemeTokens) =>
+  StyleSheet.create({
+    header: {
+      gap: 10,
+    },
+    title: {
+      fontSize: 28,
+      lineHeight: 34,
+      fontWeight: "700",
+      color: colors.text,
+    },
+    body: {
+      fontSize: 15,
+      lineHeight: 22,
+      color: colors.textMuted,
+    },
+  });

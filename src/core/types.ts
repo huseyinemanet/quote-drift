@@ -6,8 +6,6 @@ export type QuoteRecord = {
   source?: string;
 };
 
-export type QuoteFeedback = "loved" | "neutral" | "not_for_me";
-
 export type BootstrapState =
   | "loading"
   | "ready"
@@ -40,8 +38,12 @@ export type TodayQuoteState = {
 export type QuoteView = QuoteRecord & {
   primaryTag: string | null;
   saved: boolean;
-  feedback: QuoteFeedback | null;
 };
+
+export type ShareableQuote = Pick<
+  QuoteView,
+  "id" | "text" | "author" | "source" | "primaryTag"
+>;
 
 export type ExhaustedResult = {
   type: "exhausted";

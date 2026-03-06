@@ -4,7 +4,6 @@ import { APP_STATE_KEYS } from "./constants";
 import { getDayKey } from "./date";
 import { getDb, getAppState, setAppState, withExclusiveTransaction } from "./db";
 import type {
-  QuoteFeedback,
   QuoteRecord,
   QuoteView,
   Result,
@@ -23,10 +22,6 @@ type CandidateRow = {
 
 type PreferenceProfile = {
   selectedTopics: string[];
-  lovedAuthors: string[];
-  lovedTags: string[];
-  blockedAuthors: string[];
-  blockedTags: string[];
 };
 
 function normalizeText(value: string) {
@@ -46,42 +41,10 @@ async function getSelectedTopics() {
   }
 }
 
-async function getPreferenceProfile(tx: SQLiteDatabase): Promise<PreferenceProfile> {
+async function getPreferenceProfile(): Promise<PreferenceProfile> {
   const selectedTopics = await getSelectedTopics();
-  const rows = await tx.getAllAsync<{
-    feedback: QuoteFeedback;
-    author: string;
-    tag: string;
-  }>(
-    `SELECT qf.feedback as feedback, q.author as author, qt.tag as tag
-     FROM quote_feedback qf
-     INNER JOIN quotes q ON q.id = qf.quote_id
-     INNER JOIN quote_tags qt ON qt.quote_id = q.id`
-  );
-
-  const lovedAuthors = new Set<string>();
-  const lovedTags = new Set<string>();
-  const blockedAuthors = new Set<string>();
-  const blockedTags = new Set<string>();
-
-  for (const row of rows) {
-    if (row.feedback === "loved") {
-      lovedAuthors.add(row.author);
-      lovedTags.add(row.tag);
-    }
-
-    if (row.feedback === "not_for_me") {
-      blockedAuthors.add(row.author);
-      blockedTags.add(row.tag);
-    }
-  }
-
   return {
     selectedTopics,
-    lovedAuthors: Array.from(lovedAuthors),
-    lovedTags: Array.from(lovedTags),
-    blockedAuthors: Array.from(blockedAuthors),
-    blockedTags: Array.from(blockedTags),
   };
 }
 
@@ -95,22 +58,6 @@ function calculateWeight(
     if (profile.selectedTopics.includes(tag)) {
       weight += 3;
     }
-
-    if (profile.lovedTags.includes(tag)) {
-      weight += 2;
-    }
-
-    if (profile.blockedTags.includes(tag)) {
-      weight -= 2;
-    }
-  }
-
-  if (profile.lovedAuthors.includes(candidate.author)) {
-    weight += 3;
-  }
-
-  if (profile.blockedAuthors.includes(candidate.author)) {
-    weight -= 3;
   }
 
   return Math.max(weight, 0.2);
@@ -175,16 +122,13 @@ async function hydrateQuote(tx: SQLiteDatabase, quoteId: string): Promise<QuoteV
     source: string | null;
     tags: string;
     saved: number | null;
-    feedback: QuoteFeedback | null;
   }>(
     `SELECT q.id, q.text, q.author, q.source,
             GROUP_CONCAT(qt.tag, '|') AS tags,
-            sq.quote_id AS saved,
-            qf.feedback AS feedback
+            sq.quote_id AS saved
      FROM quotes q
      LEFT JOIN quote_tags qt ON qt.quote_id = q.id
      LEFT JOIN saved_quotes sq ON sq.quote_id = q.id
-     LEFT JOIN quote_feedback qf ON qf.quote_id = q.id
      WHERE q.id = ?
      GROUP BY q.id`,
     [quoteId]
@@ -204,7 +148,6 @@ async function hydrateQuote(tx: SQLiteDatabase, quoteId: string): Promise<QuoteV
     tags,
     primaryTag: tags[0] ?? null,
     saved: Boolean(quote.saved),
-    feedback: quote.feedback,
   };
 }
 
@@ -213,7 +156,7 @@ async function claimQuoteInTransaction(
   kind: "today" | "notification",
   metadata: { dayKey?: string; notificationId?: string; fireAt?: number }
 ) {
-  const profile = await getPreferenceProfile(tx);
+  const profile = await getPreferenceProfile();
   const candidates = await fetchCandidates(tx, Date.now());
   const selected = pickWeightedCandidate(candidates, profile);
 
@@ -436,16 +379,6 @@ export async function toggleSavedQuote(quoteId: string) {
   return true;
 }
 
-export async function setQuoteFeedback(quoteId: string, feedback: QuoteFeedback) {
-  const db = await getDb();
-  await db.runAsync(
-    `INSERT INTO quote_feedback(quote_id, feedback, updated_at)
-     VALUES(?, ?, ?)
-     ON CONFLICT(quote_id) DO UPDATE SET feedback = excluded.feedback, updated_at = excluded.updated_at`,
-    [quoteId, feedback, Date.now()]
-  );
-}
-
 export async function getLibraryQuotes(filters: {
   query: string;
   topic: string | null;
@@ -479,16 +412,13 @@ export async function getLibraryQuotes(filters: {
     source: string | null;
     tags: string;
     saved: number | null;
-    feedback: QuoteFeedback | null;
   }>(
     `SELECT q.id, q.text, q.author, q.source,
             GROUP_CONCAT(qt.tag, '|') AS tags,
-            sq.quote_id AS saved,
-            qf.feedback AS feedback
+            sq.quote_id AS saved
      FROM quotes q
      LEFT JOIN quote_tags qt ON qt.quote_id = q.id
      LEFT JOIN saved_quotes sq ON sq.quote_id = q.id
-     LEFT JOIN quote_feedback qf ON qf.quote_id = q.id
      WHERE ${conditions.join(" AND ")}
      GROUP BY q.id
      ORDER BY q.author ASC, q.text ASC
@@ -506,7 +436,6 @@ export async function getLibraryQuotes(filters: {
       tags,
       primaryTag: tags[0] ?? null,
       saved: Boolean(row.saved),
-      feedback: row.feedback,
     } satisfies QuoteView;
   });
 }

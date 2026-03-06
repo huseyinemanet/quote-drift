@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
 
-import { colors } from "./theme";
+import { ThemeTokens, useTheme } from "./theme";
 
 export function EmptyState({
   title,
@@ -9,6 +9,9 @@ export function EmptyState({
   title: string;
   body: string;
 }) {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>
@@ -17,23 +20,24 @@ export function EmptyState({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: colors.surface,
-    padding: 18,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: colors.border,
-    gap: 8,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: colors.text,
-  },
-  body: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: colors.textMuted,
-  },
-});
+const createStyles = (colors: ThemeTokens) =>
+  StyleSheet.create({
+    container: {
+      backgroundColor: colors.surface,
+      padding: 18,
+      borderRadius: 18,
+      borderWidth: 1,
+      borderColor: colors.border,
+      gap: 8,
+    },
+    title: {
+      fontSize: 18,
+      fontWeight: "700",
+      color: colors.text,
+    },
+    body: {
+      fontSize: 14,
+      lineHeight: 20,
+      color: colors.textMuted,
+    },
+  });

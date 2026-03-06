@@ -5,19 +5,23 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "scheme": "quotedrift",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#f5efe2"
+      "backgroundColor": "#f5efe2",
+      "dark": {
+        "image": "./assets/splash-icon.png",
+        "backgroundColor": "#141915"
+      }
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.quotedrift.app"
+      "bundleIdentifier": "com.huseyinemanet.quotedrift"
     },
     "android": {
-      "package": "com.quotedrift.app",
+      "package": "com.huseyinemanet.quotedrift",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",

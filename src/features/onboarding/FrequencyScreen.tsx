@@ -5,9 +5,11 @@ import { useState } from "react";
 import { ChoiceChip } from "@/ui/ChoiceChip";
 import { Button } from "@/ui/Button";
 import { Screen } from "@/ui/Screen";
-import { colors } from "@/ui/theme";
+import { ThemeTokens, useTheme } from "@/ui/theme";
 
 export function FrequencyScreen() {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   const params = useLocalSearchParams<{ topics?: string; skipNotifications?: string }>();
   const [frequency, setFrequency] = useState<1 | 2 | 3>(1);
 
@@ -46,23 +48,24 @@ export function FrequencyScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  header: {
-    gap: 10,
-  },
-  title: {
-    fontSize: 28,
-    lineHeight: 34,
-    fontWeight: "700",
-    color: colors.text,
-  },
-  body: {
-    fontSize: 15,
-    lineHeight: 22,
-    color: colors.textMuted,
-  },
-  choices: {
-    flexDirection: "row",
-    gap: 12,
-  },
-});
+const createStyles = (colors: ThemeTokens) =>
+  StyleSheet.create({
+    header: {
+      gap: 10,
+    },
+    title: {
+      fontSize: 28,
+      lineHeight: 34,
+      fontWeight: "700",
+      color: colors.text,
+    },
+    body: {
+      fontSize: 15,
+      lineHeight: 22,
+      color: colors.textMuted,
+    },
+    choices: {
+      flexDirection: "row",
+      gap: 12,
+    },
+  });

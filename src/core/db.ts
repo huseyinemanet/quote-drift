@@ -57,13 +57,6 @@ export async function runMigrations() {
       FOREIGN KEY (quote_id) REFERENCES quotes(id) ON DELETE CASCADE
     );
 
-    CREATE TABLE IF NOT EXISTS quote_feedback (
-      quote_id TEXT PRIMARY KEY,
-      feedback TEXT NOT NULL CHECK(feedback IN ('loved', 'neutral', 'not_for_me')),
-      updated_at INTEGER NOT NULL,
-      FOREIGN KEY (quote_id) REFERENCES quotes(id) ON DELETE CASCADE
-    );
-
     CREATE TABLE IF NOT EXISTS notification_settings (
       id INTEGER PRIMARY KEY CHECK(id = 1),
       enabled INTEGER NOT NULL,

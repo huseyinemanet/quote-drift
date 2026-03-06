@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text } from "react-native";
 
-import { colors } from "./theme";
+import { ThemeTokens, useTheme } from "./theme";
 
 type Props = {
   label: string;
@@ -15,6 +15,9 @@ export function Button({
   variant = "primary",
   disabled = false,
 }: Props) {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
+
   return (
     <Pressable
       accessibilityRole="button"
@@ -40,43 +43,44 @@ export function Button({
   );
 }
 
-const styles = StyleSheet.create({
-  base: {
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  primary: {
-    backgroundColor: colors.text,
-  },
-  secondary: {
-    backgroundColor: colors.surfaceMuted,
-  },
-  ghost: {
-    backgroundColor: "transparent",
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  danger: {
-    backgroundColor: colors.danger,
-  },
-  pressed: {
-    opacity: 0.82,
-  },
-  disabled: {
-    opacity: 0.45,
-  },
-  label: {
-    color: "#fff",
-    fontWeight: "600",
-    fontSize: 16,
-  },
-  secondaryLabel: {
-    color: colors.text,
-  },
-  ghostLabel: {
-    color: colors.text,
-  },
-});
+const createStyles = (colors: ThemeTokens) =>
+  StyleSheet.create({
+    base: {
+      borderRadius: 16,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    primary: {
+      backgroundColor: colors.text,
+    },
+    secondary: {
+      backgroundColor: colors.surfaceMuted,
+    },
+    ghost: {
+      backgroundColor: "transparent",
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    danger: {
+      backgroundColor: colors.danger,
+    },
+    pressed: {
+      opacity: 0.82,
+    },
+    disabled: {
+      opacity: 0.45,
+    },
+    label: {
+      color: colors.background,
+      fontWeight: "600",
+      fontSize: 16,
+    },
+    secondaryLabel: {
+      color: colors.text,
+    },
+    ghostLabel: {
+      color: colors.text,
+    },
+  });

@@ -3,9 +3,12 @@ import { StyleSheet, Text, View } from "react-native";
 
 import { Button } from "@/ui/Button";
 import { Screen } from "@/ui/Screen";
-import { colors } from "@/ui/theme";
+import { ThemeTokens, useTheme } from "@/ui/theme";
 
 export function WelcomeScreen() {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
+
   return (
     <Screen>
       <View style={styles.hero}>
@@ -24,27 +27,28 @@ export function WelcomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  hero: {
-    marginTop: 48,
-    gap: 16,
-  },
-  kicker: {
-    fontSize: 14,
-    fontWeight: "700",
-    letterSpacing: 2,
-    textTransform: "uppercase",
-    color: colors.accent,
-  },
-  title: {
-    fontSize: 40,
-    lineHeight: 48,
-    fontWeight: "700",
-    color: colors.text,
-  },
-  body: {
-    fontSize: 17,
-    lineHeight: 26,
-    color: colors.textMuted,
-  },
-});
+const createStyles = (colors: ThemeTokens) =>
+  StyleSheet.create({
+    hero: {
+      marginTop: 48,
+      gap: 16,
+    },
+    kicker: {
+      fontSize: 14,
+      fontWeight: "700",
+      letterSpacing: 2,
+      textTransform: "uppercase",
+      color: colors.accent,
+    },
+    title: {
+      fontSize: 40,
+      lineHeight: 48,
+      fontWeight: "700",
+      color: colors.text,
+    },
+    body: {
+      fontSize: 17,
+      lineHeight: 26,
+      color: colors.textMuted,
+    },
+  });
