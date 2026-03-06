@@ -1,18 +1,37 @@
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { QuoteView } from "@/core/types";
 
 import { ThemeTokens, useTheme } from "./theme";
 
-export function QuoteCard({ quote, eyebrow }: { quote: QuoteView; eyebrow: string }) {
+export function QuoteCard({
+  quote,
+  eyebrow,
+  hideAuthor = false,
+  onPressAuthor,
+}: {
+  quote: QuoteView;
+  eyebrow: string;
+  hideAuthor?: boolean;
+  onPressAuthor?: () => void;
+}) {
   const { colors } = useTheme();
   const styles = createStyles(colors);
+  const authorLabel = <Text style={styles.author}>{quote.author}</Text>;
 
   return (
     <View style={styles.card}>
       <Text style={styles.eyebrow}>{eyebrow}</Text>
       <Text style={styles.text}>{quote.text}</Text>
-      <Text style={styles.author}>{quote.author}</Text>
+      {!hideAuthor ? (
+        onPressAuthor ? (
+          <Pressable accessibilityRole="button" onPress={onPressAuthor}>
+            {authorLabel}
+          </Pressable>
+        ) : (
+          authorLabel
+        )
+      ) : null}
       <View style={styles.metaRow}>
         {quote.primaryTag ? <Text style={styles.meta}>#{quote.primaryTag}</Text> : null}
       </View>

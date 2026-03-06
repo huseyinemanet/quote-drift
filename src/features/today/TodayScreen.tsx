@@ -31,6 +31,7 @@ export function TodayScreen() {
     claimExtraQuote,
     onExhausted: () => router.push("/exhausted"),
   });
+  const openAuthor = (authorId: string) => router.push(`/author/${authorId}`);
 
   if (!todayQuote) {
     return (
@@ -63,7 +64,11 @@ export function TodayScreen() {
           body="That is fine. Quote Drift works fully without them, and you can enable local reminders anytime in Settings."
         />
       ) : null}
-      <QuoteCard quote={todayQuote} eyebrow="Quote of the day" />
+      <QuoteCard
+        quote={todayQuote}
+        eyebrow="Quote of the day"
+        onPressAuthor={() => openAuthor(todayQuote.authorId)}
+      />
       <View style={styles.row}>
         <Button
           label={todayQuote.saved ? "Unsave" : "Save"}
@@ -84,7 +89,11 @@ export function TodayScreen() {
       />
       {extraQuote ? (
         <View style={styles.extraSection}>
-          <QuoteCard quote={extraQuote} eyebrow="One more for today" />
+          <QuoteCard
+            quote={extraQuote}
+            eyebrow="One more for today"
+            onPressAuthor={() => openAuthor(extraQuote.authorId)}
+          />
           <View style={styles.row}>
             <Button
               label={extraQuote.saved ? "Unsave" : "Save"}

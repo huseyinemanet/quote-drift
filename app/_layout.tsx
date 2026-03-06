@@ -45,6 +45,7 @@ function RootNavigator() {
           <Stack.Screen name="loading" />
           <Stack.Screen name="fatal-data" />
           <Stack.Screen name="exhausted" />
+          <Stack.Screen name="author/[authorId]" />
           <Stack.Screen name="(onboarding)" />
           <Stack.Screen name="(app)" />
         </Stack>

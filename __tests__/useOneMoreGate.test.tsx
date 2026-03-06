@@ -31,6 +31,7 @@ describe("useOneMoreGate", () => {
           id: "q-2",
           text: "Already here.",
           author: "Author",
+          authorId: "author-000001",
           tags: [],
           primaryTag: null,
           saved: false,

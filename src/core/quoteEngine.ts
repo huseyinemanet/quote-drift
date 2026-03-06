@@ -1,6 +1,7 @@
 import type { SQLiteDatabase } from "expo-sqlite";
 
 import { APP_STATE_KEYS } from "./constants";
+import { getAuthorIdFromName } from "./authorIdentity";
 import { getDayKey } from "./date";
 import { getDb, getAppState, setAppState, withExclusiveTransaction } from "./db";
 import type {
@@ -144,6 +145,7 @@ async function hydrateQuote(tx: SQLiteDatabase, quoteId: string): Promise<QuoteV
     id: quote.id,
     text: quote.text,
     author: quote.author,
+    authorId: getAuthorIdFromName(quote.author),
     source: quote.source ?? undefined,
     tags,
     primaryTag: tags[0] ?? null,
@@ -432,6 +434,7 @@ export async function getLibraryQuotes(filters: {
       id: row.id,
       text: row.text,
       author: row.author,
+      authorId: getAuthorIdFromName(row.author),
       source: row.source ?? undefined,
       tags,
       primaryTag: tags[0] ?? null,

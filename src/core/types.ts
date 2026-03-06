@@ -6,6 +6,15 @@ export type QuoteRecord = {
   source?: string;
 };
 
+export type Author = {
+  id: string;
+  name: string;
+  slug?: string;
+  shortBio?: string;
+  description?: string;
+  tags?: string[];
+};
+
 export type BootstrapState =
   | "loading"
   | "ready"
@@ -36,6 +45,7 @@ export type TodayQuoteState = {
 };
 
 export type QuoteView = QuoteRecord & {
+  authorId: string;
   primaryTag: string | null;
   saved: boolean;
 };

@@ -1,48 +1,15 @@
 import { useEffect, useState } from "react";
-import { Share, StyleSheet, Text, TextInput, View } from "react-native";
+import { Text, TextInput, View, StyleSheet } from "react-native";
+import { router } from "expo-router";
 
 import { useAppState } from "@/core/bootstrap";
+import { shareQuoteText } from "@/core/sharecard/quoteText";
 import type { QuoteView } from "@/core/types";
 import { ChoiceChip } from "@/ui/ChoiceChip";
-import { Button } from "@/ui/Button";
 import { EmptyState } from "@/ui/EmptyState";
+import { QuoteListItem } from "@/ui/QuoteListItem";
 import { Screen } from "@/ui/Screen";
 import { ThemeTokens, useTheme } from "@/ui/theme";
-
-function QuoteRow({
-  quote,
-  onToggleSave,
-}: {
-  quote: QuoteView;
-  onToggleSave: () => void;
-}) {
-  const { colors } = useTheme();
-  const styles = createStyles(colors);
-
-  return (
-    <View style={styles.quoteRow}>
-      <Text style={styles.quoteText}>{quote.text}</Text>
-      <Text style={styles.quoteAuthor}>{quote.author}</Text>
-      <View style={styles.quoteMeta}>
-        {quote.primaryTag ? <Text style={styles.meta}>#{quote.primaryTag}</Text> : null}
-      </View>
-      <View style={styles.actions}>
-        <Button
-          label={quote.saved ? "Unsave" : "Save"}
-          variant="secondary"
-          onPress={onToggleSave}
-        />
-        <Button
-          label="Share"
-          variant="ghost"
-          onPress={() =>
-            Share.share({ message: `"${quote.text}" — ${quote.author}` })
-          }
-        />
-      </View>
-    </View>
-  );
-}
 
 export function LibraryScreen() {
   const { colors } = useTheme();
@@ -93,10 +60,12 @@ export function LibraryScreen() {
         />
       ) : (
         results.map((quote) => (
-          <QuoteRow
+          <QuoteListItem
             key={quote.id}
             quote={quote}
             onToggleSave={() => toggleSave(quote.id)}
+            onPressAuthor={() => router.push(`/author/${quote.authorId}`)}
+            onShare={() => shareQuoteText(quote)}
           />
         ))
       )}
@@ -131,34 +100,5 @@ const createStyles = (colors: ThemeTokens) =>
       flexDirection: "row",
       flexWrap: "wrap",
       gap: 10,
-    },
-    quoteRow: {
-      backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
-      borderRadius: 20,
-      padding: 16,
-      gap: 8,
-    },
-    quoteText: {
-      fontSize: 18,
-      lineHeight: 26,
-      color: colors.text,
-    },
-    quoteAuthor: {
-      fontSize: 15,
-      fontWeight: "700",
-      color: colors.text,
-    },
-    quoteMeta: {
-      gap: 2,
-    },
-    meta: {
-      color: colors.textMuted,
-      fontSize: 13,
-    },
-    actions: {
-      flexDirection: "row",
-      gap: 12,
     },
   });
