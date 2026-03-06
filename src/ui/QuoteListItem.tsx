@@ -1,8 +1,9 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
+import { selectionHaptic } from "@/core/haptics";
 import type { QuoteView } from "@/core/types";
 
-import { Button } from "./Button";
 import { ThemeTokens, useTheme } from "./theme";
 
 type Props = {
@@ -10,6 +11,7 @@ type Props = {
   onToggleSave: () => void;
   onShare?: () => void;
   onCopy?: () => void;
+  isCopyConfirmed?: boolean;
   onPressAuthor?: () => void;
   showAuthor?: boolean;
   showShare?: boolean;
@@ -21,6 +23,7 @@ export function QuoteListItem({
   onToggleSave,
   onShare,
   onCopy,
+  isCopyConfirmed = false,
   onPressAuthor,
   showAuthor = true,
   showShare = true,
@@ -34,6 +37,41 @@ export function QuoteListItem({
 
   return (
     <View style={styles.quoteRow}>
+      <View style={styles.topRow}>
+        <View style={styles.quoteMeta}>
+          {quote.primaryTag ? <Text style={styles.meta}>#{quote.primaryTag}</Text> : null}
+        </View>
+        <View style={styles.iconActions}>
+          {onCopy ? (
+            <Pressable accessibilityRole="button" onPress={onCopy} style={styles.iconButton}>
+              <Ionicons
+                name={isCopyConfirmed ? "checkmark" : "copy-outline"}
+                size={18}
+                color={isCopyConfirmed ? colors.text : colors.textMuted}
+              />
+            </Pressable>
+          ) : null}
+          {showShare && onShare ? (
+            <Pressable accessibilityRole="button" onPress={onShare} style={styles.iconButton}>
+              <Ionicons name="share-outline" size={18} color={colors.textMuted} />
+            </Pressable>
+          ) : null}
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => {
+              void selectionHaptic();
+              onToggleSave();
+            }}
+            style={styles.iconButton}
+          >
+            <Ionicons
+              name={quote.saved ? "bookmark" : "bookmark-outline"}
+              size={19}
+              color={quote.saved ? colors.text : colors.textMuted}
+            />
+          </Pressable>
+        </View>
+      </View>
       <Text numberOfLines={compact ? 3 : 4} style={[styles.quoteText, compact ? styles.quoteTextCompact : null]}>
         {quote.text}
       </Text>
@@ -46,30 +84,6 @@ export function QuoteListItem({
           authorLabel
         )
       ) : null}
-      <View style={styles.quoteMeta}>
-        {quote.primaryTag ? <Text style={styles.meta}>#{quote.primaryTag}</Text> : null}
-      </View>
-      <View style={styles.actions}>
-        <Button
-          label={quote.saved ? "Saved" : "Save"}
-          variant="ghost"
-          onPress={onToggleSave}
-        />
-        {onCopy ? (
-          <Button
-            label="Copy"
-            variant="ghost"
-            onPress={onCopy}
-          />
-        ) : null}
-        {showShare && onShare ? (
-          <Button
-            label="Share"
-            variant="ghost"
-            onPress={onShare}
-          />
-        ) : null}
-      </View>
     </View>
   );
 }
@@ -83,6 +97,12 @@ const createStyles = (colors: ThemeTokens) =>
       borderRadius: 20,
       padding: 16,
       gap: 10,
+    },
+    topRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 12,
     },
     quoteText: {
       fontSize: 17,
@@ -100,6 +120,7 @@ const createStyles = (colors: ThemeTokens) =>
     },
     quoteMeta: {
       gap: 2,
+      flex: 1,
     },
     meta: {
       alignSelf: "flex-start",
@@ -112,9 +133,16 @@ const createStyles = (colors: ThemeTokens) =>
       paddingVertical: 6,
       backgroundColor: colors.background,
     },
-    actions: {
+    iconActions: {
       flexDirection: "row",
-      gap: 10,
-      flexWrap: "wrap",
+      gap: 2,
+      alignItems: "center",
+    },
+    iconButton: {
+      width: 34,
+      height: 34,
+      borderRadius: 17,
+      alignItems: "center",
+      justifyContent: "center",
     },
   });

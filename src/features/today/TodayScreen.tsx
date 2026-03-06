@@ -3,6 +3,7 @@ import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { useAppState } from "@/core/bootstrap";
+import { selectionHaptic } from "@/core/haptics";
 import { useShareQuote } from "@/features/today/share/useShareQuote";
 import { useOneMoreGate } from "@/features/today/useOneMoreGate";
 import { Button } from "@/ui/Button";
@@ -32,9 +33,17 @@ export function TodayScreen() {
     claimExtraQuote,
     onExhausted: () => router.push("/exhausted"),
   });
-  const openAuthor = (authorId: string) => router.push(`/author/${authorId}`);
+  const openAuthor = (authorId: string) =>
+    router.push({
+      pathname: "/author/[authorId]",
+      params: { authorId, backLabel: "Today" },
+    });
   const [isTodayExpanded, setIsTodayExpanded] = useState(false);
   const [isExtraExpanded, setIsExtraExpanded] = useState(false);
+  const handleToggleSave = async (quoteId: string) => {
+    void selectionHaptic();
+    await toggleSave(quoteId);
+  };
 
   if (!todayQuote) {
     return (
@@ -81,7 +90,7 @@ export function TodayScreen() {
           <Button
             label={todayQuote.saved ? "Saved" : "Save"}
             variant="secondary"
-            onPress={() => toggleSave(todayQuote.id)}
+            onPress={() => handleToggleSave(todayQuote.id)}
           />
           <Button
             label={todayShare.isPreparing ? "Preparing..." : "Share"}
@@ -118,7 +127,7 @@ export function TodayScreen() {
               <Button
                 label={extraQuote.saved ? "Saved" : "Save"}
                 variant="secondary"
-                onPress={() => toggleSave(extraQuote.id)}
+                onPress={() => handleToggleSave(extraQuote.id)}
               />
               <Button
                 label={extraShare.isPreparing ? "Preparing..." : "Share"}

@@ -1,7 +1,7 @@
 import * as FileSystem from "expo-file-system/legacy";
 
 const SHARECARD_DIR = `${FileSystem.cacheDirectory ?? ""}quotify-sharecards`;
-const FILE_PREFIX = "quotify-story-";
+const FILE_NAME = "Quotify Image.png";
 const DEFAULT_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
 export function getSharecardDirectory() {
@@ -29,7 +29,7 @@ export async function cleanupTempFiles(maxAgeMs = DEFAULT_MAX_AGE_MS) {
 
   await Promise.all(
     files
-      .filter((name: string) => name.startsWith(FILE_PREFIX))
+      .filter((name: string) => name === FILE_NAME)
       .map(async (name: string) => {
         const uri = `${SHARECARD_DIR}/${name}`;
         const info = await FileSystem.getInfoAsync(uri);

@@ -31,7 +31,7 @@ export async function renderQuoteStoryCard(
   });
 
   const directory = await ensureDirectory();
-  const finalUri = `${directory}/quotify-story-${Date.now()}.png`;
+  const finalUri = `${directory}/Quotify Image.png`;
 
   await FileSystem.copyAsync({ from: tempCaptureUri, to: finalUri });
 

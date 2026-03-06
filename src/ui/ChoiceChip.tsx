@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text } from "react-native";
 
+import { selectionHaptic } from "@/core/haptics";
 import { ThemeTokens, useTheme } from "./theme";
 
 export function ChoiceChip({
@@ -20,7 +21,10 @@ export function ChoiceChip({
     <Pressable
       accessibilityRole="button"
       disabled={disabled}
-      onPress={onPress}
+      onPress={() => {
+        void selectionHaptic();
+        onPress();
+      }}
       style={[
         styles.chip,
         selected ? styles.selected : null,

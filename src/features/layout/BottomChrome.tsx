@@ -1,9 +1,10 @@
 import { BottomTabBar, type BottomTabBarProps } from "@react-navigation/bottom-tabs";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { StyleSheet, View } from "react-native";
 
 import { AdBanner } from "@/core/ads/AdBanner";
 import type { AdBannerState } from "@/core/ads/useAdBanner";
+import { selectionHaptic } from "@/core/haptics";
 import { ThemeTokens, useTheme } from "@/ui/theme";
 
 const AD_GAP = 8;
@@ -19,6 +20,7 @@ export function BottomChrome({
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const [tabBarHeight, setTabBarHeight] = useState(0);
+  const previousTabIndex = useRef<number | null>(null);
   const currentRouteName =
     tabBarProps.state.routes[tabBarProps.state.index]?.name ?? "";
   const shouldShowBanner =
@@ -32,6 +34,18 @@ export function BottomChrome({
   useEffect(() => {
     onInsetChange(chromeHeight);
   }, [chromeHeight, onInsetChange]);
+
+  useEffect(() => {
+    if (previousTabIndex.current === null) {
+      previousTabIndex.current = tabBarProps.state.index;
+      return;
+    }
+
+    if (previousTabIndex.current !== tabBarProps.state.index) {
+      previousTabIndex.current = tabBarProps.state.index;
+      void selectionHaptic();
+    }
+  }, [tabBarProps.state.index]);
 
   return (
     <View style={styles.container}>

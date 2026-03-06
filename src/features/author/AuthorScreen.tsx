@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
-import { StyleSheet, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { getAuthorById, getAuthorQuoteCount, getQuotesByAuthorId } from "@/core/authors";
 import { copyQuoteText, shareQuoteText } from "@/core/sharecard/quoteText";
 import { useAppState } from "@/core/bootstrap";
+import { selectionHaptic } from "@/core/haptics";
 import type { Author, QuoteView } from "@/core/types";
 import type { AuthorQuoteSort } from "@/core/authors";
-import { Button } from "@/ui/Button";
 import { ChoiceChip } from "@/ui/ChoiceChip";
 import { EmptyState } from "@/ui/EmptyState";
 import { QuoteListItem } from "@/ui/QuoteListItem";
@@ -30,20 +31,43 @@ type LoadState =
 export function AuthorScreen() {
   const { colors } = useTheme();
   const styles = createStyles(colors);
-  const { authorId } = useLocalSearchParams<{ authorId?: string | string[] }>();
+  const { authorId, backLabel } = useLocalSearchParams<{
+    authorId?: string | string[];
+    backLabel?: string | string[];
+  }>();
   const normalizedAuthorId = useMemo(
     () => (Array.isArray(authorId) ? authorId[0] : authorId) ?? "",
     [authorId]
   );
+  const normalizedBackLabel = useMemo(
+    () => (Array.isArray(backLabel) ? backLabel[0] : backLabel) ?? "Back",
+    [backLabel]
+  );
   const { toggleSave } = useAppState();
   const [sort, setSort] = useState<AuthorQuoteSort>("default");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [copiedQuoteId, setCopiedQuoteId] = useState<string | null>(null);
   const [state, setState] = useState<LoadState>({ status: "loading" });
 
-  const showToast = (message: string) => {
-    setToastMessage(message);
-    setTimeout(() => setToastMessage(null), 2200);
-  };
+  const showToast = (message: string) => setToastMessage(message);
+
+  useEffect(() => {
+    if (!toastMessage) {
+      return;
+    }
+
+    const timer = setTimeout(() => setToastMessage(null), 1500);
+    return () => clearTimeout(timer);
+  }, [toastMessage]);
+
+  useEffect(() => {
+    if (!copiedQuoteId) {
+      return;
+    }
+
+    const timer = setTimeout(() => setCopiedQuoteId(null), 900);
+    return () => clearTimeout(timer);
+  }, [copiedQuoteId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -98,7 +122,9 @@ export function AuthorScreen() {
   const handleCopy = async (quote: QuoteView) => {
     try {
       await copyQuoteText(quote);
-      showToast("Copied quote.");
+      void selectionHaptic();
+      setCopiedQuoteId(quote.id);
+      showToast("Quote copied");
     } catch {
       showToast("Couldn't copy that quote.");
     }
@@ -115,7 +141,10 @@ export function AuthorScreen() {
   if (state.status === "loading") {
     return (
       <Screen>
-        <Button label="Back" variant="ghost" onPress={() => router.back()} />
+        <Pressable style={styles.backLink} onPress={() => router.back()}>
+          <Ionicons name="chevron-back" size={18} color={colors.text} />
+          <Text style={styles.backLabel}>{normalizedBackLabel}</Text>
+        </Pressable>
         <EmptyState
           title="Loading author"
           body="Gathering quotes for this author."
@@ -127,7 +156,10 @@ export function AuthorScreen() {
   if (state.status === "not-found") {
     return (
       <Screen>
-        <Button label="Back" variant="ghost" onPress={() => router.back()} />
+        <Pressable style={styles.backLink} onPress={() => router.back()}>
+          <Ionicons name="chevron-back" size={18} color={colors.text} />
+          <Text style={styles.backLabel}>{normalizedBackLabel}</Text>
+        </Pressable>
         <EmptyState
           title="Author not found"
           body="This author page is unavailable or the link is no longer valid."
@@ -140,8 +172,13 @@ export function AuthorScreen() {
 
   return (
     <Screen>
-      <Button label="Back" variant="ghost" onPress={() => router.back()} />
-      <View style={styles.header}>
+      <View style={styles.navRow}>
+        <Pressable style={styles.backLink} onPress={() => router.back()}>
+          <Ionicons name="chevron-back" size={18} color={colors.text} />
+          <Text style={styles.backLabel}>{normalizedBackLabel}</Text>
+        </Pressable>
+      </View>
+      <View style={styles.headerBlock}>
         <Text style={styles.title}>{author.name}</Text>
         <Text style={styles.subtitle}>{quoteCount} quotes</Text>
       </View>
@@ -153,15 +190,21 @@ export function AuthorScreen() {
           ) : null}
         </View>
       ) : null}
-      <View style={styles.sortRow}>
-        {SORT_OPTIONS.map((option) => (
-          <ChoiceChip
-            key={option.value}
-            label={option.label}
-            selected={sort === option.value}
-            onPress={() => setSort(option.value)}
-          />
-        ))}
+      <View style={styles.sortSection}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.sortScroller}
+        >
+          {SORT_OPTIONS.map((option) => (
+            <ChoiceChip
+              key={option.value}
+              label={option.label}
+              selected={sort === option.value}
+              onPress={() => setSort(option.value)}
+            />
+          ))}
+        </ScrollView>
       </View>
       {quotes.length === 0 ? (
         <EmptyState
@@ -174,21 +217,41 @@ export function AuthorScreen() {
             key={quote.id}
             quote={quote}
             showAuthor={false}
+            compact
             onToggleSave={() => handleToggleSave(quote.id)}
             onCopy={() => handleCopy(quote)}
+            isCopyConfirmed={copiedQuoteId === quote.id}
             onShare={() => handleShare(quote)}
           />
         ))
       )}
-      {toastMessage ? <ToastMessage message={toastMessage} /> : null}
+      {toastMessage ? <ToastMessage message={toastMessage} variant="hud" /> : null}
     </Screen>
   );
 }
 
 const createStyles = (colors: ThemeTokens) =>
   StyleSheet.create({
-    header: {
+    navRow: {
+      minHeight: 32,
+      justifyContent: "center",
+      marginTop: -2,
+    },
+    backLink: {
+      flexDirection: "row",
+      alignItems: "center",
+      alignSelf: "flex-start",
+      gap: 2,
+    },
+    backLabel: {
+      fontSize: 16,
+      lineHeight: 20,
+      color: colors.text,
+      fontWeight: "500",
+    },
+    headerBlock: {
       gap: 4,
+      paddingTop: 4,
     },
     title: {
       fontSize: 32,
@@ -217,9 +280,11 @@ const createStyles = (colors: ThemeTokens) =>
       lineHeight: 22,
       color: colors.textMuted,
     },
-    sortRow: {
-      flexDirection: "row",
-      flexWrap: "wrap",
+    sortSection: {
+      marginHorizontal: -20,
+    },
+    sortScroller: {
       gap: 10,
+      paddingHorizontal: 20,
     },
   });

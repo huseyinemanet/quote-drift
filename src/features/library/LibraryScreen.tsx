@@ -92,7 +92,12 @@ export function LibraryScreen() {
             compact
             showShare={false}
             onToggleSave={() => toggleSave(quote.id)}
-            onPressAuthor={() => router.push(`/author/${quote.authorId}`)}
+            onPressAuthor={() =>
+              router.push({
+                pathname: "/author/[authorId]",
+                params: { authorId: quote.authorId, backLabel: "Library" },
+              })
+            }
           />
         ))
       )}
@@ -129,6 +134,7 @@ const createStyles = (colors: ThemeTokens) =>
     },
     topicSection: {
       gap: 10,
+      marginHorizontal: -20,
     },
     topicLabel: {
       fontSize: 13,
@@ -136,9 +142,10 @@ const createStyles = (colors: ThemeTokens) =>
       letterSpacing: 1,
       textTransform: "uppercase",
       color: colors.accent,
+      paddingHorizontal: 20,
     },
     topicScroller: {
       gap: 10,
-      paddingRight: 20,
+      paddingHorizontal: 20,
     },
   });

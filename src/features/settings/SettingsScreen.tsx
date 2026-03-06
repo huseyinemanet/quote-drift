@@ -13,6 +13,7 @@ import {
 
 import { appConfig } from "@/core/config";
 import { minutesToLabel } from "@/core/date";
+import { selectionHaptic } from "@/core/haptics";
 import { openSystemSettings } from "@/core/notifications";
 import { useAppState } from "@/core/bootstrap";
 import { Banner } from "@/ui/Banner";
@@ -45,6 +46,8 @@ export function SettingsScreen() {
   const denied = notificationSettings.permission_status === "denied";
 
   const handleSetNotificationsEnabled = async (nextEnabled: boolean) => {
+    void selectionHaptic();
+
     if (!nextEnabled) {
       await updateNotificationSettings({ enabled: false });
       return;
