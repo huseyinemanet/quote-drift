@@ -127,7 +127,7 @@ export function QuoteCard({
             </Text>
           ) : null}
         </View>
-        {showAttribution ? (
+        {showAttribution && background ? (
           <Pressable
             style={({ pressed }) => [
               styles.attributionWrap,

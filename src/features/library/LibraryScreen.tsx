@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { ScrollView, Text, TextInput, View, StyleSheet } from "react-native";
-import { Bookmark } from "lucide-react-native";
+import { Pressable, ScrollView, Text, TextInput, View, StyleSheet } from "react-native";
+import { Bookmark, Search, X } from "lucide-react-native";
 import { router } from "expo-router";
 
 import { useAppState } from "@/core/bootstrap";
@@ -39,11 +39,9 @@ export function LibraryScreen() {
       {results.length === 0 ? (
         <View style={styles.emptyStateRoot}>
           <View style={styles.header}>
-            <Text style={styles.subtitle}>
-              {savedOnly
-                ? `${savedCount} saved quotes in your library`
-                : "Search your library"}
-            </Text>
+            {savedOnly ? (
+              <Text style={styles.subtitle}>{savedCount} saved quotes in your library</Text>
+            ) : null}
           </View>
           <View style={styles.modeRow}>
             <ChoiceChip
@@ -57,14 +55,28 @@ export function LibraryScreen() {
               onPress={() => setSavedOnly(true)}
             />
           </View>
-          <TextInput
-            placeholder="Search"
-            placeholderTextColor={colors.textMuted}
-            selectionColor={colors.accent}
-            style={styles.input}
-            value={query}
-            onChangeText={setQuery}
-          />
+          <View style={styles.inputWrapper}>
+            <View style={styles.searchIconLeft} pointerEvents="none">
+              <Search size={20} color={colors.textMuted} />
+            </View>
+            <TextInput
+              placeholder="Search"
+              placeholderTextColor={colors.textMuted}
+              selectionColor={colors.accent}
+              style={[styles.input, styles.inputWithSearchIcon, query.length > 0 && styles.inputWithClear]}
+              value={query}
+              onChangeText={setQuery}
+            />
+            {query.length > 0 ? (
+              <Pressable
+                style={({ pressed }) => [styles.clearButton, pressed && styles.clearButtonPressed]}
+                onPress={() => setQuery("")}
+                hitSlop={8}
+              >
+                <X size={20} color={colors.textMuted} />
+              </Pressable>
+            ) : null}
+          </View>
           <View style={styles.topicSection}>
             <Text style={styles.topicLabel}>Topics</Text>
             <ScrollView
@@ -103,11 +115,9 @@ export function LibraryScreen() {
       ) : (
         <>
           <View style={styles.header}>
-            <Text style={styles.subtitle}>
-              {savedOnly
-                ? `${savedCount} saved quotes in your library`
-                : "Search your library"}
-            </Text>
+            {savedOnly ? (
+              <Text style={styles.subtitle}>{savedCount} saved quotes in your library</Text>
+            ) : null}
           </View>
           <View style={styles.modeRow}>
             <ChoiceChip
@@ -121,14 +131,28 @@ export function LibraryScreen() {
               onPress={() => setSavedOnly(true)}
             />
           </View>
-          <TextInput
-            placeholder="Search"
-            placeholderTextColor={colors.textMuted}
-            selectionColor={colors.accent}
-            style={styles.input}
-            value={query}
-            onChangeText={setQuery}
-          />
+          <View style={styles.inputWrapper}>
+            <View style={styles.searchIconLeft} pointerEvents="none">
+              <Search size={20} color={colors.textMuted} />
+            </View>
+            <TextInput
+              placeholder="Search..."
+              placeholderTextColor={colors.textMuted}
+              selectionColor={colors.accent}
+              style={[styles.input, styles.inputWithSearchIcon, query.length > 0 && styles.inputWithClear]}
+              value={query}
+              onChangeText={setQuery}
+            />
+            {query.length > 0 ? (
+              <Pressable
+                style={({ pressed }) => [styles.clearButton, pressed && styles.clearButtonPressed]}
+                onPress={() => setQuery("")}
+                hitSlop={8}
+              >
+                <X size={20} color={colors.textMuted} />
+              </Pressable>
+            ) : null}
+          </View>
           <View style={styles.topicSection}>
             <Text style={styles.topicLabel}>Topics</Text>
             <ScrollView
@@ -187,6 +211,17 @@ const createStyles = (colors: ThemeTokens) =>
       flexDirection: "row",
       gap: 10,
     },
+    inputWrapper: {
+      position: "relative",
+    },
+    searchIconLeft: {
+      position: "absolute",
+      left: 14,
+      top: 0,
+      bottom: 0,
+      justifyContent: "center",
+      zIndex: 1,
+    },
     input: {
       borderWidth: 1,
       borderColor: colors.border,
@@ -195,6 +230,24 @@ const createStyles = (colors: ThemeTokens) =>
       paddingHorizontal: 16,
       paddingVertical: 14,
       color: colors.text,
+      fontSize: 17,
+      lineHeight: 20,
+    },
+    inputWithSearchIcon: {
+      paddingLeft: 44,
+    },
+    inputWithClear: {
+      paddingRight: 44,
+    },
+    clearButton: {
+      position: "absolute",
+      right: 12,
+      top: 0,
+      bottom: 0,
+      justifyContent: "center",
+    },
+    clearButtonPressed: {
+      opacity: 0.6,
     },
     topicSection: {
       gap: 10,

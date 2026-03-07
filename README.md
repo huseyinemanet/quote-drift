@@ -157,7 +157,7 @@ scripts/          build-quotes (yazar–alıntı dosyasından corpus üretir)
 
 ## Yapılandırma
 
-- **Uygulama kimliği:** `app.json` ve `app.config.ts` (isim Quotify, scheme `quotify`, bundle id’ler).
+- **Uygulama kimliği:** `app.config.ts` (isim Quotify, scheme `quotify`, bundle id’ler).
 - **URL’ler:** Destek, gizlilik, kaynaklar `expo.extra` üzerinden; yayına almadan önce doldurulmalı.
 - **Reklamlar:** `EXPO_PUBLIC_ADS_ENV`, AdMob uygulama / birim ID’leri; [docs/ads.md](docs/ads.md). Ödüllü reklamlar native build ister (Expo Go’da çalışmaz).
 - **Widget:** `app.config.ts` içinde `expo-widgets`; DailyQuoteWidget, systemSmall / systemMedium.
@@ -192,7 +192,7 @@ Bu bölüm projede şu an tam çalışmayan veya tamamlanması gereken öğeleri
 
 ### Diğer eksikler / to-do’lar
 
-- [ ] **Destek / Gizlilik / Kaynak URL’leri:** `app.json` veya `app.config.ts` içindeki `expo.extra` (supportUrl, privacyUrl, sourcesUrl) şu an placeholder (örn. `https://www.example.com/`). Yayına almadan canlı URL’lerle güncellenmeli.
+- [ ] **Destek / Gizlilik / Kaynak URL’leri:** `app.config.ts` içindeki `expo.extra` (supportUrl, privacyUrl, sourcesUrl) şu an placeholder (örn. `https://www.example.com/`). Yayına almadan canlı URL’lerle güncellenmeli.
 - [ ] **AdMob production:** Production’da gerçek AdMob uygulama ve birim ID’leri kullanılmalı; `EXPO_PUBLIC_ADS_ENV=production` ve ilgili `EXPO_PUBLIC_ADMOB_*` env’ler set edilmeli. [docs/ads.md](docs/ads.md).
 - [ ] **Widget bundle / group id:** `app.config.ts` içinde widget `bundleIdentifier` ve `groupIdentifier` ana uygulama bundle id’si ile uyumlu; farklı bir bundle id kullanılıyorsa bu değerler güncellenmeli.
 - [ ] **Bildirim ve ödüllü reklam:** Gerçek cihazda hatırlatma zamanlaması ve “One more” ödüllü reklam akışı son kez test edilmeli (Expo Go’da reklamlar çalışmaz; dev client veya release build gerekir).

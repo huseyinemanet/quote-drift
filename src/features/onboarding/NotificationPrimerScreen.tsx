@@ -16,11 +16,12 @@ import {
   Text,
   View,
 } from "react-native";
-import { ChevronRight, Circle, CircleDot, Info } from "lucide-react-native";
+import { ChevronRight, Circle, CircleDot, Clock } from "lucide-react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 
 import { useAppState } from "@/core/bootstrap";
 import { dateToMinute, minuteToDate, minutesToLabel } from "@/core/date";
+import { createOnboardingProgressStyles } from "@/features/onboarding/onboardingProgressStyles";
 import { Button } from "@/ui/Button";
 import { Screen } from "@/ui/Screen";
 import { ThemeTokens, useTheme } from "@/ui/theme";
@@ -99,8 +100,8 @@ export function NotificationPrimerScreen() {
 
   const showInfo = () => {
     Alert.alert(
-      "What happens if you skip reminders?",
-      "Nothing essential changes.\n\n• Today still works\n• Library and favourites still work\n• About and Settings still work",
+      "If you skip reminders",
+      "Nothing changes. Today, Library, Settings — everything works as usual.",
       [{ text: "Got it", style: "default" }]
     );
   };
@@ -171,31 +172,23 @@ export function NotificationPrimerScreen() {
     <Screen
       useChromeInset={false}
       stickyFooter={
-        <>
-          <Button
-            label={remindersEnabled ? "Enable reminders" : "Continue"}
-            onPress={finish}
-          />
+        <View style={styles.ctaBlock}>
+          <Button label="Continue" onPress={finish} />
           {remindersEnabled ? (
             <Text style={styles.footerText}>
-              You can change this later in Settings.
+              You can change this anytime in Settings.
             </Text>
-          ) : (
-            <Text style={styles.footerText}>
-              You can set reminders later in Settings.
-            </Text>
-          )}
-        </>
+          ) : null}
+        </View>
       }
     >
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
         <View style={styles.progressRow}>
           <View style={styles.progressDots}>
-            <View style={[styles.progressDot, styles.progressDotComplete]} />
-            <View style={[styles.progressDot, styles.progressDotComplete]} />
+            <View style={styles.progressDot} />
+            <View style={styles.progressDot} />
             <View style={[styles.progressDot, styles.progressDotActive]} />
           </View>
-          <Text style={styles.progressLabel}>Step 3 of 3</Text>
         </View>
         <View style={styles.header}>
           <Text style={styles.title}>Use reminders if you want.</Text>
@@ -203,46 +196,75 @@ export function NotificationPrimerScreen() {
             Get a gentle quote prompt during the day.
           </Text>
         </View>
-        <View style={styles.toggleRow}>
-          <Text style={styles.toggleLabel}>Enable reminders</Text>
-          <Switch
-            value={remindersEnabled}
-            onValueChange={(value) => {
-              LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-              setRemindersEnabled(value);
-            }}
-            trackColor={{ false: colors.border, true: colors.accent }}
-            thumbColor={colors.background}
-          />
-        </View>
         {!remindersEnabled ? (
-          <Pressable
-            onPress={showInfo}
-            style={({ pressed }) => [styles.infoRow, pressed && styles.infoRowPressed]}
-          >
-            <Info size={20} color={colors.textMuted} />
-            <Text style={styles.infoText}>What happens if you skip reminders?</Text>
-          </Pressable>
-        ) : null}
-        {remindersEnabled ? (
+          <View style={styles.toggleGroup}>
+            <View style={styles.toggleRow}>
+              <Text style={styles.toggleLabel}>Enable reminders</Text>
+              <Switch
+                value={remindersEnabled}
+                onValueChange={(value) => {
+                  LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                  setRemindersEnabled(value);
+                }}
+                trackColor={{ false: colors.border, true: colors.accent }}
+                thumbColor={colors.background}
+              />
+            </View>
+            <Text style={styles.toggleHelper}>
+              Optional. Set this up now or later in Settings.
+            </Text>
+            <Pressable
+              onPress={showInfo}
+              style={({ pressed }) => [
+                styles.disclosureRow,
+                pressed && styles.disclosureRowPressed,
+              ]}
+            >
+              <Text style={styles.disclosureLabel}>Set this up later</Text>
+              <ChevronRight size={16} color={colors.textMuted} />
+            </Pressable>
+          </View>
+        ) : (
           <>
+            <View style={[styles.toggleRow, styles.toggleRowFirst]}>
+              <Text style={styles.toggleLabel}>Enable reminders</Text>
+              <Switch
+                value={remindersEnabled}
+                onValueChange={(value) => {
+                  LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                  setRemindersEnabled(value);
+                }}
+                trackColor={{ false: colors.border, true: colors.accent }}
+                thumbColor={colors.background}
+              />
+            </View>
+            <View style={styles.settingsBlock}>
             <Text style={styles.sectionLabel}>How often</Text>
             <View style={styles.radioGroup}>
               {FREQUENCY_OPTIONS.map((option) => (
                 <Pressable
                   key={option.value}
-                  style={({ pressed }) => [styles.radioRow, pressed && styles.radioRowPressed]}
+                  style={({ pressed }) => [
+                    styles.radioRow,
+                    pressed && styles.radioRowPressed,
+                  ]}
                   onPress={() => setFrequency(option.value)}
                 >
                   {frequency === option.value ? (
-                    <CircleDot size={20} color={colors.text} />
+                    <CircleDot size={20} color={colors.accent} />
                   ) : (
-                    <Circle size={20} color={colors.textMuted} strokeWidth={2} />
+                    <Circle
+                      size={20}
+                      color={colors.border}
+                      strokeWidth={2}
+                    />
                   )}
                   <Text
                     style={[
                       styles.radioLabel,
-                      frequency === option.value ? styles.radioLabelSelected : null,
+                      frequency === option.value
+                        ? styles.radioLabelSelected
+                        : null,
                     ]}
                   >
                     {option.label}
@@ -250,27 +272,43 @@ export function NotificationPrimerScreen() {
                 </Pressable>
               ))}
             </View>
-            <Text style={styles.sectionLabel}>Reminder hours</Text>
-            <View style={styles.hoursCard}>
-              <Text style={styles.hoursLabel}>Start</Text>
-              <Pressable
-                style={({ pressed }) => [styles.timeRow, pressed && styles.timeRowPressed]}
-                onPress={openStartPicker}
-              >
-                <Text style={styles.timeValue}>{minutesToLabel(startMinute)}</Text>
-                <ChevronRight size={20} color={colors.textMuted} />
-              </Pressable>
-              <Text style={styles.hoursLabel}>End</Text>
-              <Pressable
-                style={({ pressed }) => [styles.timeRow, pressed && styles.timeRowPressed]}
-                onPress={openEndPicker}
-              >
-                <Text style={styles.timeValue}>{minutesToLabel(endMinute)}</Text>
-                <ChevronRight size={20} color={colors.textMuted} />
-              </Pressable>
-            </View>
-          </>
-        ) : null}
+            <Text style={[styles.sectionLabel, styles.sectionLabelSpaced]}>
+              Reminder hours
+            </Text>
+            <Pressable
+              style={({ pressed }) => [
+                styles.timeRow,
+                pressed && styles.timeRowPressed,
+              ]}
+              onPress={openStartPicker}
+            >
+              <Text style={styles.timeRowLabel}>Start</Text>
+              <View style={styles.timeRowRight}>
+                <Text style={styles.timeValue}>
+                  {minutesToLabel(startMinute)}
+                </Text>
+                <Clock size={18} color={colors.textMuted} />
+              </View>
+            </Pressable>
+            <Pressable
+              style={({ pressed }) => [
+                styles.timeRow,
+                styles.timeRowSecond,
+                pressed && styles.timeRowPressed,
+              ]}
+              onPress={openEndPicker}
+            >
+              <Text style={styles.timeRowLabel}>End</Text>
+              <View style={styles.timeRowRight}>
+                <Text style={styles.timeValue}>
+                  {minutesToLabel(endMinute)}
+                </Text>
+                <Clock size={18} color={colors.textMuted} />
+              </View>
+            </Pressable>
+          </View>
+        </>
+        )}
       </ScrollView>
       {showTimePicker ? (
         Platform.OS === "ios" ? (
@@ -341,50 +379,23 @@ export function NotificationPrimerScreen() {
 
 const createStyles = (colors: ThemeTokens) =>
   StyleSheet.create({
+    ...createOnboardingProgressStyles(colors),
     scroll: {
       flex: 1,
     },
     scrollContent: {
       paddingBottom: 24,
     },
-    progressRow: {
-      marginTop: 8,
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-    },
-    progressDots: {
-      flexDirection: "row",
-      gap: 8,
-    },
-    progressDot: {
-      width: 8,
-      height: 8,
-      borderRadius: 999,
-      backgroundColor: colors.border,
-    },
-    progressDotComplete: {
-      backgroundColor: colors.accent,
-    },
-    progressDotActive: {
-      width: 26,
-      backgroundColor: colors.text,
-    },
-    progressLabel: {
-      fontSize: 13,
-      fontWeight: "600",
-      color: colors.textMuted,
-    },
     header: {
-      marginTop: 16,
-      gap: 8,
+      marginTop: 12,
+      gap: 5,
     },
     title: {
-      fontSize: 28,
-      lineHeight: 34,
+      fontSize: 30,
+      lineHeight: 36,
       fontWeight: "700",
       fontFamily: "SourceSerif4_400Regular",
-      letterSpacing: -0.3,
+      letterSpacing: -0.5,
       color: colors.text,
     },
     body: {
@@ -392,87 +403,113 @@ const createStyles = (colors: ThemeTokens) =>
       lineHeight: 22,
       color: colors.textMuted,
     },
+    toggleGroup: {
+      marginTop: 14,
+      paddingVertical: 8,
+      paddingHorizontal: 0,
+      gap: 0,
+    },
     toggleRow: {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      marginTop: 16,
-      paddingVertical: 12,
+      paddingVertical: 8,
     },
     toggleLabel: {
       fontSize: 17,
       fontWeight: "600",
       color: colors.text,
     },
-    infoRow: {
+    toggleRowFirst: {
+      marginTop: 10,
+    },
+    toggleHelper: {
+      marginTop: 0,
+      fontSize: 17,
+      lineHeight: 20,
+      color: colors.textMuted,
+    },
+    disclosureRow: {
       flexDirection: "row",
       alignItems: "center",
-      gap: 8,
-      marginTop: 8,
+      justifyContent: "space-between",
+      marginTop: 6,
+      paddingVertical: 16,
+      paddingHorizontal: 0,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: colors.border,
     },
-    infoRowPressed: {
-      opacity: 0.82,
+    disclosureRowPressed: {
+      opacity: 0.5,
     },
-    infoText: {
-      fontSize: 14,
-      color: colors.textMuted,
+    disclosureLabel: {
+      fontSize: 17,
+      color: colors.text,
+    },
+    settingsBlock: {
+      marginTop: 2,
+      padding: 10,
+      borderRadius: 16,
+      backgroundColor: colors.surfaceMuted,
+      borderWidth: 0,
+      gap: 0,
     },
     sectionLabel: {
       fontSize: 17,
       fontWeight: "600",
       color: colors.text,
-      marginTop: 28,
-      marginBottom: 8,
+      marginBottom: 4,
+    },
+    sectionLabelSpaced: {
+      marginTop: 6,
     },
     radioGroup: {
-      gap: 2,
+      gap: 0,
     },
     radioRow: {
       flexDirection: "row",
       alignItems: "center",
       gap: 12,
-      paddingVertical: 6,
+      paddingVertical: 5,
     },
     radioRowPressed: {
-      opacity: 0.8,
+      opacity: 0.5,
     },
     radioLabel: {
       fontSize: 17,
-      color: colors.textMuted,
+      color: colors.text,
+      opacity: 0.92,
     },
     radioLabelSelected: {
-      color: colors.text
-    },
-    hoursCard: {
-      gap: 8,
-      backgroundColor: colors.surface,
-      borderRadius: 16,
-      padding: 14,
-      borderWidth: 1,
-      borderColor: colors.border,
-    },
-    hoursLabel: {
-      fontSize: 17,
-      fontWeight: "400",
       color: colors.text,
+      opacity: 1,
     },
     timeRow: {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
       paddingVertical: 12,
-      paddingHorizontal: 14,
-      backgroundColor: colors.background,
-      borderRadius: 12,
-      borderWidth: 1,
-      borderColor: colors.border,
+      paddingHorizontal: 0,
+    },
+    timeRowSecond: {
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
+    },
+    timeRowLabel: {
+      fontSize: 17,
+      color: colors.textMuted,
+    },
+    timeRowRight: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 0,
     },
     timeRowPressed: {
-      opacity: 0.82,
+      opacity: 0.5,
     },
     timeValue: {
-      fontSize: 17,
       color: colors.text,
+      fontSize: 17,
     },
     modalOverlay: {
       flex: 1,
@@ -504,7 +541,7 @@ const createStyles = (colors: ThemeTokens) =>
       minWidth: 64,
     },
     modalButtonPressed: {
-      opacity: 0.82,
+      opacity: 0.5,
     },
     modalCancel: {
       color: colors.textMuted,
@@ -522,11 +559,14 @@ const createStyles = (colors: ThemeTokens) =>
     picker: {
       backgroundColor: colors.background,
     },
+    ctaBlock: {
+      paddingTop: 0,
+      gap: 12,
+    },
     footerText: {
-      fontSize: 13,
-      lineHeight: 19,
+      fontSize: 12,
+      lineHeight: 16,
       textAlign: "center",
       color: colors.textMuted,
-      marginTop: 8,
     },
   });

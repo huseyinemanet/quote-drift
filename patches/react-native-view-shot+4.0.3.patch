@@ -1,0 +1,50 @@
+diff --git a/node_modules/react-native-view-shot/ios/RNViewShot.mm b/node_modules/react-native-view-shot/ios/RNViewShot.mm
+index 2cf632f..3b1b791 100644
+--- a/node_modules/react-native-view-shot/ios/RNViewShot.mm
++++ b/node_modules/react-native-view-shot/ios/RNViewShot.mm
+@@ -4,7 +4,6 @@
+ #import <React/UIView+React.h>
+ #import <React/RCTUtils.h>
+ #import <React/RCTConvert.h>
+-#import <React/RCTScrollView.h>
+ #import <React/RCTUIManager.h>
+ #if __has_include(<React/RCTUIManagerUtils.h>)
+ #import <React/RCTUIManagerUtils.h>
+@@ -78,14 +77,32 @@ - (dispatch_queue_t)methodQueue
+     BOOL success;
+ 
+     UIView* rendered;
+-    UIScrollView* scrollView;
++    UIScrollView* scrollView = nil;
+     if (snapshotContentContainer) {
+-      if (![view isKindOfClass:[RCTScrollView class]]) {
+-        reject(RCTErrorUnspecified, [NSString stringWithFormat:@"snapshotContentContainer can only be used on a RCTScrollView. instead got: %@", view], nil);
++      // Find the UIScrollView from the view hierarchy (works for both old and new arch)
++      UIScrollView* foundScrollView = nil;
++      if ([view isKindOfClass:[UIScrollView class]]) {
++        foundScrollView = (UIScrollView *)view;
++      }
++      if (!foundScrollView) {
++        for (UIView *subview in view.subviews) {
++          if ([subview isKindOfClass:[UIScrollView class]]) {
++            foundScrollView = (UIScrollView *)subview;
++            break;
++          }
++        }
++      }
++      if (!foundScrollView && [view respondsToSelector:@selector(scrollView)]) {
++        id sv = [view performSelector:@selector(scrollView)];
++        if ([sv isKindOfClass:[UIScrollView class]]) {
++          foundScrollView = (UIScrollView *)sv;
++        }
++      }
++      if (!foundScrollView) {
++        reject(RCTErrorUnspecified, [NSString stringWithFormat:@"snapshotContentContainer requires a ScrollView. Got: %@", view], nil);
+         return;
+       }
+-      RCTScrollView* rctScrollView = view;
+-      scrollView = rctScrollView.scrollView;
++      scrollView = foundScrollView;
+       rendered = scrollView;
+     }
+     else {

@@ -22,6 +22,7 @@ export type ThemeTokens = {
   success: string;
   tabActive: string;
   tabInactive: string;
+  tabBarBorder: string;
 };
 
 export const lightTheme: ThemeTokens = {
@@ -35,8 +36,9 @@ export const lightTheme: ThemeTokens = {
   border: "#e0d7c7",
   danger: "#8c3d39",
   success: "#4d6b4e",
-  tabActive: "#1c2421",
+  tabActive: "#8b5e3c",
   tabInactive: "#5d675f",
+  tabBarBorder: "#e0d7c7",
 };
 
 export const darkTheme: ThemeTokens = {
@@ -50,8 +52,9 @@ export const darkTheme: ThemeTokens = {
   border: "#314035",
   danger: "#dd8e88",
   success: "#9ec4a1",
-  tabActive: "#eff3ec",
+  tabActive: "#d7b18a",
   tabInactive: "#9ba89d",
+  tabBarBorder: "#252d28",
 };
 
 type ThemeContextValue = {

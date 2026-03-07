@@ -142,6 +142,8 @@ export default function TabLayout() {
             backgroundColor: "transparent",
             elevation: 0,
             shadowOpacity: 0,
+            borderTopWidth: StyleSheet.hairlineWidth,
+            borderTopColor: colors.tabBarBorder,
           },
           tabBarBackground: () => <TabBarBlurBackground />,
         }}

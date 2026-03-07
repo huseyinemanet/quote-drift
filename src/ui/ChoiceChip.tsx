@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Animated, Pressable, StyleSheet, Text } from "react-native";
+import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { selectionHaptic } from "@/core/haptics";
 import {
@@ -16,27 +16,30 @@ export function ChoiceChip({
   onPress,
   disabled = false,
   compact = false,
+  leftIcon: LeftIcon,
 }: {
   label: string;
   selected: boolean;
   onPress: () => void;
   disabled?: boolean;
   compact?: boolean;
+  leftIcon?: React.ComponentType<{ size?: number; color: string }>;
 }) {
   const { colors } = useTheme();
   const styles = createStyles(colors, compact);
   const scale = useRef(new Animated.Value(1)).current;
   const opacity = useRef(new Animated.Value(1)).current;
+  const iconColor = disabled ? colors.textMuted : colors.text;
 
   useEffect(() => {
     Animated.parallel([
       Animated.timing(scale, {
-        toValue: disabled ? 0.98 : 1,
+        toValue: disabled ? 0.99 : 1,
         duration: 180,
         useNativeDriver: true,
       }),
       Animated.timing(opacity, {
-        toValue: disabled ? 0.35 : 1,
+        toValue: disabled ? 0.82 : 1,
         duration: 180,
         useNativeDriver: true,
       }),
@@ -59,6 +62,11 @@ export function ChoiceChip({
           pressed && !disabled ? styles.chipPressed : null,
         ]}
       >
+        {LeftIcon ? (
+          <View style={styles.iconWrap}>
+            <LeftIcon size={compact ? 20 : 18} color={iconColor} />
+          </View>
+        ) : null}
         <Text
           style={[
             styles.label,
@@ -76,34 +84,43 @@ export function ChoiceChip({
 const createStyles = (colors: ThemeTokens, compact: boolean) =>
   StyleSheet.create({
     chip: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: compact ? 8 : 8,
       borderWidth: 1,
       borderColor: colors.border,
       backgroundColor: "transparent",
       paddingHorizontal: compact ? 12 : 18,
-      paddingVertical: compact ? 8 : BUTTON_PADDING_VERTICAL,
-      borderRadius: BUTTON_BORDER_RADIUS,
+      paddingVertical: compact ? 12 : BUTTON_PADDING_VERTICAL,
+      borderRadius: compact ? 12 : BUTTON_BORDER_RADIUS,
     },
     selected: {
-      backgroundColor: colors.accent,
-      borderColor: colors.accent,
-      borderWidth: 0,
-      opacity: 0.9,
+      backgroundColor: colors.accentSoft,
+      borderColor: colors.accentSoft,
+      borderWidth: 1,
     },
     disabled: {
       opacity: 1,
     },
     chipPressed: {
-      opacity: 0.82,
+      opacity: 0.5,
     },
     label: {
       color: colors.text,
-      fontWeight: BUTTON_FONT_WEIGHT,
-      fontSize: compact ? 14 : BUTTON_FONT_SIZE,
+      fontWeight: compact ? "400" : BUTTON_FONT_WEIGHT,
+      fontSize: compact ? 17 : BUTTON_FONT_SIZE,
+      textAlign: "center",
+      lineHeight: 20
     },
     selectedLabel: {
-      color: colors.background,
+      color: colors.text,
+      fontWeight: "500",
     },
     disabledLabel: {
       color: colors.textMuted,
+    },
+    iconWrap: {
+      marginTop: compact ? 0 : 1,
     },
   });

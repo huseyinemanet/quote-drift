@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 import { Heart, Share2 } from "lucide-react-native";
 
 import { useAppState } from "@/core/bootstrap";
@@ -157,14 +157,20 @@ export function TodayScreen() {
               onPress={() => handleToggleSave(todayQuote.id)}
               disabled={savingQuoteId === todayQuote.id}
             >
-              <Heart
-                size={24}
-                color={todayQuote.saved ? colors.accent : colors.text}
-                style={styles.saveIcon}
-              />
-              <Text style={[styles.saveLabel, todayQuote.saved && styles.saveLabelSaved]}>
-                {savingQuoteId === todayQuote.id ? "..." : todayQuote.saved ? "Saved ✓" : "Save"}
-              </Text>
+              {savingQuoteId === todayQuote.id ? (
+                <ActivityIndicator size="small" color={colors.text} style={styles.saveSpinner} />
+              ) : (
+                <>
+                  <Heart
+                    size={24}
+                    color={todayQuote.saved ? colors.accent : colors.text}
+                    style={styles.saveIcon}
+                  />
+                  <Text style={[styles.saveLabel, todayQuote.saved && styles.saveLabelSaved]}>
+                    {todayQuote.saved ? "Saved" : "Save"}
+                  </Text>
+                </>
+              )}
             </Pressable>
           </View>
           <View style={styles.buttonSlot}>
@@ -180,14 +186,18 @@ export function TodayScreen() {
               }}
               disabled={todayShare.isPreparing}
             >
-              <Share2
-                size={24}
-                color={colors.text}
-                style={styles.shareIcon}
-              />
-              <Text style={styles.shareLabel}>
-                {todayShare.isPreparing ? "Preparing..." : "Share"}
-              </Text>
+              {todayShare.isPreparing ? (
+                <ActivityIndicator size="small" color={colors.text} style={styles.shareSpinner} />
+              ) : (
+                <>
+                  <Share2
+                    size={24}
+                    color={colors.text}
+                    style={styles.shareIcon}
+                  />
+                  <Text style={styles.shareLabel}>Share</Text>
+                </>
+              )}
             </Pressable>
           </View>
         </View>
@@ -229,14 +239,20 @@ export function TodayScreen() {
                   onPress={() => handleToggleSave(extraQuote.id)}
                   disabled={savingQuoteId === extraQuote.id}
                 >
-                  <Heart
-                    size={24}
-                    color={extraQuote.saved ? colors.accent : colors.text}
-                    style={styles.saveIcon}
-                  />
-                  <Text style={[styles.saveLabel, extraQuote.saved && styles.saveLabelSaved]}>
-                    {savingQuoteId === extraQuote.id ? "..." : extraQuote.saved ? "Saved ✓" : "Save"}
-                  </Text>
+                  {savingQuoteId === extraQuote.id ? (
+                    <ActivityIndicator size="small" color={colors.text} style={styles.saveSpinner} />
+                  ) : (
+                    <>
+                      <Heart
+                        size={24}
+                        color={extraQuote.saved ? colors.accent : colors.text}
+                        style={styles.saveIcon}
+                      />
+                      <Text style={[styles.saveLabel, extraQuote.saved && styles.saveLabelSaved]}>
+                        {extraQuote.saved ? "Saved ✓" : "Save"}
+                      </Text>
+                    </>
+                  )}
                 </Pressable>
               </View>
               <View style={styles.buttonSlot}>
@@ -252,14 +268,18 @@ export function TodayScreen() {
                   }}
                   disabled={extraShare.isPreparing}
                 >
-                  <Share2
-                    size={24}
-                    color={colors.text}
-                    style={styles.shareIcon}
-                  />
-                  <Text style={styles.shareLabel}>
-                    {extraShare.isPreparing ? "Preparing..." : "Share"}
-                  </Text>
+                  {extraShare.isPreparing ? (
+                    <ActivityIndicator size="small" color={colors.text} style={styles.shareSpinner} />
+                  ) : (
+                    <>
+                      <Share2
+                        size={24}
+                        color={colors.text}
+                        style={styles.shareIcon}
+                      />
+                      <Text style={styles.shareLabel}>Share</Text>
+                    </>
+                  )}
                 </Pressable>
               </View>
             </View>
@@ -331,6 +351,9 @@ const createStyles = (colors: ThemeTokens) =>
     saveIcon: {
       marginTop: 1,
     },
+    saveSpinner: {
+      marginTop: 1,
+    },
     saveLabel: {
       fontSize: 15,
       fontWeight: "600",
@@ -359,6 +382,9 @@ const createStyles = (colors: ThemeTokens) =>
       opacity: 0.45,
     },
     shareIcon: {
+      marginTop: 1,
+    },
+    shareSpinner: {
       marginTop: 1,
     },
     shareLabel: {
