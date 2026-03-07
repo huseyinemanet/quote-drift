@@ -55,6 +55,7 @@ const widgetGroupIdentifier = iosBundleIdentifier
 
 export default (): ExpoConfig => ({
   ...baseConfig,
+  scheme: baseConfig.scheme ?? "quotify",
   plugins: [
     ...(baseConfig.plugins ?? []),
     [

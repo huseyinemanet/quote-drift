@@ -13,6 +13,18 @@ export function minutesToLabel(minutes: number) {
   return `${normalizedHour}:${String(mins).padStart(2, "0")} ${suffix}`;
 }
 
+/** Minutes since midnight (0–1439) to a Date with that time (same day base). */
+export function minuteToDate(minute: number): Date {
+  const d = new Date(2000, 0, 1, 0, 0, 0, 0);
+  d.setMinutes(minute);
+  return d;
+}
+
+/** Date to minutes since midnight (0–1439). */
+export function dateToMinute(date: Date): number {
+  return date.getHours() * 60 + date.getMinutes();
+}
+
 export function addDays(date: Date, days: number) {
   const next = new Date(date);
   next.setDate(next.getDate() + days);

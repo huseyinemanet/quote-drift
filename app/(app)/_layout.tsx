@@ -63,8 +63,8 @@ export default function TabLayout() {
                 focused={focused}
                 color={color}
                 size={size}
-                activeName="sunny"
-                inactiveName="sunny-outline"
+                activeName="partly-sunny"
+                inactiveName="partly-sunny-outline"
               />
             ),
           }}
@@ -78,8 +78,8 @@ export default function TabLayout() {
                 focused={focused}
                 color={color}
                 size={size}
-                activeName="book"
-                inactiveName="book-outline"
+                activeName="bookmark"
+                inactiveName="bookmark-outline"
               />
             ),
           }}
@@ -93,8 +93,8 @@ export default function TabLayout() {
                 focused={focused}
                 color={color}
                 size={size}
-                activeName="settings"
-                inactiveName="settings-outline"
+                activeName="cog"
+                inactiveName="cog-outline"
               />
             ),
           }}

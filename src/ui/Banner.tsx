@@ -24,7 +24,7 @@ const createStyles = (colors: ThemeTokens) =>
   StyleSheet.create({
     container: {
       backgroundColor: colors.surfaceMuted,
-      borderRadius: 18,
+      borderRadius: 16,
       padding: 16,
       borderWidth: 1,
       borderColor: colors.border,

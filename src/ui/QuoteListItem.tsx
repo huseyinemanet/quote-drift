@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 import { selectionHaptic } from "@/core/haptics";
@@ -16,6 +16,7 @@ type Props = {
   showAuthor?: boolean;
   showShare?: boolean;
   compact?: boolean;
+  saving?: boolean;
 };
 
 export function QuoteListItem({
@@ -28,6 +29,7 @@ export function QuoteListItem({
   showAuthor = true,
   showShare = true,
   compact = false,
+  saving = false,
 }: Props) {
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -58,17 +60,22 @@ export function QuoteListItem({
           ) : null}
           <Pressable
             accessibilityRole="button"
+            disabled={saving}
             onPress={() => {
               void selectionHaptic();
               onToggleSave();
             }}
             style={styles.iconButton}
           >
-            <Ionicons
-              name={quote.saved ? "bookmark" : "bookmark-outline"}
-              size={19}
-              color={quote.saved ? colors.text : colors.textMuted}
-            />
+            {saving ? (
+              <ActivityIndicator size="small" color={colors.textMuted} />
+            ) : (
+              <Ionicons
+                name={quote.saved ? "bookmark" : "bookmark-outline"}
+                size={22}
+                color={quote.saved ? colors.text : colors.textMuted}
+              />
+            )}
           </Pressable>
         </View>
       </View>
@@ -94,7 +101,7 @@ const createStyles = (colors: ThemeTokens) =>
       backgroundColor: colors.surface,
       borderWidth: 1,
       borderColor: colors.border,
-      borderRadius: 20,
+      borderRadius: 16,
       padding: 16,
       gap: 10,
     },
@@ -126,8 +133,6 @@ const createStyles = (colors: ThemeTokens) =>
       alignSelf: "flex-start",
       color: colors.textMuted,
       fontSize: 12,
-      borderWidth: 1,
-      borderColor: colors.border,
       borderRadius: 999,
       paddingHorizontal: 10,
       paddingVertical: 6,
@@ -141,7 +146,7 @@ const createStyles = (colors: ThemeTokens) =>
     iconButton: {
       width: 34,
       height: 34,
-      borderRadius: 17,
+      borderRadius: 16,
       alignItems: "center",
       justifyContent: "center",
     },

@@ -20,7 +20,7 @@ const SORT_OPTIONS: { value: AuthorQuoteSort; label: string }[] = [
   { value: "default", label: "Default" },
   { value: "shortest", label: "Shortest" },
   { value: "longest", label: "Longest" },
-  { value: "saved", label: "Saved first" },
+  { value: "saved", label: "Saved only" },
 ];
 
 type LoadState =
@@ -47,6 +47,7 @@ export function AuthorScreen() {
   const [sort, setSort] = useState<AuthorQuoteSort>("default");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [copiedQuoteId, setCopiedQuoteId] = useState<string | null>(null);
+  const [savingQuoteId, setSavingQuoteId] = useState<string | null>(null);
   const [state, setState] = useState<LoadState>({ status: "loading" });
 
   const showToast = (message: string) => setToastMessage(message);
@@ -110,13 +111,17 @@ export function AuthorScreen() {
   }, [normalizedAuthorId, sort]);
 
   const handleToggleSave = async (quoteId: string) => {
-    await toggleSave(quoteId);
-    if (state.status !== "ready") {
-      return;
+    setSavingQuoteId(quoteId);
+    try {
+      await toggleSave(quoteId);
+      if (state.status !== "ready") {
+        return;
+      }
+      const quotes = await getQuotesByAuthorId(normalizedAuthorId, sort);
+      setState({ ...state, quotes });
+    } finally {
+      setSavingQuoteId(null);
     }
-
-    const quotes = await getQuotesByAuthorId(normalizedAuthorId, sort);
-    setState({ ...state, quotes });
   };
 
   const handleCopy = async (quote: QuoteView) => {
@@ -218,6 +223,7 @@ export function AuthorScreen() {
             quote={quote}
             showAuthor={false}
             compact
+            saving={savingQuoteId === quote.id}
             onToggleSave={() => handleToggleSave(quote.id)}
             onCopy={() => handleCopy(quote)}
             isCopyConfirmed={copiedQuoteId === quote.id}
@@ -266,7 +272,7 @@ const createStyles = (colors: ThemeTokens) =>
       backgroundColor: colors.surface,
       borderWidth: 1,
       borderColor: colors.border,
-      borderRadius: 20,
+      borderRadius: 16,
       padding: 16,
       gap: 8,
     },

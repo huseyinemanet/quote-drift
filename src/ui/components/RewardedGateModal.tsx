@@ -9,7 +9,15 @@ import {
   Text,
   View,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
+import {
+  BUTTON_BORDER_RADIUS,
+  BUTTON_FONT_SIZE,
+  BUTTON_FONT_WEIGHT,
+  BUTTON_PADDING_HORIZONTAL,
+  BUTTON_PADDING_VERTICAL,
+} from "@/ui/buttonMetrics";
 import { ThemeTokens, useTheme } from "@/ui/theme";
 
 type Props = {
@@ -41,26 +49,29 @@ export function RewardedGateModal({
       overlayOpacity.setValue(0);
       sheetTranslateY.setValue(64);
 
-      Animated.timing(overlayOpacity, {
+      const a1 = Animated.timing(overlayOpacity, {
         toValue: 1,
         duration: 180,
         easing: Easing.out(Easing.quad),
         useNativeDriver: true,
-      }).start();
-
-      Animated.spring(sheetTranslateY, {
+      });
+      const a2 = Animated.spring(sheetTranslateY, {
         toValue: 0,
         damping: 20,
         stiffness: 220,
         mass: 0.92,
         delay: 42,
         useNativeDriver: true,
-      }).start();
-
-      return;
+      });
+      a1.start();
+      a2.start();
+      return () => {
+        a1.stop();
+        a2.stop();
+      };
     }
 
-    Animated.sequence([
+    const closeSeq = Animated.sequence([
       Animated.timing(sheetTranslateY, {
         toValue: 64,
         duration: 220,
@@ -73,11 +84,15 @@ export function RewardedGateModal({
         easing: Easing.out(Easing.quad),
         useNativeDriver: true,
       }),
-    ]).start(({ finished }) => {
+    ]);
+    closeSeq.start(({ finished }) => {
       if (finished) {
         setIsMounted(false);
       }
     });
+    return () => {
+      closeSeq.stop();
+    };
   }, [overlayOpacity, sheetTranslateY, visible]);
 
   if (!isMounted) {
@@ -101,11 +116,18 @@ export function RewardedGateModal({
             },
           ]}
         >
-          <View style={styles.handle} />
-          <Text style={styles.title}>One more quote</Text>
-          <Text style={styles.body}>
-            Watch a short ad to continue.
-          </Text>
+          <View style={styles.headerBlock}>
+            <Ionicons
+              name="play-circle"
+              size={56}
+              color={colors.accent}
+              style={styles.headerIcon}
+            />
+            <Text style={styles.title}>One more quote</Text>
+            <Text style={styles.body}>
+              Watch a short ad to continue.
+            </Text>
+          </View>
           {status === "error" ? (
             <Text style={styles.note}>A short ad is unavailable right now.</Text>
           ) : null}
@@ -146,37 +168,36 @@ const createStyles = (colors: ThemeTokens) =>
       flex: 1,
       backgroundColor: "rgba(7, 9, 11, 0.56)",
       justifyContent: "flex-end",
-      paddingHorizontal: 14,
-      paddingBottom: 10,
     },
     card: {
       backgroundColor: colors.surface,
-      borderTopLeftRadius: 28,
-      borderTopRightRadius: 28,
-      borderBottomLeftRadius: 26,
-      borderBottomRightRadius: 26,
-      paddingHorizontal: 20,
-      paddingTop: 12,
-      paddingBottom: 12,
-      gap: 8,
+      borderTopLeftRadius: 16,
+      borderTopRightRadius: 16,
+      borderBottomLeftRadius: 0,
+      borderBottomRightRadius: 0,
+      paddingHorizontal: 24,
+      paddingTop: 24,
+      paddingBottom: 24,
+      gap: 14,
     },
-    handle: {
-      width: 42,
-      height: 5,
-      borderRadius: 999,
-      backgroundColor: colors.border,
-      alignSelf: "center",
-      marginBottom: 6,
+    headerBlock: {
+      gap: 6,
+      alignItems: "center",
+    },
+    headerIcon: {
+      marginBottom: 2,
     },
     title: {
       color: colors.text,
       fontSize: 18,
       fontWeight: "700",
+      textAlign: "center",
     },
     body: {
       color: colors.text,
       fontSize: 15,
       lineHeight: 21,
+      textAlign: "center",
     },
     note: {
       color: colors.textMuted,
@@ -189,16 +210,16 @@ const createStyles = (colors: ThemeTokens) =>
       gap: 10,
     },
     actions: {
-      gap: 2,
-      marginTop: 2,
+      gap: 14,
+      marginTop: 8,
     },
     primaryAction: {
-      minHeight: 50,
-      borderRadius: 17,
+      borderRadius: BUTTON_BORDER_RADIUS,
       backgroundColor: colors.text,
       alignItems: "center",
       justifyContent: "center",
-      paddingHorizontal: 18,
+      paddingHorizontal: BUTTON_PADDING_HORIZONTAL,
+      paddingVertical: BUTTON_PADDING_VERTICAL,
     },
     primaryActionPressed: {
       opacity: 0.88,
@@ -208,17 +229,17 @@ const createStyles = (colors: ThemeTokens) =>
     },
     primaryActionLabel: {
       color: colors.background,
-      fontSize: 16,
-      fontWeight: "600",
+      fontSize: BUTTON_FONT_SIZE,
+      fontWeight: BUTTON_FONT_WEIGHT,
     },
     secondaryAction: {
-      paddingVertical: 10,
+      paddingVertical: BUTTON_PADDING_VERTICAL,
       alignItems: "center",
       justifyContent: "center",
     },
     secondaryActionLabel: {
       color: colors.textMuted,
-      fontSize: 15,
-      fontWeight: "600",
+      fontSize: BUTTON_FONT_SIZE,
+      fontWeight: BUTTON_FONT_WEIGHT,
     },
   });

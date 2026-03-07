@@ -1,51 +1,46 @@
 import { router } from "expo-router";
-import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 import { Button } from "@/ui/Button";
 import { Screen } from "@/ui/Screen";
 import { ThemeTokens, useTheme } from "@/ui/theme";
 
-const PREVIEW_QUOTES = [
-  {
-    text: "The happiness of your life depends upon the quality of your thoughts.",
-    author: "Marcus Aurelius",
-    topics: ["Stoicism", "Focus", "Clarity"],
-  },
-  {
-    text: "You do not have to see the whole staircase, just take the first step.",
-    author: "Martin Luther King Jr.",
-    topics: ["Courage", "Growth", "Resilience"],
-  },
-] as const;
+const PREVIEW_QUOTE = {
+  text: "The happiness of your life depends upon the quality of your thoughts.",
+  author: "Marcus Aurelius",
+  topics: ["Stoicism", "Focus", "Clarity"],
+} as const;
 
-const TRUST_POINTS = [
-  "Works offline",
-  "No account needed",
-  "Reminders stay on device",
-] as const;
-
-const FEATURE_POINTS = [
-  "Daily quotes shaped by the topics you choose",
-  "Save the lines you want to revisit later",
-  "Keep reminders optional from the very start",
-] as const;
+const TRUST_POINTS: { icon: keyof typeof Ionicons.glyphMap; label: string }[] = [
+  { icon: "wifi-outline", label: "Works offline" },
+  { icon: "person-circle-outline", label: "No account needed" },
+  { icon: "lock-closed-outline", label: "Reminders stay on device" },
+];
 
 export function WelcomeScreen() {
   const { colors } = useTheme();
   const styles = createStyles(colors);
-  const [previewIndex, setPreviewIndex] = useState(0);
-  const preview = PREVIEW_QUOTES[previewIndex];
 
   return (
-    <Screen>
+    <Screen
+      stickyFooter={
+        <View style={styles.ctaBlock}>
+          <Button
+            label="Get started"
+            onPress={() => router.push("/(onboarding)/topics")}
+          />
+          <Text style={styles.ctaMicrocopy}>Takes 10 seconds</Text>
+        </View>
+      }
+    >
       <View style={styles.progressRow}>
         <View style={styles.progressDots}>
           <View style={[styles.progressDot, styles.progressDotActive]} />
           <View style={styles.progressDot} />
           <View style={styles.progressDot} />
         </View>
-        <Text style={styles.progressLabel}>Onboarding</Text>
+        <Text style={styles.progressLabel}>Step 1 of 3</Text>
       </View>
       <View style={styles.hero}>
         <View style={styles.kickerBlock}>
@@ -53,59 +48,30 @@ export function WelcomeScreen() {
           <Text style={styles.eyebrow}>A calm daily quote app, even offline.</Text>
         </View>
         <Text style={styles.title}>
-          Quotes for the moods, topics, and seasons that matter to you.
+          Daily quotes that match your mood.
         </Text>
         <Text style={styles.body}>
-          Choose a few topics, save the lines you love, and keep reminders
-          optional.
-        </Text>
-        <View style={styles.featureList}>
-          {FEATURE_POINTS.map((feature) => (
-            <View key={feature} style={styles.featureRow}>
-              <View style={styles.featureBullet} />
-              <Text style={styles.featureText}>{feature}</Text>
-            </View>
-          ))}
-        </View>
-      </View>
-      <View style={styles.ctaBlock}>
-        <Button
-          label="Get started"
-          onPress={() => router.push("/(onboarding)/topics")}
-        />
-        <Button
-          label="See example quotes"
-          variant="ghost"
-          onPress={() =>
-            setPreviewIndex((current) => (current + 1) % PREVIEW_QUOTES.length)
-          }
-        />
-        <Text style={styles.supportingCopy}>
-          Takes less than a minute. You will pick a few topics next.
+          Choose topics, save favourites. Reminders stay optional.
         </Text>
       </View>
       <View style={styles.previewPanel}>
-        <View style={styles.previewHeader}>
-          <Text style={styles.previewLabel}>Preview</Text>
-          <Text style={styles.previewHint}>Saved quotes and reminders stay optional.</Text>
-        </View>
-        <View style={styles.topicRow}>
-          {preview.topics.map((topic) => (
-            <View key={topic} style={styles.topicChip}>
-              <Text style={styles.topicChipText}>{topic}</Text>
-            </View>
-          ))}
-        </View>
-        <View style={styles.quoteCard}>
+        <Text style={styles.previewTopicLabel}>Popular topics</Text>
+        <Text style={styles.previewTopicChips}>
+          {PREVIEW_QUOTE.topics.join(" · ")}
+        </Text>
+        <View style={styles.previewQuoteWrap}>
+          <View style={styles.previewQuoteBlock}>
           <Text style={styles.quoteMark}>“</Text>
-          <Text style={styles.quoteText}>{preview.text}</Text>
-          <Text style={styles.quoteAuthor}>{preview.author}</Text>
+          <Text style={styles.quoteText}>{PREVIEW_QUOTE.text}</Text>
+          <Text style={styles.quoteAuthor}>{PREVIEW_QUOTE.author}</Text>
+          </View>
         </View>
       </View>
-      <View style={styles.trustRow}>
+      <View style={styles.trustList}>
         {TRUST_POINTS.map((point) => (
-          <View key={point} style={styles.trustChip}>
-            <Text style={styles.trustChipText}>{point}</Text>
+          <View key={point.label} style={styles.trustRow}>
+            <Ionicons name={point.icon} size={20} color={colors.accent} style={styles.trustCheck} />
+            <Text style={styles.trustText}>{point.label}</Text>
           </View>
         ))}
       </View>
@@ -125,6 +91,11 @@ const createStyles = (colors: ThemeTokens) =>
       flexDirection: "row",
       gap: 8,
     },
+    progressLabel: {
+      fontSize: 13,
+      fontWeight: "600",
+      color: colors.textMuted,
+    },
     progressDot: {
       width: 8,
       height: 8,
@@ -135,14 +106,9 @@ const createStyles = (colors: ThemeTokens) =>
       width: 26,
       backgroundColor: colors.text,
     },
-    progressLabel: {
-      fontSize: 13,
-      fontWeight: "600",
-      color: colors.textMuted,
-    },
     hero: {
-      marginTop: 28,
-      gap: 18,
+      marginTop: 22,
+      gap: 14,
     },
     kickerBlock: {
       gap: 8,
@@ -150,7 +116,7 @@ const createStyles = (colors: ThemeTokens) =>
     kicker: {
       fontSize: 14,
       fontWeight: "700",
-      letterSpacing: 2,
+      letterSpacing: 0.5,
       textTransform: "uppercase",
       color: colors.accent,
     },
@@ -161,8 +127,10 @@ const createStyles = (colors: ThemeTokens) =>
     },
     title: {
       fontSize: 35,
-      lineHeight: 42,
+      lineHeight: 38,
       fontWeight: "700",
+      fontFamily: "SourceSerif4_400Regular",
+      letterSpacing: -0.5,
       color: colors.text,
     },
     body: {
@@ -170,84 +138,43 @@ const createStyles = (colors: ThemeTokens) =>
       lineHeight: 27,
       color: colors.textMuted,
     },
-    featureList: {
-      gap: 10,
-      marginTop: 6,
-    },
-    featureRow: {
-      flexDirection: "row",
-      alignItems: "flex-start",
-      gap: 10,
-    },
-    featureBullet: {
-      width: 8,
-      height: 8,
-      borderRadius: 999,
-      marginTop: 8,
-      backgroundColor: colors.accent,
-    },
-    featureText: {
-      flex: 1,
-      fontSize: 15,
-      lineHeight: 23,
-      color: colors.text,
-    },
     ctaBlock: {
-      gap: 12,
-      marginTop: 8,
+      marginTop: 4,
+      gap: 6,
     },
-    supportingCopy: {
-      fontSize: 14,
-      lineHeight: 20,
-      textAlign: "center",
+    ctaMicrocopy: {
+      fontSize: 13,
       color: colors.textMuted,
+      textAlign: "center",
     },
     previewPanel: {
-      gap: 16,
-      marginTop: 8,
-      padding: 18,
-      borderRadius: 28,
+      gap: 14,
+      marginTop: 6,
+      padding: 14,
+      borderRadius: 16,
       backgroundColor: colors.surface,
       borderWidth: 1,
       borderColor: colors.border,
     },
-    previewHeader: {
-      gap: 6,
-    },
-    previewLabel: {
-      fontSize: 13,
+    previewTopicLabel: {
+      fontSize: 12,
       fontWeight: "700",
-      letterSpacing: 1.2,
+      letterSpacing: 1,
       textTransform: "uppercase",
-      color: colors.accent,
-    },
-    previewHint: {
-      fontSize: 15,
-      lineHeight: 22,
       color: colors.textMuted,
     },
-    topicRow: {
-      flexDirection: "row",
-      flexWrap: "wrap",
-      gap: 10,
-    },
-    topicChip: {
-      borderRadius: 999,
-      paddingHorizontal: 12,
-      paddingVertical: 8,
-      backgroundColor: colors.surfaceMuted,
-    },
-    topicChipText: {
-      fontSize: 13,
+    previewTopicChips: {
+      fontSize: 15,
       fontWeight: "600",
       color: colors.text,
     },
-    quoteCard: {
-      gap: 10,
-      borderRadius: 22,
-      paddingHorizontal: 18,
-      paddingVertical: 20,
-      backgroundColor: colors.background,
+    previewQuoteWrap: {
+      transform: [{ scale: 0.72 }],
+      alignSelf: "center",
+      width: "100%",
+    },
+    previewQuoteBlock: {
+      gap: 8,
     },
     quoteMark: {
       fontSize: 32,
@@ -265,22 +192,22 @@ const createStyles = (colors: ThemeTokens) =>
       lineHeight: 22,
       color: colors.textMuted,
     },
+    trustList: {
+      gap: 5,
+      marginTop: 4,
+    },
     trustRow: {
       flexDirection: "row",
-      flexWrap: "wrap",
+      alignItems: "center",
       gap: 10,
     },
-    trustChip: {
-      borderRadius: 999,
-      paddingHorizontal: 12,
-      paddingVertical: 8,
-      borderWidth: 1,
-      borderColor: colors.border,
-      backgroundColor: colors.background,
+    trustCheck: {
+      marginTop: 2,
     },
-    trustChipText: {
-      fontSize: 13,
-      fontWeight: "600",
+    trustText: {
+      flex: 1,
+      fontSize: 15,
+      lineHeight: 22,
       color: colors.textMuted,
     },
   });

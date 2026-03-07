@@ -1,5 +1,12 @@
-import { Pressable, StyleSheet, Text } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, Text, ViewStyle } from "react-native";
 
+import {
+  BUTTON_BORDER_RADIUS,
+  BUTTON_FONT_SIZE,
+  BUTTON_FONT_WEIGHT,
+  BUTTON_PADDING_HORIZONTAL,
+  BUTTON_PADDING_VERTICAL,
+} from "./buttonMetrics";
 import { ThemeTokens, useTheme } from "./theme";
 
 type Props = {
@@ -7,6 +14,9 @@ type Props = {
   onPress: () => void;
   variant?: "primary" | "secondary" | "ghost" | "danger";
   disabled?: boolean;
+  loading?: boolean;
+  minWidth?: number;
+  style?: ViewStyle;
 };
 
 export function Button({
@@ -14,31 +24,44 @@ export function Button({
   onPress,
   variant = "primary",
   disabled = false,
+  loading = false,
+  minWidth,
+  style,
 }: Props) {
   const { colors } = useTheme();
   const styles = createStyles(colors);
+  const isDisabled = disabled || loading;
 
   return (
     <Pressable
       accessibilityRole="button"
-      disabled={disabled}
+      disabled={isDisabled}
       onPress={onPress}
       style={({ pressed }) => [
         styles.base,
         styles[variant],
-        pressed && !disabled ? styles.pressed : null,
-        disabled ? styles.disabled : null,
+        pressed && !isDisabled ? styles.pressed : null,
+        isDisabled ? styles.disabled : null,
+        minWidth != null ? { minWidth } : null,
+        style,
       ]}
     >
-      <Text
-        style={[
-          styles.label,
-          variant === "ghost" ? styles.ghostLabel : null,
-          variant === "secondary" ? styles.secondaryLabel : null,
-        ]}
-      >
-        {label}
-      </Text>
+      {loading ? (
+        <ActivityIndicator
+          size="small"
+          color={variant === "secondary" || variant === "ghost" ? colors.text : colors.background}
+        />
+      ) : (
+        <Text
+          style={[
+            styles.label,
+            variant === "ghost" ? styles.ghostLabel : null,
+            variant === "secondary" ? styles.secondaryLabel : null,
+          ]}
+        >
+          {label}
+        </Text>
+      )}
     </Pressable>
   );
 }
@@ -46,9 +69,9 @@ export function Button({
 const createStyles = (colors: ThemeTokens) =>
   StyleSheet.create({
     base: {
-      borderRadius: 16,
-      paddingHorizontal: 16,
-      paddingVertical: 14,
+      borderRadius: BUTTON_BORDER_RADIUS,
+      paddingHorizontal: BUTTON_PADDING_HORIZONTAL,
+      paddingVertical: BUTTON_PADDING_VERTICAL,
       alignItems: "center",
       justifyContent: "center",
     },
@@ -74,8 +97,8 @@ const createStyles = (colors: ThemeTokens) =>
     },
     label: {
       color: colors.background,
-      fontWeight: "600",
-      fontSize: 16,
+      fontWeight: BUTTON_FONT_WEIGHT,
+      fontSize: BUTTON_FONT_SIZE,
     },
     secondaryLabel: {
       color: colors.text,

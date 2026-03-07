@@ -1,4 +1,5 @@
 import * as Application from "expo-application";
+import { router } from "expo-router";
 import { useMemo } from "react";
 import {
   ActionSheetIOS,
@@ -23,7 +24,7 @@ import { ThemeTokens, useTheme } from "@/ui/theme";
 const FREQUENCY_OPTIONS = [
   { value: 1 as const, label: "Once a day" },
   { value: 2 as const, label: "Twice a day" },
-  { value: 3 as const, label: "Three times" },
+  { value: 3 as const, label: "Three times a day" },
 ] as const;
 
 export function SettingsScreen() {
@@ -35,11 +36,12 @@ export function SettingsScreen() {
     updateNotificationSettings,
     pauseNotificationsForDays,
     sendTestReminder,
+    resetOnboarding,
   } = useAppState();
 
   const version = useMemo(
     () =>
-      `${Application.applicationName ?? "Quotify"} ${Application.nativeApplicationVersion ?? "1.0.0"} (${Application.nativeBuildVersion ?? "1"})`,
+      `${Application.applicationName ?? "Quotify"} ${Application.nativeApplicationVersion ?? "1.0.0"}`,
     []
   );
 
@@ -154,8 +156,8 @@ export function SettingsScreen() {
   };
 
   const openPauseOptions = () => {
-    const options = ["Pause for 1 day", "Pause for 7 days"];
-    const destructiveButtonIndex = 2;
+    const options = ["For 1 day", "For 1 week", "Until I turn them back on"];
+    const destructiveButtonIndex = 3;
     const allOptions = [...options, "Resume now", "Cancel"];
     const cancelButtonIndex = allOptions.length - 1;
 
@@ -167,6 +169,11 @@ export function SettingsScreen() {
 
       if (index === 1) {
         void pauseNotificationsForDays(7);
+        return;
+      }
+
+      if (index === 2) {
+        void pauseNotificationsForDays(365);
         return;
       }
 
@@ -207,6 +214,12 @@ export function SettingsScreen() {
     notificationSettings.pause_until > Date.now()
       ? "Paused for now"
       : "No pause set";
+
+  const handleShowOnboardingAgain = async () => {
+    void selectionHaptic();
+    await resetOnboarding();
+    router.replace("/(onboarding)/welcome");
+  };
 
   return (
     <Screen>
@@ -269,6 +282,22 @@ export function SettingsScreen() {
       </View>
       <View style={[styles.section, styles.aboutSection]}>
         <Text style={styles.sectionTitle}>About</Text>
+        {appConfig.storeReviewUrl ? (
+          <Pressable
+            style={styles.linkRow}
+            onPress={() => Linking.openURL(appConfig.storeReviewUrl!)}
+          >
+            <Text style={styles.linkLabel}>Rate Quotify</Text>
+            <Text style={styles.linkChevron}>›</Text>
+          </Pressable>
+        ) : null}
+        <Pressable style={styles.linkRow} onPress={handleShowOnboardingAgain}>
+          <View style={styles.settingCopy}>
+            <Text style={styles.linkLabel}>Show onboarding again</Text>
+            <Text style={styles.rowSubtitle}>View the welcome and topic selection screens again</Text>
+          </View>
+          <Text style={styles.linkChevron}>›</Text>
+        </Pressable>
         <Pressable style={styles.linkRow} onPress={() => Linking.openURL(appConfig.supportUrl)}>
           <Text style={styles.linkLabel}>Support</Text>
           <Text style={styles.linkChevron}>›</Text>
@@ -281,7 +310,17 @@ export function SettingsScreen() {
           <Text style={styles.linkLabel}>Sources</Text>
           <Text style={styles.linkChevron}>›</Text>
         </Pressable>
+        <Pressable style={styles.linkRow} onPress={() => Linking.openURL("https://unsplash.com")}>
+          <View style={styles.settingCopy}>
+            <Text style={styles.linkLabel}>Photo backgrounds</Text>
+            <Text style={styles.rowSubtitle}>Unsplash</Text>
+          </View>
+          <Text style={styles.linkChevron}>›</Text>
+        </Pressable>
+      </View>
+      <View style={styles.footerBlock}>
         <Text style={styles.caption}>{version}</Text>
+        <Text style={styles.caption}>yaba.studio © 2026. All rights reserved.</Text>
       </View>
     </Screen>
   );
@@ -298,7 +337,7 @@ const createStyles = (colors: ThemeTokens) =>
       backgroundColor: colors.surface,
       borderWidth: 1,
       borderColor: colors.border,
-      borderRadius: 22,
+      borderRadius: 16,
       padding: 18,
       gap: 16,
     },
@@ -374,10 +413,13 @@ const createStyles = (colors: ThemeTokens) =>
       lineHeight: 24,
       color: colors.textMuted,
     },
+    footerBlock: {
+      gap: 4,
+      marginTop: 8,
+    },
     caption: {
       fontSize: 13,
       color: colors.textMuted,
-      marginTop: 4,
       opacity: 0.86,
     },
   });

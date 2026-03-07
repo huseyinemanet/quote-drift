@@ -1,11 +1,11 @@
 const STORY_TEXT_PRESETS = [
-  { fontSize: 118, lineHeight: 144, letterSpacing: -1.8, maxCharacters: 110 },
-  { fontSize: 104, lineHeight: 130, letterSpacing: -1.6, maxCharacters: 145 },
-  { fontSize: 92, lineHeight: 116, letterSpacing: -1.4, maxCharacters: 175 },
-  { fontSize: 82, lineHeight: 104, letterSpacing: -1.2, maxCharacters: 215 },
-  { fontSize: 74, lineHeight: 94, letterSpacing: -1.1, maxCharacters: 260 },
-  { fontSize: 66, lineHeight: 86, letterSpacing: -1, maxCharacters: 320 },
-  { fontSize: 58, lineHeight: 76, letterSpacing: -0.9, maxCharacters: Number.POSITIVE_INFINITY },
+  { fontSize: 112, lineHeight: 140, letterSpacing: -1.8, maxCharacters: 100 },
+  { fontSize: 98, lineHeight: 124, letterSpacing: -1.6, maxCharacters: 130 },
+  { fontSize: 86, lineHeight: 110, letterSpacing: -1.4, maxCharacters: 165 },
+  { fontSize: 76, lineHeight: 98, letterSpacing: -1.2, maxCharacters: 200 },
+  { fontSize: 68, lineHeight: 88, letterSpacing: -1.1, maxCharacters: 245 },
+  { fontSize: 60, lineHeight: 80, letterSpacing: -1, maxCharacters: 300 },
+  { fontSize: 52, lineHeight: 70, letterSpacing: -0.9, maxCharacters: Number.POSITIVE_INFINITY },
 ];
 
 export type StoryTypography = (typeof STORY_TEXT_PRESETS)[number];

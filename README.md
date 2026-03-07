@@ -121,8 +121,8 @@ npm test
 
 Primary app config lives in:
 
-- [app.json](/Users/huseyinemanet/Projects/Quote%20Drift/app.json)
-- [app.config.ts](/Users/huseyinemanet/Projects/Quote%20Drift/app.config.ts)
+- [app.json](/Users/huseyinemanet/Projects/Quotify/app.json)
+- [app.config.ts](/Users/huseyinemanet/Projects/Quotify/app.config.ts)
 
 Current app identity:
 
@@ -156,7 +156,7 @@ Relevant public env vars:
 - `EXPO_PUBLIC_ADMOB_ANDROID_REWARDED_UNIT_ID`
 - `EXPO_PUBLIC_ADMOB_TEST_DEVICE_IDS`
 
-In non-production ads mode, the app falls back to Google test IDs from [app.config.ts](/Users/huseyinemanet/Projects/Quote%20Drift/app.config.ts).
+In non-production ads mode, the app falls back to Google test IDs from [app.config.ts](/Users/huseyinemanet/Projects/Quotify/app.config.ts).
 
 ## Notifications
 
@@ -174,7 +174,7 @@ The app remains fully usable if notification permission is denied.
 
 ## Widget
 
-The iOS widget is configured through `expo-widgets` in [app.config.ts](/Users/huseyinemanet/Projects/Quote%20Drift/app.config.ts).
+The iOS widget is configured through `expo-widgets` in [app.config.ts](/Users/huseyinemanet/Projects/Quotify/app.config.ts).
 
 Current widget setup:
 
@@ -237,9 +237,9 @@ Before shipping:
 
 ## Docs
 
-- [Architecture](/Users/huseyinemanet/Projects/Quote%20Drift/docs/architecture.md)
-- [Ads](/Users/huseyinemanet/Projects/Quote%20Drift/docs/ads.md)
-- [Sharing](/Users/huseyinemanet/Projects/Quote%20Drift/docs/sharing.md)
-- [QA Checklist](/Users/huseyinemanet/Projects/Quote%20Drift/docs/qa-checklist.md)
-- [Review Notes](/Users/huseyinemanet/Projects/Quote%20Drift/docs/review-notes.md)
-- [Submission Checklist](/Users/huseyinemanet/Projects/Quote%20Drift/docs/submission.md)
+- [Architecture](/Users/huseyinemanet/Projects/Quotify/docs/architecture.md)
+- [Ads](/Users/huseyinemanet/Projects/Quotify/docs/ads.md)
+- [Sharing](/Users/huseyinemanet/Projects/Quotify/docs/sharing.md)
+- [QA Checklist](/Users/huseyinemanet/Projects/Quotify/docs/qa-checklist.md)
+- [Review Notes](/Users/huseyinemanet/Projects/Quotify/docs/review-notes.md)
+- [Submission Checklist](/Users/huseyinemanet/Projects/Quotify/docs/submission.md)

@@ -46,7 +46,7 @@ const createStyles = (colors: ThemeTokens) =>
       backgroundColor: colors.surface,
       borderWidth: 1,
       borderColor: colors.border,
-      borderRadius: 18,
+      borderRadius: 16,
       paddingHorizontal: 18,
       paddingVertical: 12,
       minWidth: 180,

@@ -3,6 +3,7 @@ import type { ComponentType } from "react";
 import { useMemo } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 
+import { BUTTON_BORDER_RADIUS } from "@/ui/buttonMetrics";
 import { ThemeTokens, useTheme } from "@/ui/theme";
 
 import { getBannerUnitId, getGoogleMobileAdsModule } from "./admob";
@@ -127,7 +128,7 @@ const createStyles = (colors: ThemeTokens) =>
       height: 32,
       alignItems: "center",
       justifyContent: "center",
-      borderRadius: 12,
+      borderRadius: BUTTON_BORDER_RADIUS,
     },
     closeButtonPressed: {
       opacity: 0.7,

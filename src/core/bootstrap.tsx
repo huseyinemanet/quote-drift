@@ -63,53 +63,76 @@ type AppContextValue = AppBootstrapSnapshot & {
   sendTestReminder: () => Promise<void>;
   restartQuoteCollection: () => Promise<void>;
   setBootstrapState: (state: BootstrapState) => void;
+  resetOnboarding: () => Promise<void>;
 };
 
 const AppContext = createContext<AppContextValue | null>(null);
 
 async function readSnapshot(): Promise<AppBootstrapSnapshot> {
-  await runMigrations();
-  const importResult = await importQuotesIfNeeded();
-  const db = await getDb();
-  const quoteRow = await db.getFirstAsync<{ count: number }>(
-    "SELECT COUNT(*) as count FROM quotes"
-  );
-  const hasLibraryContent = (quoteRow?.count ?? 0) > 0;
-  const onboardingComplete =
-    (await getAppState(APP_STATE_KEYS.onboardingComplete)) === "true";
-  const invalidRaw = await getAppState(APP_STATE_KEYS.corpusInvalidIssues);
-  const invalidIssues = invalidRaw ? (JSON.parse(invalidRaw) as string[]) : [];
-  const notificationSettings = await getNotificationSettings();
+  try {
+    await runMigrations();
+    const importResult = await importQuotesIfNeeded();
+    const db = await getDb();
+    const quoteRow = await db.getFirstAsync<{ count: number }>(
+      "SELECT COUNT(*) as count FROM quotes"
+    );
+    const hasLibraryContent = (quoteRow?.count ?? 0) > 0;
+    const onboardingComplete =
+      (await getAppState(APP_STATE_KEYS.onboardingComplete)) === "true";
+    const invalidRaw = await getAppState(APP_STATE_KEYS.corpusInvalidIssues);
+    const invalidIssues = invalidRaw ? (JSON.parse(invalidRaw) as string[]) : [];
+    const notificationSettings = await getNotificationSettings();
 
-  if (importResult.type === "invalid-corpus") {
+    if (importResult.type === "invalid-corpus") {
+      return {
+        state: "fatalCorpus",
+        hasLibraryContent,
+        invalidIssues: importResult.issues,
+        onboardingComplete,
+        notificationSettings,
+      };
+    }
+
+    const remaining = await getRemainingQuoteCount();
+    const todayState = await db.getFirstAsync<{ day_key: string }>(
+      "SELECT day_key FROM today_state WHERE day_key = ?",
+      [getDayKey()]
+    );
+    const state: BootstrapState =
+      !onboardingComplete
+        ? "onboarding"
+        : remaining === 0 && !todayState
+          ? "exhausted"
+          : "ready";
+
     return {
-      state: "fatalCorpus",
+      state,
       hasLibraryContent,
-      invalidIssues: importResult.issues,
+      invalidIssues,
       onboardingComplete,
       notificationSettings,
     };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    if (__DEV__) {
+      console.error("Bootstrap readSnapshot failed:", err);
+    }
+    return {
+      state: "fatalCorpus",
+      hasLibraryContent: false,
+      invalidIssues: [`Uygulama başlatılırken bir hata oluştu: ${message}`],
+      onboardingComplete: false,
+      notificationSettings: {
+        enabled: false,
+        frequency_per_day: 1,
+        active_start_minute: 570,
+        active_end_minute: 1230,
+        pause_until: null,
+        permission_status: "undetermined",
+        updated_at: Date.now(),
+      },
+    };
   }
-
-  const remaining = await getRemainingQuoteCount();
-  const todayState = await db.getFirstAsync<{ day_key: string }>(
-    "SELECT day_key FROM today_state WHERE day_key = ?",
-    [getDayKey()]
-  );
-  const state: BootstrapState =
-    !onboardingComplete
-      ? "onboarding"
-      : remaining === 0 && !todayState
-        ? "exhausted"
-        : "ready";
-
-  return {
-    state,
-    hasLibraryContent,
-    invalidIssues,
-    onboardingComplete,
-    notificationSettings,
-  };
 }
 
 export function AppProvider({ children }: PropsWithChildren) {
@@ -137,28 +160,40 @@ export function AppProvider({ children }: PropsWithChildren) {
   const [savedCount, setSavedCount] = useState(0);
 
   const refreshAllInternal = async (shouldSyncWidget: boolean) => {
-    const nextSnapshot = await readSnapshot();
-    setSnapshot(nextSnapshot);
-    setTopics(await getAvailableTopics());
-    setSavedCount(await getSavedCount());
-    setStreak(await getDaysReadStreak());
+    try {
+      const nextSnapshot = await readSnapshot();
+      setSnapshot(nextSnapshot);
+      setTopics(await getAvailableTopics());
+      setSavedCount(await getSavedCount());
+      setStreak(await getDaysReadStreak());
 
-    const rawTopics = await getAppState(APP_STATE_KEYS.selectedTopics);
-    setSelectedTopicsState(rawTopics ? (JSON.parse(rawTopics) as string[]) : []);
+      const rawTopics = await getAppState(APP_STATE_KEYS.selectedTopics);
+      setSelectedTopicsState(rawTopics ? (JSON.parse(rawTopics) as string[]) : []);
 
-    if (nextSnapshot.state === "ready" || nextSnapshot.state === "exhausted") {
-      const primary = await getOrCreateTodayQuote(getDayKey());
-      if (primary.type === "success") {
-        setTodayQuote(primary.data);
-        if (shouldSyncWidget) {
-          syncTodayWidgetTimeline({
-            quote: primary.data,
-            scheme: systemScheme === "dark" ? "dark" : "light",
-          });
+      if (nextSnapshot.state === "ready" || nextSnapshot.state === "exhausted") {
+        const primary = await getOrCreateTodayQuote(getDayKey());
+        if (primary.type === "success") {
+          setTodayQuote(primary.data);
+          if (shouldSyncWidget) {
+            syncTodayWidgetTimeline({
+              quote: primary.data,
+              scheme: systemScheme === "dark" ? "dark" : "light",
+            });
+          }
+        } else {
+          setTodayQuote(null);
+          setSnapshot((current) => ({ ...current, state: "exhausted" }));
+          if (shouldSyncWidget) {
+            syncTodayWidgetTimeline({
+              quote: null,
+              scheme: systemScheme === "dark" ? "dark" : "light",
+            });
+          }
         }
+        setExtraQuote(await getExtraTodayQuote(getDayKey()));
       } else {
         setTodayQuote(null);
-        setSnapshot((current) => ({ ...current, state: "exhausted" }));
+        setExtraQuote(null);
         if (shouldSyncWidget) {
           syncTodayWidgetTimeline({
             quote: null,
@@ -166,16 +201,16 @@ export function AppProvider({ children }: PropsWithChildren) {
           });
         }
       }
-      setExtraQuote(await getExtraTodayQuote(getDayKey()));
-    } else {
-      setTodayQuote(null);
-      setExtraQuote(null);
-      if (shouldSyncWidget) {
-        syncTodayWidgetTimeline({
-          quote: null,
-          scheme: systemScheme === "dark" ? "dark" : "light",
-        });
+    } catch (err) {
+      if (__DEV__) {
+        console.error("Bootstrap refreshAll failed:", err);
       }
+      const message = err instanceof Error ? err.message : String(err);
+      setSnapshot((current) => ({
+        ...current,
+        state: "fatalCorpus",
+        invalidIssues: [`Yenileme sırasında hata: ${message}`],
+      }));
     }
   };
 
@@ -192,7 +227,14 @@ export function AppProvider({ children }: PropsWithChildren) {
   }, []);
 
   useEffect(() => {
-    void initializeMobileAds();
+    if (process.env.EXPO_PUBLIC_DISABLE_ADMOB === "1") {
+      return;
+    }
+    const delay = 2000;
+    const t = setTimeout(() => {
+      void initializeMobileAds();
+    }, delay);
+    return () => clearTimeout(t);
   }, []);
 
   const value = useMemo<AppContextValue>(
@@ -262,6 +304,10 @@ export function AppProvider({ children }: PropsWithChildren) {
       },
       setBootstrapState: (state) => {
         setSnapshot((current) => ({ ...current, state }));
+      },
+      resetOnboarding: async () => {
+        await setAppState(APP_STATE_KEYS.onboardingComplete, null);
+        setSnapshot((current) => ({ ...current, state: "onboarding" }));
       },
     }),
     [

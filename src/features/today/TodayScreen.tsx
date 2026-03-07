@@ -1,12 +1,19 @@
 import { router } from "expo-router";
 import { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 import { useAppState } from "@/core/bootstrap";
+import { getDayKey } from "@/core/date";
 import { selectionHaptic } from "@/core/haptics";
+import {
+  getQuoteCardBackgroundIndex,
+  QUOTE_CARD_BACKGROUNDS,
+} from "@/features/today/quoteCardBackgrounds";
 import { useShareQuote } from "@/features/today/share/useShareQuote";
 import { useOneMoreGate } from "@/features/today/useOneMoreGate";
 import { Button } from "@/ui/Button";
+import { BUTTON_BORDER_RADIUS } from "@/ui/buttonMetrics";
 import { Banner } from "@/ui/Banner";
 import { EmptyState } from "@/ui/EmptyState";
 import { QuoteCard } from "@/ui/QuoteCard";
@@ -40,9 +47,16 @@ export function TodayScreen() {
     });
   const [isTodayExpanded, setIsTodayExpanded] = useState(false);
   const [isExtraExpanded, setIsExtraExpanded] = useState(false);
+  const [savingQuoteId, setSavingQuoteId] = useState<string | null>(null);
+
   const handleToggleSave = async (quoteId: string) => {
     void selectionHaptic();
-    await toggleSave(quoteId);
+    setSavingQuoteId(quoteId);
+    try {
+      await toggleSave(quoteId);
+    } finally {
+      setSavingQuoteId(null);
+    }
   };
 
   if (!todayQuote) {
@@ -64,7 +78,11 @@ export function TodayScreen() {
     !notificationSettings.enabled ||
     notificationSettings.permission_status !== "granted";
   const streakLabel =
-    streak > 0 ? `${streak} day read streak` : "Day 1 starts today";
+    streak >= 7
+      ? `🔥 ${streak} day streak`
+      : streak > 0
+        ? `${streak} day read streak`
+        : "Day 1 starts today";
 
   return (
     <Screen>
@@ -84,34 +102,70 @@ export function TodayScreen() {
         isExpanded={isTodayExpanded}
         onToggleExpanded={() => setIsTodayExpanded((current) => !current)}
         onPressAuthor={() => openAuthor(todayQuote.authorId)}
+        background={QUOTE_CARD_BACKGROUNDS[getQuoteCardBackgroundIndex(getDayKey())]}
+        hideAttribution
       />
       <View style={styles.actionsBlock}>
         <View style={styles.row}>
-          <Button
-            label={todayQuote.saved ? "Saved" : "Save"}
-            variant="secondary"
-            onPress={() => handleToggleSave(todayQuote.id)}
-          />
-          <Button
-            label={todayShare.isPreparing ? "Preparing..." : "Share"}
-            variant="ghost"
-            disabled={todayShare.isPreparing}
-            onPress={todayShare.share}
-          />
+          <View style={styles.buttonSlot}>
+            <Pressable
+              style={({ pressed }) => [
+                styles.saveButton,
+                savingQuoteId === todayQuote.id && styles.saveButtonDisabled,
+                pressed && savingQuoteId !== todayQuote.id && styles.saveButtonPressed,
+              ]}
+              onPress={() => handleToggleSave(todayQuote.id)}
+              disabled={savingQuoteId === todayQuote.id}
+            >
+              <Ionicons
+                name={todayQuote.saved ? "heart" : "heart-outline"}
+                size={24}
+                color={todayQuote.saved ? colors.accent : colors.text}
+                style={styles.saveIcon}
+              />
+              <Text style={[styles.saveLabel, todayQuote.saved && styles.saveLabelSaved]}>
+                {savingQuoteId === todayQuote.id ? "..." : todayQuote.saved ? "Saved ✓" : "Save"}
+              </Text>
+            </Pressable>
+          </View>
+          <View style={styles.buttonSlot}>
+            <Pressable
+              style={({ pressed }) => [
+                styles.shareButton,
+                todayShare.isPreparing && styles.shareButtonDisabled,
+                pressed && !todayShare.isPreparing && styles.shareButtonPressed,
+              ]}
+              onPress={() => {
+                void selectionHaptic();
+                todayShare.share();
+              }}
+              disabled={todayShare.isPreparing}
+            >
+              <Ionicons
+                name="share-outline"
+                size={24}
+                color={colors.text}
+                style={styles.shareIcon}
+              />
+              <Text style={styles.shareLabel}>
+                {todayShare.isPreparing ? "Preparing..." : "Share"}
+              </Text>
+            </Pressable>
+          </View>
         </View>
       </View>
       <View style={styles.exploreBlock}>
+        <Text style={styles.exploreCopy}>
+          {oneMore.isAlreadyUnlocked
+            ? "New quote tomorrow"
+            : "Want another quote today? Unlock one more."}
+        </Text>
         <Button
-          label={
-            oneMore.isAlreadyUnlocked ? "Extra quote unlocked" : "One more for today"
-          }
+          label="Get another quote"
           variant="secondary"
           disabled={oneMore.isAlreadyUnlocked}
           onPress={oneMore.handleOneMorePress}
         />
-        <Text style={styles.exploreHint}>
-          Unlock one extra quote if you want more today.
-        </Text>
       </View>
       {extraQuote ? (
         <View style={styles.extraSection}>
@@ -121,20 +175,55 @@ export function TodayScreen() {
             isExpanded={isExtraExpanded}
             onToggleExpanded={() => setIsExtraExpanded((current) => !current)}
             onPressAuthor={() => openAuthor(extraQuote.authorId)}
+            hideAttribution
           />
           <View style={styles.actionsBlock}>
             <View style={styles.row}>
-              <Button
-                label={extraQuote.saved ? "Saved" : "Save"}
-                variant="secondary"
-                onPress={() => handleToggleSave(extraQuote.id)}
-              />
-              <Button
-                label={extraShare.isPreparing ? "Preparing..." : "Share"}
-                variant="ghost"
-                disabled={extraShare.isPreparing}
-                onPress={extraShare.share}
-              />
+              <View style={styles.buttonSlot}>
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.saveButton,
+                    savingQuoteId === extraQuote.id && styles.saveButtonDisabled,
+                    pressed && savingQuoteId !== extraQuote.id && styles.saveButtonPressed,
+                  ]}
+                  onPress={() => handleToggleSave(extraQuote.id)}
+                  disabled={savingQuoteId === extraQuote.id}
+                >
+                  <Ionicons
+                    name={extraQuote.saved ? "heart" : "heart-outline"}
+                    size={24}
+                    color={extraQuote.saved ? colors.accent : colors.text}
+                    style={styles.saveIcon}
+                  />
+                  <Text style={[styles.saveLabel, extraQuote.saved && styles.saveLabelSaved]}>
+                    {savingQuoteId === extraQuote.id ? "..." : extraQuote.saved ? "Saved ✓" : "Save"}
+                  </Text>
+                </Pressable>
+              </View>
+              <View style={styles.buttonSlot}>
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.shareButton,
+                    extraShare.isPreparing && styles.shareButtonDisabled,
+                    pressed && !extraShare.isPreparing && styles.shareButtonPressed,
+                  ]}
+                  onPress={() => {
+                    void selectionHaptic();
+                    extraShare.share();
+                  }}
+                  disabled={extraShare.isPreparing}
+                >
+                  <Ionicons
+                    name="share-outline"
+                    size={24}
+                    color={colors.text}
+                    style={styles.shareIcon}
+                  />
+                  <Text style={styles.shareLabel}>
+                    {extraShare.isPreparing ? "Preparing..." : "Share"}
+                  </Text>
+                </Pressable>
+              </View>
             </View>
           </View>
         </View>
@@ -172,6 +261,68 @@ const createStyles = (colors: ThemeTokens) =>
     row: {
       flexDirection: "row",
       gap: 12,
+      width: "100%",
+    },
+    buttonSlot: {
+      flex: 1,
+    },
+    flexButton: {
+      flex: 1,
+    },
+    saveButton: {
+      flex: 1,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8,
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      borderRadius: BUTTON_BORDER_RADIUS,
+      backgroundColor: colors.surfaceMuted,
+    },
+    saveButtonPressed: {
+      opacity: 0.82,
+    },
+    saveButtonDisabled: {
+      opacity: 0.6,
+    },
+    saveIcon: {
+      marginTop: 1,
+    },
+    saveLabel: {
+      fontSize: 15,
+      fontWeight: "600",
+      color: colors.text,
+    },
+    saveLabelSaved: {
+      color: colors.accent,
+    },
+    shareButton: {
+      flex: 1,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8,
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      borderRadius: BUTTON_BORDER_RADIUS,
+      backgroundColor: "transparent",
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    shareButtonPressed: {
+      opacity: 0.82,
+    },
+    shareButtonDisabled: {
+      opacity: 0.45,
+    },
+    shareIcon: {
+      marginTop: 1,
+    },
+    shareLabel: {
+      fontSize: 15,
+      fontWeight: "600",
+      color: colors.text,
     },
     actionsBlock: {
       gap: 12,
@@ -180,7 +331,7 @@ const createStyles = (colors: ThemeTokens) =>
     exploreBlock: {
       gap: 10,
     },
-    exploreHint: {
+    exploreCopy: {
       fontSize: 14,
       lineHeight: 20,
       color: colors.textMuted,

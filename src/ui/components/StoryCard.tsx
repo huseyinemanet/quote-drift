@@ -15,18 +15,20 @@ export function StoryCard({ quote }: { quote: ShareableQuote }) {
       <View style={styles.card}>
         <Text style={styles.eyebrow}>Quotify</Text>
         <View style={styles.content}>
-          <Text
-            style={[
-              styles.quote,
-              {
-                fontSize: preset.fontSize,
-                lineHeight: preset.lineHeight,
-                letterSpacing: preset.letterSpacing,
-              },
-            ]}
-          >
-            {quote.text}
-          </Text>
+          <View style={styles.quoteWrap}>
+            <Text
+              style={[
+                styles.quote,
+                {
+                  fontSize: preset.fontSize,
+                  lineHeight: preset.lineHeight,
+                  letterSpacing: preset.letterSpacing,
+                },
+              ]}
+            >
+              {quote.text}
+            </Text>
+          </View>
         </View>
         <View style={styles.metaBlock}>
           <Text style={styles.author}>{quote.author}</Text>
@@ -41,7 +43,7 @@ const styles = StyleSheet.create({
   frame: {
     width: STORY_WIDTH,
     height: STORY_HEIGHT,
-    backgroundColor: lightTheme.background,
+    backgroundColor: lightTheme.surface,
     paddingHorizontal: 88,
     paddingTop: 180,
     paddingBottom: 260,
@@ -49,12 +51,10 @@ const styles = StyleSheet.create({
   card: {
     flex: 1,
     backgroundColor: lightTheme.surface,
-    borderColor: lightTheme.border,
-    borderWidth: 2,
-    borderRadius: 64,
     paddingHorizontal: 76,
     paddingTop: 86,
     paddingBottom: 96,
+    overflow: "hidden",
   },
   eyebrow: {
     color: lightTheme.accent,
@@ -67,6 +67,13 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     justifyContent: "center",
+    alignSelf: "stretch",
+    overflow: "hidden",
+    minHeight: 0,
+  },
+  quoteWrap: {
+    width: "100%",
+    overflow: "hidden",
   },
   quote: {
     color: lightTheme.text,

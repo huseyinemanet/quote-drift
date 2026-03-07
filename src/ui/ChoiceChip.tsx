@@ -1,6 +1,13 @@
-import { Pressable, StyleSheet, Text } from "react-native";
+import { useEffect, useRef } from "react";
+import { Animated, Pressable, StyleSheet, Text } from "react-native";
 
 import { selectionHaptic } from "@/core/haptics";
+import {
+  BUTTON_BORDER_RADIUS,
+  BUTTON_FONT_SIZE,
+  BUTTON_FONT_WEIGHT,
+  BUTTON_PADDING_VERTICAL,
+} from "@/ui/buttonMetrics";
 import { ThemeTokens, useTheme } from "./theme";
 
 export function ChoiceChip({
@@ -16,31 +23,50 @@ export function ChoiceChip({
 }) {
   const { colors } = useTheme();
   const styles = createStyles(colors);
+  const scale = useRef(new Animated.Value(1)).current;
+  const opacity = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(scale, {
+        toValue: disabled ? 0.98 : 1,
+        duration: 180,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacity, {
+        toValue: disabled ? 0.4 : 1,
+        duration: 180,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [disabled, scale, opacity]);
 
   return (
-    <Pressable
-      accessibilityRole="button"
-      disabled={disabled}
-      onPress={() => {
-        void selectionHaptic();
-        onPress();
-      }}
-      style={[
-        styles.chip,
-        selected ? styles.selected : null,
-        disabled ? styles.disabled : null,
-      ]}
-    >
-      <Text
+    <Animated.View style={{ transform: [{ scale }], opacity }}>
+      <Pressable
+        accessibilityRole="button"
+        disabled={disabled}
+        onPress={() => {
+          void selectionHaptic();
+          onPress();
+        }}
         style={[
-          styles.label,
-          selected ? styles.selectedLabel : null,
-          disabled ? styles.disabledLabel : null,
+          styles.chip,
+          selected ? styles.selected : null,
+          disabled ? styles.disabled : null,
         ]}
       >
-        {label}
-      </Text>
-    </Pressable>
+        <Text
+          style={[
+            styles.label,
+            selected ? styles.selectedLabel : null,
+            disabled ? styles.disabledLabel : null,
+          ]}
+        >
+          {label}
+        </Text>
+      </Pressable>
+    </Animated.View>
   );
 }
 
@@ -49,21 +75,24 @@ const createStyles = (colors: ThemeTokens) =>
     chip: {
       borderWidth: 1,
       borderColor: colors.border,
-      backgroundColor: colors.surface,
-      paddingHorizontal: 14,
-      paddingVertical: 10,
-      borderRadius: 999,
+      backgroundColor: "transparent",
+      paddingHorizontal: 18,
+      paddingVertical: BUTTON_PADDING_VERTICAL,
+      borderRadius: BUTTON_BORDER_RADIUS,
     },
     selected: {
-      backgroundColor: colors.text,
-      borderColor: colors.text,
+      backgroundColor: colors.accent,
+      borderColor: colors.accent,
+      borderWidth: 0,
+      opacity: 0.9,
     },
     disabled: {
-      opacity: 0.4,
+      opacity: 1,
     },
     label: {
       color: colors.text,
-      fontWeight: "600",
+      fontWeight: BUTTON_FONT_WEIGHT,
+      fontSize: BUTTON_FONT_SIZE,
     },
     selectedLabel: {
       color: colors.background,
