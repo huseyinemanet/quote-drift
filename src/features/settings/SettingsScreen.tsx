@@ -206,9 +206,11 @@ export function SettingsScreen() {
     FREQUENCY_OPTIONS.find(
       (option) => option.value === notificationSettings.frequency_per_day
     )?.label ?? "Once a day";
+
   const activeHoursLabel = `${minutesToLabel(
     notificationSettings.active_start_minute
   )} — ${minutesToLabel(notificationSettings.active_end_minute)}`;
+
   const pauseSummary =
     typeof notificationSettings.pause_until === "number" &&
     notificationSettings.pause_until > Date.now()
@@ -229,6 +231,7 @@ export function SettingsScreen() {
           body="The app still works fully. Re-enable reminders in system settings if you want them back."
         />
       ) : null}
+
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Reminders</Text>
@@ -239,77 +242,121 @@ export function SettingsScreen() {
             thumbColor={colors.background}
           />
         </View>
-        <Pressable style={styles.settingRow} onPress={openFrequencyPicker}>
+
+        <Pressable
+          style={({ pressed }) => [styles.settingRow, pressed && styles.settingRowPressed]}
+          onPress={openFrequencyPicker}
+        >
           <View style={styles.settingCopy}>
             <Text style={styles.rowTitle}>Frequency</Text>
             <Text style={styles.rowSubtitle}>{frequencyLabel}</Text>
           </View>
           <Text style={styles.linkChevron}>›</Text>
         </Pressable>
-        <Pressable style={styles.settingRow} onPress={openHoursPicker}>
+
+        <Pressable
+          style={({ pressed }) => [styles.settingRow, pressed && styles.settingRowPressed]}
+          onPress={openHoursPicker}
+        >
           <View style={styles.settingCopy}>
             <Text style={styles.rowTitle}>Active hours</Text>
             <Text style={styles.rowSubtitle}>{activeHoursLabel}</Text>
           </View>
           <Text style={styles.linkChevron}>›</Text>
         </Pressable>
-        <Pressable style={styles.settingRow} onPress={openPauseOptions}>
+
+        <Pressable
+          style={({ pressed }) => [styles.settingRow, pressed && styles.settingRowPressed]}
+          onPress={openPauseOptions}
+        >
           <View style={styles.settingCopy}>
             <Text style={styles.rowTitle}>Pause reminders</Text>
             <Text style={styles.rowSubtitle}>{pauseSummary}</Text>
           </View>
           <Text style={styles.linkChevron}>›</Text>
         </Pressable>
+
         {notificationSettings.enabled ? (
           <View style={styles.advancedBlock}>
             <Text style={styles.helperLabel}>Advanced</Text>
-            <Pressable style={styles.linkRow} onPress={sendTestReminder}>
+            <Pressable
+              style={({ pressed }) => [styles.linkRow, pressed && styles.linkRowPressed]}
+              onPress={sendTestReminder}
+            >
               <View style={styles.settingCopy}>
                 <Text style={styles.linkLabel}>Send test notification</Text>
-                <Text style={styles.rowSubtitle}>Optional check before relying on reminders.</Text>
+                <Text style={styles.rowSubtitle}>
+                  Optional check before relying on reminders.
+                </Text>
               </View>
               <Text style={styles.linkChevron}>›</Text>
             </Pressable>
           </View>
         ) : null}
+
         {denied ? (
-          <Pressable style={styles.linkRow} onPress={openSystemSettings}>
+          <Pressable
+            style={({ pressed }) => [styles.linkRow, pressed && styles.linkRowPressed]}
+            onPress={openSystemSettings}
+          >
             <Text style={styles.linkLabel}>Open system settings</Text>
             <Text style={styles.linkChevron}>›</Text>
           </Pressable>
         ) : null}
       </View>
+
       <View style={[styles.section, styles.aboutSection]}>
         <Text style={styles.sectionTitle}>About</Text>
+
         {appConfig.storeReviewUrl ? (
           <Pressable
-            style={styles.linkRow}
+            style={({ pressed }) => [styles.linkRow, pressed && styles.linkRowPressed]}
             onPress={() => Linking.openURL(appConfig.storeReviewUrl!)}
           >
             <Text style={styles.linkLabel}>Rate Quotify</Text>
             <Text style={styles.linkChevron}>›</Text>
           </Pressable>
         ) : null}
-        <Pressable style={styles.linkRow} onPress={handleShowOnboardingAgain}>
+
+        <Pressable
+          style={({ pressed }) => [styles.linkRow, pressed && styles.linkRowPressed]}
+          onPress={handleShowOnboardingAgain}
+        >
           <View style={styles.settingCopy}>
             <Text style={styles.linkLabel}>Show onboarding again</Text>
             <Text style={styles.rowSubtitle}>See the welcome screens again</Text>
           </View>
           <Text style={styles.linkChevron}>›</Text>
         </Pressable>
-        <Pressable style={styles.linkRow} onPress={() => Linking.openURL(appConfig.supportUrl)}>
+
+        <Pressable
+          style={({ pressed }) => [styles.linkRow, pressed && styles.linkRowPressed]}
+          onPress={() => Linking.openURL(appConfig.supportUrl)}
+        >
           <Text style={styles.linkLabel}>Support</Text>
           <Text style={styles.linkChevron}>›</Text>
         </Pressable>
-        <Pressable style={styles.linkRow} onPress={() => Linking.openURL(appConfig.privacyUrl)}>
+
+        <Pressable
+          style={({ pressed }) => [styles.linkRow, pressed && styles.linkRowPressed]}
+          onPress={() => Linking.openURL(appConfig.privacyUrl)}
+        >
           <Text style={styles.linkLabel}>Privacy policy</Text>
           <Text style={styles.linkChevron}>›</Text>
         </Pressable>
-        <Pressable style={styles.linkRow} onPress={() => Linking.openURL(appConfig.sourcesUrl)}>
+
+        <Pressable
+          style={({ pressed }) => [styles.linkRow, pressed && styles.linkRowPressed]}
+          onPress={() => Linking.openURL(appConfig.sourcesUrl)}
+        >
           <Text style={styles.linkLabel}>Sources</Text>
           <Text style={styles.linkChevron}>›</Text>
         </Pressable>
-        <Pressable style={styles.linkRow} onPress={() => Linking.openURL("https://unsplash.com")}>
+
+        <Pressable
+          style={({ pressed }) => [styles.linkRow, pressed && styles.linkRowPressed]}
+          onPress={() => Linking.openURL("https://unsplash.com")}
+        >
           <View style={styles.settingCopy}>
             <Text style={styles.linkLabel}>Photo backgrounds</Text>
             <Text style={styles.rowSubtitle}>Unsplash</Text>
@@ -317,9 +364,11 @@ export function SettingsScreen() {
           <Text style={styles.linkChevron}>›</Text>
         </Pressable>
       </View>
+
       <View style={styles.footerBlock}>
         <Text style={styles.caption}>{version}</Text>
-        <Text style={styles.caption}>yaba.studio © 2026. All rights reserved.</Text>
+        <Text style={styles.caption}>yaba.studio © 2026</Text>
+        <Text style={styles.caption}>All rights reserved</Text>
       </View>
     </Screen>
   );
@@ -334,13 +383,19 @@ const createStyles = (colors: ThemeTokens) =>
       borderRadius: 16,
       padding: 18,
       gap: 16,
+
+      shadowColor: "#000",
+      shadowOpacity: 0.04,
+      shadowRadius: 2,
+      shadowOffset: { width: 0, height: 2 },
+      elevation: 1,
     },
     aboutSection: {
       gap: 10,
     },
     sectionTitle: {
       fontSize: 20,
-      fontWeight: "700",
+      fontWeight: "600",
       color: colors.text,
     },
     sectionHeader: {
@@ -351,7 +406,7 @@ const createStyles = (colors: ThemeTokens) =>
       marginBottom: 2,
     },
     settingBlock: {
-      gap: 10,
+      gap: 16,
     },
     settingBlockCompact: {
       marginTop: 2,
@@ -367,6 +422,9 @@ const createStyles = (colors: ThemeTokens) =>
       gap: 12,
       paddingVertical: 6,
     },
+    settingRowPressed: {
+      opacity: 0.5,
+    },
     settingCopy: {
       flex: 1,
       gap: 4,
@@ -375,7 +433,7 @@ const createStyles = (colors: ThemeTokens) =>
       fontSize: 17,
       lineHeight: 22,
       color: colors.text,
-      fontWeight: "600",
+      fontWeight: "400",
     },
     rowSubtitle: {
       fontSize: 14,
@@ -397,6 +455,9 @@ const createStyles = (colors: ThemeTokens) =>
       justifyContent: "space-between",
       paddingVertical: 4,
     },
+    linkRowPressed: {
+      opacity: 0.8,
+    },
     linkLabel: {
       fontSize: 17,
       lineHeight: 22,
@@ -410,10 +471,12 @@ const createStyles = (colors: ThemeTokens) =>
     footerBlock: {
       gap: 4,
       marginTop: 8,
+      alignItems: "center",
     },
     caption: {
       fontSize: 13,
       color: colors.textMuted,
-      opacity: 0.86,
+      opacity: 0.8,
+      textAlign: "center",
     },
   });

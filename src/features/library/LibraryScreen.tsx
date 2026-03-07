@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { ScrollView, Text, TextInput, View, StyleSheet } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Bookmark } from "lucide-react-native";
 import { router } from "expo-router";
 
 import { useAppState } from "@/core/bootstrap";
@@ -95,7 +95,7 @@ export function LibraryScreen() {
                   ? "Save quotes from Today or Library and they will appear here."
                   : "Try a different search term, remove a filter, or browse another topic."
               }
-              icon={savedOnly ? <Ionicons name="bookmark-outline" size={48} color={colors.textMuted} /> : undefined}
+              icon={savedOnly ? <Bookmark size={48} color={colors.textMuted} /> : undefined}
               fillVertical
             />
           </View>

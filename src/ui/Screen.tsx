@@ -1,6 +1,7 @@
 import type { PropsWithChildren, ReactNode } from "react";
 import { useEffect } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { useHeaderHeight } from "@react-navigation/elements";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useBottomChromeInset } from "@/features/layout/BottomChromeInset";
@@ -28,6 +29,7 @@ const STICKY_FOOTER_PADDING_BOTTOM = 160;
 
 export function Screen({ children, scroll = true, padded = true, edges = ["top"], stickyFooter, useChromeInset = true, debugInsets = false }: Props) {
   const { colors } = useTheme();
+  const headerHeight = useHeaderHeight();
   const bottomChromeInset = useBottomChromeInset();
   const effectiveBottomInset = useChromeInset
     ? (bottomChromeInset > 0 ? bottomChromeInset : MIN_BOTTOM_CHROME_INSET)
@@ -47,6 +49,7 @@ export function Screen({ children, scroll = true, padded = true, edges = ["top"]
     <View
       style={[
         styles.content,
+        scroll ? null : { paddingTop: 12 + headerHeight },
         !scroll ? { paddingBottom: 12 + effectiveBottomInset, flex: 1 } : null,
       ]}
     >
@@ -55,7 +58,7 @@ export function Screen({ children, scroll = true, padded = true, edges = ["top"]
   ) : scroll ? (
     children
   ) : (
-    <View style={{ paddingBottom: effectiveBottomInset }}>{children}</View>
+    <View style={{ paddingTop: headerHeight, paddingBottom: effectiveBottomInset }}>{children}</View>
   );
 
   const scrollContent = (
@@ -64,6 +67,7 @@ export function Screen({ children, scroll = true, padded = true, edges = ["top"]
       contentContainerStyle={[
         styles.scrollContent,
         {
+          paddingTop: headerHeight,
           paddingBottom,
         },
       ]}

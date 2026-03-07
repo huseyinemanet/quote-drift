@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Lock, UserCircle, Wifi } from "lucide-react-native";
 
 import { Button } from "@/ui/Button";
 import { Screen } from "@/ui/Screen";
@@ -12,10 +12,10 @@ const PREVIEW_QUOTE = {
   topics: ["Stoicism", "Focus", "Clarity"],
 } as const;
 
-const TRUST_POINTS: { icon: keyof typeof Ionicons.glyphMap; label: string }[] = [
-  { icon: "wifi-outline", label: "Works offline" },
-  { icon: "person-circle-outline", label: "No account needed" },
-  { icon: "lock-closed-outline", label: "Reminders stay on device" },
+const TRUST_POINTS: { Icon: React.ComponentType<{ size: number; color: string }>; label: string }[] = [
+  { Icon: Wifi, label: "Works offline" },
+  { Icon: UserCircle, label: "No account needed" },
+  { Icon: Lock, label: "Reminders stay on device" },
 ];
 
 export function WelcomeScreen() {
@@ -69,12 +69,17 @@ export function WelcomeScreen() {
         </View>
       </View>
       <View style={styles.trustList}>
-        {TRUST_POINTS.map((point) => (
-          <View key={point.label} style={styles.trustRow}>
-            <Ionicons name={point.icon} size={20} color={colors.accent} style={styles.trustCheck} />
-            <Text style={styles.trustText}>{point.label}</Text>
-          </View>
-        ))}
+        {TRUST_POINTS.map((point) => {
+          const Icon = point.Icon;
+          return (
+            <View key={point.label} style={styles.trustRow}>
+              <View style={styles.trustCheck}>
+                <Icon size={20} color={colors.accent} />
+              </View>
+              <Text style={styles.trustText}>{point.label}</Text>
+            </View>
+          );
+        })}
       </View>
     </Screen>
   );

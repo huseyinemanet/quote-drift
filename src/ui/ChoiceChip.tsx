@@ -52,10 +52,11 @@ export function ChoiceChip({
           void selectionHaptic();
           onPress();
         }}
-        style={[
+        style={({ pressed }) => [
           styles.chip,
           selected ? styles.selected : null,
           disabled ? styles.disabled : null,
+          pressed && !disabled ? styles.chipPressed : null,
         ]}
       >
         <Text
@@ -90,6 +91,9 @@ const createStyles = (colors: ThemeTokens, compact: boolean) =>
     },
     disabled: {
       opacity: 1,
+    },
+    chipPressed: {
+      opacity: 0.82,
     },
     label: {
       color: colors.text,

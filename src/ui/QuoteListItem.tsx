@@ -1,5 +1,5 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Bookmark, Check, Copy, Share2 } from "lucide-react-native";
 
 import { selectionHaptic } from "@/core/haptics";
 import type { QuoteView } from "@/core/types";
@@ -47,17 +47,25 @@ export function QuoteListItem({
         </View>
         <View style={styles.iconActions}>
           {onCopy ? (
-            <Pressable accessibilityRole="button" onPress={onCopy} style={styles.iconButton}>
-              <Ionicons
-                name={isCopyConfirmed ? "checkmark" : "copy-outline"}
-                size={16}
-                color={isCopyConfirmed ? colors.text : colors.textMuted}
-              />
+            <Pressable
+              accessibilityRole="button"
+              onPress={onCopy}
+              style={({ pressed }) => [styles.iconButton, pressed && styles.iconButtonPressed]}
+            >
+              {isCopyConfirmed ? (
+                <Check size={16} color={colors.text} />
+              ) : (
+                <Copy size={16} color={colors.textMuted} />
+              )}
             </Pressable>
           ) : null}
           {showShare && onShare ? (
-            <Pressable accessibilityRole="button" onPress={onShare} style={styles.iconButton}>
-              <Ionicons name="share-outline" size={16} color={colors.textMuted} />
+            <Pressable
+              accessibilityRole="button"
+              onPress={onShare}
+              style={({ pressed }) => [styles.iconButton, pressed && styles.iconButtonPressed]}
+            >
+              <Share2 size={16} color={colors.textMuted} />
             </Pressable>
           ) : null}
           <Pressable
@@ -67,13 +75,12 @@ export function QuoteListItem({
               void selectionHaptic();
               onToggleSave();
             }}
-            style={styles.iconButton}
+            style={({ pressed }) => [styles.iconButton, pressed && styles.iconButtonPressed]}
           >
             {saving ? (
               <ActivityIndicator size="small" color={colors.textMuted} />
             ) : (
-              <Ionicons
-                name={quote.saved ? "bookmark" : "bookmark-outline"}
+              <Bookmark
                 size={20}
                 color={quote.saved ? colors.accent : colors.textMuted}
               />
@@ -86,7 +93,11 @@ export function QuoteListItem({
       </Text>
       {showAuthor ? (
         onPressAuthor ? (
-          <Pressable accessibilityRole="button" onPress={onPressAuthor}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={onPressAuthor}
+            style={({ pressed }) => [pressed && styles.authorLinkPressed]}
+          >
             {authorLabel}
           </Pressable>
         ) : (
@@ -131,6 +142,9 @@ const createStyles = (colors: ThemeTokens) =>
       color: colors.accent,
       textDecorationLine: "underline",
     },
+    authorLinkPressed: {
+      opacity: 0.82,
+    },
     quoteMeta: {
       gap: 2,
       flex: 1,
@@ -155,5 +169,8 @@ const createStyles = (colors: ThemeTokens) =>
       borderRadius: 15,
       alignItems: "center",
       justifyContent: "center",
+    },
+    iconButtonPressed: {
+      opacity: 0.82,
     },
   });

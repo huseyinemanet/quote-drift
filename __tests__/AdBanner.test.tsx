@@ -1,5 +1,5 @@
-jest.mock("@expo/vector-icons", () => ({
-  Ionicons: () => null,
+jest.mock("lucide-react-native", () => ({
+  X: () => null,
 }));
 
 jest.mock("@/core/ads/admob", () => ({

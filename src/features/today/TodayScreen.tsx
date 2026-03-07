@@ -1,7 +1,7 @@
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Heart, Share2 } from "lucide-react-native";
 
 import { useAppState } from "@/core/bootstrap";
 import { getDayKey } from "@/core/date";
@@ -157,8 +157,7 @@ export function TodayScreen() {
               onPress={() => handleToggleSave(todayQuote.id)}
               disabled={savingQuoteId === todayQuote.id}
             >
-              <Ionicons
-                name={todayQuote.saved ? "heart" : "heart-outline"}
+              <Heart
                 size={24}
                 color={todayQuote.saved ? colors.accent : colors.text}
                 style={styles.saveIcon}
@@ -181,8 +180,7 @@ export function TodayScreen() {
               }}
               disabled={todayShare.isPreparing}
             >
-              <Ionicons
-                name="share-outline"
+              <Share2
                 size={24}
                 color={colors.text}
                 style={styles.shareIcon}
@@ -231,8 +229,7 @@ export function TodayScreen() {
                   onPress={() => handleToggleSave(extraQuote.id)}
                   disabled={savingQuoteId === extraQuote.id}
                 >
-                  <Ionicons
-                    name={extraQuote.saved ? "heart" : "heart-outline"}
+                  <Heart
                     size={24}
                     color={extraQuote.saved ? colors.accent : colors.text}
                     style={styles.saveIcon}
@@ -255,8 +252,7 @@ export function TodayScreen() {
                   }}
                   disabled={extraShare.isPreparing}
                 >
-                  <Ionicons
-                    name="share-outline"
+                  <Share2
                     size={24}
                     color={colors.text}
                     style={styles.shareIcon}

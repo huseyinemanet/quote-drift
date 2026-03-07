@@ -1,7 +1,11 @@
 import { router, useLocalSearchParams } from "expo-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Alert,
+  Animated,
+  Appearance,
+  Dimensions,
+  Easing,
   LayoutAnimation,
   Modal,
   Platform,
@@ -12,7 +16,7 @@ import {
   Text,
   View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { ChevronRight, Circle, CircleDot, Info } from "lucide-react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 
 import { useAppState } from "@/core/bootstrap";
@@ -49,7 +53,49 @@ export function NotificationPrimerScreen() {
   const [activeField, setActiveField] = useState<TimeField | null>(null);
   const [tempTime, setTempTime] = useState<Date>(() => minuteToDate(DEFAULT_START_MINUTE));
 
+  const overlayOpacity = useRef(new Animated.Value(0)).current;
+  const sheetTranslateY = useRef(new Animated.Value(Dimensions.get("window").height)).current;
+
   const showTimePicker = activeField !== null;
+
+  useEffect(() => {
+    if (activeField != null) {
+      overlayOpacity.setValue(0);
+      sheetTranslateY.setValue(Dimensions.get("window").height);
+      Animated.parallel([
+        Animated.timing(overlayOpacity, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(sheetTranslateY, {
+          toValue: 0,
+          duration: 320,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [activeField, overlayOpacity, sheetTranslateY]);
+
+  const runCloseAnimation = (onDone?: () => void) => {
+    Animated.parallel([
+      Animated.timing(overlayOpacity, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(sheetTranslateY, {
+        toValue: Dimensions.get("window").height,
+        duration: 250,
+        easing: Easing.in(Easing.cubic),
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setActiveField(null);
+      onDone?.();
+    });
+  };
 
   const showInfo = () => {
     Alert.alert(
@@ -86,7 +132,7 @@ export function NotificationPrimerScreen() {
     setActiveField("end");
   };
 
-  const closeTimePicker = () => setActiveField(null);
+  const closeTimePicker = () => runCloseAnimation();
 
   const confirmTimePicker = () => {
     if (activeField == null) return;
@@ -102,7 +148,7 @@ export function NotificationPrimerScreen() {
         setStartMinute(Math.max(0, minute - 30));
       }
     }
-    setActiveField(null);
+    runCloseAnimation();
   };
 
   const handleTimeChange = (_: unknown, selectedDate?: Date) => {
@@ -170,8 +216,11 @@ export function NotificationPrimerScreen() {
           />
         </View>
         {!remindersEnabled ? (
-          <Pressable onPress={showInfo} style={styles.infoRow}>
-            <Ionicons name="information-circle-outline" size={20} color={colors.textMuted} />
+          <Pressable
+            onPress={showInfo}
+            style={({ pressed }) => [styles.infoRow, pressed && styles.infoRowPressed]}
+          >
+            <Info size={20} color={colors.textMuted} />
             <Text style={styles.infoText}>What happens if you skip reminders?</Text>
           </Pressable>
         ) : null}
@@ -182,14 +231,14 @@ export function NotificationPrimerScreen() {
               {FREQUENCY_OPTIONS.map((option) => (
                 <Pressable
                   key={option.value}
-                  style={styles.radioRow}
+                  style={({ pressed }) => [styles.radioRow, pressed && styles.radioRowPressed]}
                   onPress={() => setFrequency(option.value)}
                 >
-                  <Ionicons
-                    name={frequency === option.value ? "radio-button-on" : "radio-button-off"}
-                    size={20}
-                    color={frequency === option.value ? colors.text : colors.textMuted}
-                  />
+                  {frequency === option.value ? (
+                    <CircleDot size={20} color={colors.text} />
+                  ) : (
+                    <Circle size={20} color={colors.textMuted} strokeWidth={2} />
+                  )}
                   <Text
                     style={[
                       styles.radioLabel,
@@ -205,19 +254,19 @@ export function NotificationPrimerScreen() {
             <View style={styles.hoursCard}>
               <Text style={styles.hoursLabel}>Start</Text>
               <Pressable
-                style={styles.timeRow}
+                style={({ pressed }) => [styles.timeRow, pressed && styles.timeRowPressed]}
                 onPress={openStartPicker}
               >
                 <Text style={styles.timeValue}>{minutesToLabel(startMinute)}</Text>
-                <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+                <ChevronRight size={20} color={colors.textMuted} />
               </Pressable>
               <Text style={styles.hoursLabel}>End</Text>
               <Pressable
-                style={styles.timeRow}
+                style={({ pressed }) => [styles.timeRow, pressed && styles.timeRowPressed]}
                 onPress={openEndPicker}
               >
                 <Text style={styles.timeValue}>{minutesToLabel(endMinute)}</Text>
-                <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+                <ChevronRight size={20} color={colors.textMuted} />
               </Pressable>
             </View>
           </>
@@ -228,31 +277,50 @@ export function NotificationPrimerScreen() {
           <Modal
             visible
             transparent
-            animationType="slide"
+            animationType="none"
             onRequestClose={closeTimePicker}
           >
-            <Pressable style={styles.modalOverlay} onPress={closeTimePicker}>
-              <Pressable style={styles.modalContent} onPress={(e) => e.stopPropagation()}>
+            <Animated.View style={[styles.modalOverlay, { opacity: overlayOpacity }]}>
+              <Pressable style={StyleSheet.absoluteFill} onPress={closeTimePicker} />
+              <Animated.View
+                style={[
+                  styles.modalContent,
+                  { transform: [{ translateY: sheetTranslateY }] },
+                ]}
+              >
                 <View style={styles.modalHeader}>
-                  <Pressable onPress={closeTimePicker} hitSlop={12}>
+                  <Pressable
+                    onPress={closeTimePicker}
+                    hitSlop={12}
+                    style={({ pressed }) => [pressed && styles.modalButtonPressed]}
+                  >
                     <Text style={[styles.modalButton, styles.modalCancel]}>Cancel</Text>
                   </Pressable>
                   <Text style={styles.modalTitle}>
                     {activeField === "start" ? "Start time" : "End time"}
                   </Text>
-                  <Pressable onPress={confirmTimePicker} hitSlop={12}>
+                  <Pressable
+                    onPress={confirmTimePicker}
+                    hitSlop={12}
+                    style={({ pressed }) => [pressed && styles.modalButtonPressed]}
+                  >
                     <Text style={[styles.modalButton, styles.modalDone]}>Done</Text>
                   </Pressable>
                 </View>
-                <DateTimePicker
-                  value={tempTime}
-                  mode="time"
-                  display="spinner"
-                  onChange={handleTimeChange}
-                  style={styles.picker}
-                />
-              </Pressable>
-            </Pressable>
+                <View style={styles.pickerContainer}>
+                  <DateTimePicker
+                    value={tempTime}
+                    mode="time"
+                    display="spinner"
+                    onChange={handleTimeChange}
+                    style={styles.picker}
+                    themeVariant={
+                      (Appearance.getColorScheme() === "dark" ? "dark" : "light") as "light" | "dark"
+                    }
+                  />
+                </View>
+              </Animated.View>
+            </Animated.View>
           </Modal>
         ) : (
           <>
@@ -320,7 +388,7 @@ const createStyles = (colors: ThemeTokens) =>
       color: colors.text,
     },
     body: {
-      fontSize: 15,
+      fontSize: 17,
       lineHeight: 22,
       color: colors.textMuted,
     },
@@ -342,33 +410,38 @@ const createStyles = (colors: ThemeTokens) =>
       gap: 8,
       marginTop: 8,
     },
+    infoRowPressed: {
+      opacity: 0.82,
+    },
     infoText: {
       fontSize: 14,
       color: colors.textMuted,
     },
     sectionLabel: {
-      fontSize: 15,
-      fontWeight: "700",
+      fontSize: 17,
+      fontWeight: "600",
       color: colors.text,
       marginTop: 28,
       marginBottom: 8,
     },
     radioGroup: {
-      gap: 8,
+      gap: 2,
     },
     radioRow: {
       flexDirection: "row",
       alignItems: "center",
       gap: 12,
-      paddingVertical: 10,
+      paddingVertical: 6,
+    },
+    radioRowPressed: {
+      opacity: 0.8,
     },
     radioLabel: {
-      fontSize: 16,
+      fontSize: 17,
       color: colors.textMuted,
     },
     radioLabelSelected: {
-      color: colors.text,
-      fontWeight: "600",
+      color: colors.text
     },
     hoursCard: {
       gap: 8,
@@ -379,8 +452,8 @@ const createStyles = (colors: ThemeTokens) =>
       borderColor: colors.border,
     },
     hoursLabel: {
-      fontSize: 15,
-      fontWeight: "700",
+      fontSize: 17,
+      fontWeight: "400",
       color: colors.text,
     },
     timeRow: {
@@ -394,9 +467,11 @@ const createStyles = (colors: ThemeTokens) =>
       borderWidth: 1,
       borderColor: colors.border,
     },
+    timeRowPressed: {
+      opacity: 0.82,
+    },
     timeValue: {
       fontSize: 17,
-      fontWeight: "600",
       color: colors.text,
     },
     modalOverlay: {
@@ -420,13 +495,16 @@ const createStyles = (colors: ThemeTokens) =>
       borderBottomColor: colors.border,
     },
     modalTitle: {
-      fontSize: 16,
+      fontSize: 17,
       fontWeight: "600",
       color: colors.text,
     },
     modalButton: {
-      fontSize: 16,
+      fontSize: 17,
       minWidth: 64,
+    },
+    modalButtonPressed: {
+      opacity: 0.82,
     },
     modalCancel: {
       color: colors.textMuted,
@@ -435,6 +513,11 @@ const createStyles = (colors: ThemeTokens) =>
       fontWeight: "600",
       color: colors.accent,
       textAlign: "right",
+    },
+    pickerContainer: {
+      height: 216,
+      width: "100%",
+      justifyContent: "center",
     },
     picker: {
       backgroundColor: colors.background,

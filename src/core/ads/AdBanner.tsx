@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import { X } from "lucide-react-native";
 import type { ComponentType } from "react";
 import { useMemo } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
@@ -82,7 +82,7 @@ export function AdBanner({ state }: { state: AdBannerState }) {
             pressed ? styles.closeButtonPressed : null,
           ]}
         >
-          <Ionicons name="close" size={16} color={colors.textMuted} />
+          <X size={16} color={colors.textMuted} />
         </Pressable>
       </View>
     </View>

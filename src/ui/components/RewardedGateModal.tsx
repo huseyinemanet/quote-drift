@@ -9,7 +9,7 @@ import {
   Text,
   View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { PlayCircle } from "lucide-react-native";
 
 import {
   BUTTON_BORDER_RADIUS,
@@ -117,8 +117,7 @@ export function RewardedGateModal({
           ]}
         >
           <View style={styles.headerBlock}>
-            <Ionicons
-              name="play-circle"
+            <PlayCircle
               size={56}
               color={colors.accent}
               style={styles.headerIcon}
@@ -152,7 +151,13 @@ export function RewardedGateModal({
                 {isSubmitting ? "Opening..." : "Watch ad"}
               </Text>
             </Pressable>
-            <Pressable style={styles.secondaryAction} onPress={onClose}>
+            <Pressable
+              style={({ pressed }) => [
+                styles.secondaryAction,
+                pressed && styles.secondaryActionPressed,
+              ]}
+              onPress={onClose}
+            >
               <Text style={styles.secondaryActionLabel}>Not now</Text>
             </Pressable>
           </View>
@@ -236,6 +241,9 @@ const createStyles = (colors: ThemeTokens) =>
       paddingVertical: BUTTON_PADDING_VERTICAL,
       alignItems: "center",
       justifyContent: "center",
+    },
+    secondaryActionPressed: {
+      opacity: 0.82,
     },
     secondaryActionLabel: {
       color: colors.textMuted,

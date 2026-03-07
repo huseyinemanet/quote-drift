@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import { Bookmark, CloudSun, Settings } from "lucide-react-native";
 import { BlurView } from "expo-blur";
 import { Tabs } from "expo-router";
 import { useState } from "react";
@@ -9,13 +9,13 @@ import { BottomChrome } from "@/features/layout/BottomChrome";
 import { BottomChromeInsetProvider } from "@/features/layout/BottomChromeInset";
 import { useTheme } from "@/ui/theme";
 
+/** iOS nav bar: native-style blur + subtle tint (blur visible, light mode not washed out). */
 function HeaderBlurBackground() {
   const { isDark, colors } = useTheme();
   const tint = isDark ? "dark" : "light";
-  const overlayColor = isDark ? "rgba(0,0,0,0.15)" : "rgba(255,255,255,0.05)";
-  const fallbackBg = Platform.OS === "android" ? colors.surface : undefined;
+  const overlayColor = isDark ? "rgba(0,0,0,0.15)" : "rgba(246, 239, 225, 0.9)";
   return (
-    <View style={[StyleSheet.absoluteFillObject, fallbackBg && { backgroundColor: fallbackBg }]}>
+    <View style={StyleSheet.absoluteFillObject}>
       <BlurView
         tint={tint}
         intensity={60}
@@ -23,6 +23,20 @@ function HeaderBlurBackground() {
       />
       <View
         style={[StyleSheet.absoluteFillObject, { backgroundColor: overlayColor }]}
+        pointerEvents="none"
+      />
+      <View
+        style={[
+          StyleSheet.absoluteFillObject,
+          {
+            top: undefined,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: StyleSheet.hairlineWidth,
+            backgroundColor: colors.border,
+          },
+        ]}
         pointerEvents="none"
       />
     </View>
@@ -45,6 +59,20 @@ function TabBarBlurBackground() {
         style={[StyleSheet.absoluteFillObject, { backgroundColor: overlayColor }]}
         pointerEvents="none"
       />
+      <View
+        style={[
+          StyleSheet.absoluteFillObject,
+          {
+            top: undefined,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: StyleSheet.hairlineWidth,
+            backgroundColor: colors.border,
+          },
+        ]}
+        pointerEvents="none"
+      />
     </View>
   );
 }
@@ -53,22 +81,14 @@ function TabIcon({
   focused,
   color,
   size,
-  activeName,
-  inactiveName,
+  IconComponent,
 }: {
   focused: boolean;
   color: string;
   size: number;
-  activeName: React.ComponentProps<typeof Ionicons>["name"];
-  inactiveName: React.ComponentProps<typeof Ionicons>["name"];
+  IconComponent: React.ComponentType<{ size: number; color: string }>;
 }) {
-  return (
-    <Ionicons
-      name={focused ? activeName : inactiveName}
-      size={size}
-      color={color}
-    />
-  );
+  return <IconComponent size={size} color={color} />;
 }
 
 export default function TabLayout() {
@@ -88,12 +108,22 @@ export default function TabLayout() {
         )}
         screenOptions={{
           headerShown: true,
-          headerStyle: {
-            backgroundColor: "transparent",
-            borderBottomWidth: StyleSheet.hairlineWidth,
-            borderBottomColor: colors.border,
-          },
-          headerBackground: () => <HeaderBlurBackground />,
+          headerStyle: Platform.select({
+            ios: {
+              backgroundColor: "transparent",
+              borderBottomWidth: StyleSheet.hairlineWidth,
+              borderBottomColor: colors.border,
+            },
+            default: {
+              backgroundColor: colors.surface,
+              borderBottomWidth: StyleSheet.hairlineWidth,
+              borderBottomColor: colors.border,
+            },
+          }),
+          ...(Platform.OS === "ios" && {
+            headerTransparent: true,
+            headerBackground: () => <HeaderBlurBackground />,
+          }),
           headerShadowVisible: false,
           headerTintColor: colors.text,
           headerTitleStyle: {
@@ -101,21 +131,15 @@ export default function TabLayout() {
             fontWeight: "600",
             color: colors.text,
           },
-          headerLargeTitle: false,
-          headerBlurEffect: undefined,
-          contentStyle: { backgroundColor: colors.background },
           sceneStyle: { marginBottom: 0, paddingBottom: 0 },
           tabBarActiveTintColor: colors.tabActive,
           tabBarInactiveTintColor: colors.tabInactive,
-          tabBarSafeAreaInsets: { bottom: 0 },
           tabBarStyle: {
             position: "absolute",
             bottom: 0,
             left: 0,
             right: 0,
             backgroundColor: "transparent",
-            borderTopWidth: StyleSheet.hairlineWidth,
-            borderTopColor: colors.border,
             elevation: 0,
             shadowOpacity: 0,
           },
@@ -131,8 +155,7 @@ export default function TabLayout() {
                 focused={focused}
                 color={color}
                 size={24}
-                activeName="partly-sunny"
-                inactiveName="partly-sunny-outline"
+                IconComponent={CloudSun}
               />
             ),
           }}
@@ -146,8 +169,7 @@ export default function TabLayout() {
                 focused={focused}
                 color={color}
                 size={24}
-                activeName="bookmark"
-                inactiveName="bookmark-outline"
+                IconComponent={Bookmark}
               />
             ),
           }}
@@ -161,8 +183,7 @@ export default function TabLayout() {
                 focused={focused}
                 color={color}
                 size={24}
-                activeName="cog"
-                inactiveName="cog-outline"
+                IconComponent={Settings}
               />
             ),
           }}

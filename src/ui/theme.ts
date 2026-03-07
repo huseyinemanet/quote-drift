@@ -32,7 +32,7 @@ export const lightTheme: ThemeTokens = {
   textMuted: "#5d675f",
   accent: "#8b5e3c",
   accentSoft: "#d8b998",
-  border: "#d7ccb8",
+  border: "#e0d7c7",
   danger: "#8c3d39",
   success: "#4d6b4e",
   tabActive: "#1c2421",

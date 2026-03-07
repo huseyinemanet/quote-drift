@@ -97,7 +97,11 @@ export function QuoteCard({
           {quote.text}
         </Text>
         {canCollapse && onToggleExpanded ? (
-          <Pressable accessibilityRole="button" onPress={onToggleExpanded}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={onToggleExpanded}
+            style={({ pressed }) => [pressed && styles.expandPressed]}
+          >
             <Text style={[styles.expandLabel, overlay && styles.overlayMuted]}>
               {isExpanded ? "Show less" : "Read full quote"}
             </Text>
@@ -105,7 +109,11 @@ export function QuoteCard({
         ) : null}
         {!hideAuthor ? (
           onPressAuthor ? (
-            <Pressable accessibilityRole="button" onPress={onPressAuthor}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={onPressAuthor}
+              style={({ pressed }) => [pressed && styles.authorPressed]}
+            >
               {authorLabel}
             </Pressable>
           ) : (
@@ -121,7 +129,10 @@ export function QuoteCard({
         </View>
         {showAttribution ? (
           <Pressable
-            style={styles.attributionWrap}
+            style={({ pressed }) => [
+              styles.attributionWrap,
+              pressed && styles.attributionPressed,
+            ]}
             onPress={() => background.attributionUrl && Linking.openURL(background.attributionUrl)}
             accessibilityRole="link"
             accessibilityLabel={background.attribution}
@@ -189,11 +200,17 @@ const createStyles = (colors: ThemeTokens) =>
       color: colors.text,
       fontWeight: "600",
     },
+    authorPressed: {
+      opacity: 0.82,
+    },
     expandLabel: {
       fontSize: 13,
       lineHeight: 18,
       fontWeight: "500",
       color: colors.textMuted,
+    },
+    expandPressed: {
+      opacity: 0.82,
     },
     overlayMuted: {
       color: "rgba(255,255,255,0.82)",
@@ -218,6 +235,9 @@ const createStyles = (colors: ThemeTokens) =>
     attributionWrap: {
       marginTop: 8,
       alignSelf: "flex-start",
+    },
+    attributionPressed: {
+      opacity: 0.82,
     },
     attribution: {
       fontSize: 11,

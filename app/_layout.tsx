@@ -1,10 +1,11 @@
 import { SourceSerif4_400Regular } from "@expo-google-fonts/source-serif-4";
+import { BlurView } from "expo-blur";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View, Platform } from "react-native";
 import { useColorScheme } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
@@ -84,6 +85,39 @@ function RootLayoutContent() {
 function RootNavigator() {
   const { colors, isDark } = useTheme();
 
+  /** iOS nav bar: blur + subtle tint (light mode not washed out). */
+  function HeaderBlurBackground() {
+    const { colors } = useTheme();
+    const overlayColor = isDark ? "rgba(0,0,0,0.12)" : "rgba(0,0,0,0.06)";
+    return (
+      <View style={StyleSheet.absoluteFillObject}>
+        <BlurView
+          tint={isDark ? "dark" : "light"}
+          intensity={80}
+          style={StyleSheet.absoluteFillObject}
+        />
+        <View
+          style={[StyleSheet.absoluteFillObject, { backgroundColor: overlayColor }]}
+          pointerEvents="none"
+        />
+        <View
+          style={[
+            StyleSheet.absoluteFillObject,
+            {
+              top: undefined,
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: StyleSheet.hairlineWidth,
+              backgroundColor: colors.border,
+            },
+          ]}
+          pointerEvents="none"
+        />
+      </View>
+    );
+  }
+
   return (
     <>
       <StatusBar style={isDark ? "light" : "dark"} />
@@ -91,15 +125,25 @@ function RootNavigator() {
         <Stack
           screenOptions={{
             headerShown: true,
-            headerStyle: {
-              backgroundColor: colors.surface,
-              borderBottomWidth: StyleSheet.hairlineWidth,
-              borderBottomColor: colors.border,
-            },
+            headerStyle: Platform.select({
+              ios: {
+                backgroundColor: "transparent",
+                borderBottomWidth: StyleSheet.hairlineWidth,
+                borderBottomColor: colors.border,
+              },
+              default: {
+                backgroundColor: colors.surface,
+                borderBottomWidth: StyleSheet.hairlineWidth,
+                borderBottomColor: colors.border,
+              },
+            }),
+            ...(Platform.OS === "ios" && {
+              headerTransparent: true,
+              headerBackground: () => <HeaderBlurBackground />,
+            }),
             headerShadowVisible: false,
             headerTintColor: colors.text,
             headerTitleStyle: { fontSize: 17, fontWeight: "600", color: colors.text },
-            headerBackTitleVisible: true,
             contentStyle: { backgroundColor: colors.background },
           }}
         >
