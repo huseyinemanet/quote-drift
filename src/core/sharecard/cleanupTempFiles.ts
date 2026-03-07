@@ -8,10 +8,17 @@ export function getSharecardDirectory() {
   return SHARECARD_DIR;
 }
 
-export function scheduleTempFileCleanup(uri: string, delayMs = 20_000) {
-  setTimeout(() => {
+/**
+ * Schedules deletion of a temp file after a delay. Returns a function to cancel the scheduled deletion.
+ */
+export function scheduleTempFileCleanup(
+  uri: string,
+  delayMs = 20_000
+): () => void {
+  const id = setTimeout(() => {
     void FileSystem.deleteAsync(uri, { idempotent: true }).catch(() => undefined);
   }, delayMs);
+  return () => clearTimeout(id);
 }
 
 export async function cleanupTempFiles(maxAgeMs = DEFAULT_MAX_AGE_MS) {

@@ -63,7 +63,7 @@ export function NotificationPrimerScreen() {
     if (activeField != null) {
       overlayOpacity.setValue(0);
       sheetTranslateY.setValue(Dimensions.get("window").height);
-      Animated.parallel([
+      const openAnim = Animated.parallel([
         Animated.timing(overlayOpacity, {
           toValue: 1,
           duration: 200,
@@ -75,7 +75,9 @@ export function NotificationPrimerScreen() {
           easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
-      ]).start();
+      ]);
+      openAnim.start();
+      return () => openAnim.stop();
     }
   }, [activeField, overlayOpacity, sheetTranslateY]);
 

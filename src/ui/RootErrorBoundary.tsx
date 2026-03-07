@@ -2,6 +2,7 @@ import type { ErrorInfo, ReactNode } from "react";
 import { Component } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
+import { recordError } from "@/core/crashlytics";
 import { lightTheme } from "@/ui/theme";
 
 type Props = { children: ReactNode };
@@ -18,6 +19,7 @@ export class RootErrorBoundary extends Component<Props, State> {
     if (__DEV__) {
       console.error("RootErrorBoundary caught:", error, errorInfo);
     }
+    recordError(error, errorInfo.componentStack ?? undefined);
   }
 
   render() {

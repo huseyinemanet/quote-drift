@@ -159,19 +159,25 @@ export function AppProvider({ children }: PropsWithChildren) {
   const [selectedTopics, setSelectedTopicsState] = useState<string[]>([]);
   const [savedCount, setSavedCount] = useState(0);
 
-  const refreshAllInternal = async (shouldSyncWidget: boolean) => {
+  const refreshAllInternal = async (
+    shouldSyncWidget: boolean,
+    isCancelled?: () => boolean
+  ) => {
     try {
       const nextSnapshot = await readSnapshot();
+      if (isCancelled?.()) return;
       setSnapshot(nextSnapshot);
       setTopics(await getAvailableTopics());
       setSavedCount(await getSavedCount());
       setStreak(await getDaysReadStreak());
 
       const rawTopics = await getAppState(APP_STATE_KEYS.selectedTopics);
+      if (isCancelled?.()) return;
       setSelectedTopicsState(rawTopics ? (JSON.parse(rawTopics) as string[]) : []);
 
       if (nextSnapshot.state === "ready" || nextSnapshot.state === "exhausted") {
         const primary = await getOrCreateTodayQuote(getDayKey());
+        if (isCancelled?.()) return;
         if (primary.type === "success") {
           setTodayQuote(primary.data);
           if (shouldSyncWidget) {
@@ -190,7 +196,9 @@ export function AppProvider({ children }: PropsWithChildren) {
             });
           }
         }
-        setExtraQuote(await getExtraTodayQuote(getDayKey()));
+        const extra = await getExtraTodayQuote(getDayKey());
+        if (isCancelled?.()) return;
+        setExtraQuote(extra);
       } else {
         setTodayQuote(null);
         setExtraQuote(null);
@@ -205,6 +213,7 @@ export function AppProvider({ children }: PropsWithChildren) {
       if (__DEV__) {
         console.error("Bootstrap refreshAll failed:", err);
       }
+      if (isCancelled?.()) return;
       const message = err instanceof Error ? err.message : String(err);
       setSnapshot((current) => ({
         ...current,
@@ -219,7 +228,11 @@ export function AppProvider({ children }: PropsWithChildren) {
   };
 
   useEffect(() => {
-    void refreshAll();
+    let cancelled = false;
+    void refreshAllInternal(true, () => cancelled);
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -323,13 +336,19 @@ export function AppProvider({ children }: PropsWithChildren) {
   );
 
   useEffect(() => {
+    let cancelled = false;
     void (async () => {
       const status = await getNotificationPermissionStatus();
+      if (cancelled) return;
       if (status !== snapshot.notificationSettings.permission_status) {
         const next = await persistNotificationSettings({ permission_status: status });
+        if (cancelled) return;
         setSnapshot((current) => ({ ...current, notificationSettings: next }));
       }
     })();
+    return () => {
+      cancelled = true;
+    };
   }, [snapshot.notificationSettings.permission_status]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

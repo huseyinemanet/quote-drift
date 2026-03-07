@@ -22,7 +22,13 @@ export function LibraryScreen() {
   const [savingQuoteId, setSavingQuoteId] = useState<string | null>(null);
 
   useEffect(() => {
-    void loadLibrary({ query, topic, savedOnly }).then(setResults);
+    let cancelled = false;
+    void loadLibrary({ query, topic, savedOnly }).then((data) => {
+      if (!cancelled) setResults(data);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [query, topic, savedOnly, loadLibrary]);
 
   const handleToggleSave = async (quoteId: string) => {

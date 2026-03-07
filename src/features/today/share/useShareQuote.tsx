@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import ViewShot from "react-native-view-shot";
 
@@ -10,8 +10,16 @@ import { StoryCard } from "@/ui/components/StoryCard";
 
 export function useShareQuote(quote: ShareableQuote | null) {
   const captureRef = useRef<ViewShot | null>(null);
+  const cancelTempCleanupRef = useRef<(() => void) | null>(null);
   const [isPreparing, setIsPreparing] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      cancelTempCleanupRef.current?.();
+      cancelTempCleanupRef.current = null;
+    };
+  }, []);
 
   const showToast = (message: string) => {
     setToastMessage(message);
@@ -33,12 +41,15 @@ export function useShareQuote(quote: ShareableQuote | null) {
       return;
     }
 
+    cancelTempCleanupRef.current?.();
+    cancelTempCleanupRef.current = null;
+
     setIsPreparing(true);
 
     try {
       const uri = await captureImage();
       await shareImageFile(uri);
-      scheduleTempFileCleanup(uri);
+      cancelTempCleanupRef.current = scheduleTempFileCleanup(uri);
     } catch {
       showToast("Couldn't prepare the story image. Please try again.");
     } finally {

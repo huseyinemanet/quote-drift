@@ -20,9 +20,11 @@ const baseConfig: ExpoConfig = {
   ios: {
     supportsTablet: true,
     bundleIdentifier: "com.huseyinemanet.quotify",
+    googleServicesFile: "./GoogleService-Info.plist",
   },
   android: {
     package: "com.huseyinemanet.quotify",
+    googleServicesFile: "./google-services.json",
     adaptiveIcon: {
       backgroundColor: "#ECE0CD",
       foregroundImage: "./assets/android-icon-foreground.png",
@@ -48,6 +50,14 @@ const baseConfig: ExpoConfig = {
       },
     ],
     "expo-asset",
+    "@react-native-firebase/app",
+    "@react-native-firebase/crashlytics",
+    [
+      "expo-build-properties",
+      {
+        ios: { useFrameworks: "static" },
+      },
+    ],
   ],
   extra: {
     supportUrl: "https://www.example.com/",
