@@ -222,8 +222,7 @@ export function SettingsScreen() {
   };
 
   return (
-    <Screen>
-      <Text style={styles.title}>Settings</Text>
+    <Screen edges={["bottom"]}>
       {denied ? (
         <Banner
           title="Reminders are denied at the system level"
@@ -328,11 +327,6 @@ export function SettingsScreen() {
 
 const createStyles = (colors: ThemeTokens) =>
   StyleSheet.create({
-    title: {
-      fontSize: 32,
-      fontWeight: "700",
-      color: colors.text,
-    },
     section: {
       backgroundColor: colors.surface,
       borderWidth: 1,

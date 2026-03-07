@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import { useState } from "react";
+import { StyleSheet } from "react-native";
 
 import { useAdBanner } from "@/core/ads/useAdBanner";
 import { BottomChrome } from "@/features/layout/BottomChrome";
@@ -45,7 +46,22 @@ export default function TabLayout() {
           />
         )}
         screenOptions={{
-          headerShown: false,
+          headerShown: true,
+          headerStyle: {
+            backgroundColor: colors.surface,
+            borderBottomWidth: StyleSheet.hairlineWidth,
+            borderBottomColor: colors.border,
+          },
+          headerShadowVisible: false,
+          headerTintColor: colors.text,
+          headerTitleStyle: {
+            fontSize: 17,
+            fontWeight: "600",
+            color: colors.text,
+          },
+          headerLargeTitle: false,
+          headerBlurEffect: undefined,
+          contentStyle: { backgroundColor: colors.background },
           tabBarActiveTintColor: colors.tabActive,
           tabBarInactiveTintColor: colors.tabInactive,
           tabBarStyle: {

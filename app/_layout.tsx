@@ -4,7 +4,7 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
-import { View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { useColorScheme } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
@@ -88,14 +88,28 @@ function RootNavigator() {
     <>
       <StatusBar style={isDark ? "light" : "dark"} />
       <View style={{ flex: 1, backgroundColor: colors.background }}>
-        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}>
-          <Stack.Screen name="index" />
-          <Stack.Screen name="loading" />
-          <Stack.Screen name="fatal-data" />
-          <Stack.Screen name="exhausted" />
-          <Stack.Screen name="author/[authorId]" />
-          <Stack.Screen name="(onboarding)" />
-          <Stack.Screen name="(app)" />
+        <Stack
+          screenOptions={{
+            headerShown: true,
+            headerStyle: {
+              backgroundColor: colors.surface,
+              borderBottomWidth: StyleSheet.hairlineWidth,
+              borderBottomColor: colors.border,
+            },
+            headerShadowVisible: false,
+            headerTintColor: colors.text,
+            headerTitleStyle: { fontSize: 17, fontWeight: "600", color: colors.text },
+            headerBackTitleVisible: true,
+            contentStyle: { backgroundColor: colors.background },
+          }}
+        >
+          <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen name="loading" options={{ headerShown: false }} />
+          <Stack.Screen name="fatal-data" options={{ title: "Error" }} />
+          <Stack.Screen name="exhausted" options={{ title: "Quotes" }} />
+          <Stack.Screen name="author/[authorId]" options={{ title: "Author" }} />
+          <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
+          <Stack.Screen name="(app)" options={{ headerShown: false }} />
         </Stack>
       </View>
     </>

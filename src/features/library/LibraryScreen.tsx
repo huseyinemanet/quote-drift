@@ -35,11 +35,10 @@ export function LibraryScreen() {
   };
 
   return (
-    <Screen scroll={results.length > 0}>
+    <Screen scroll={results.length > 0} edges={["bottom"]}>
       {results.length === 0 ? (
         <View style={styles.emptyStateRoot}>
           <View style={styles.header}>
-            <Text style={styles.title}>Library</Text>
             <Text style={styles.subtitle}>
               {savedOnly
                 ? `${savedCount} saved quotes in your library`
@@ -104,7 +103,6 @@ export function LibraryScreen() {
       ) : (
         <>
           <View style={styles.header}>
-            <Text style={styles.title}>Library</Text>
             <Text style={styles.subtitle}>
               {savedOnly
                 ? `${savedCount} saved quotes in your library`
@@ -178,12 +176,7 @@ export function LibraryScreen() {
 const createStyles = (colors: ThemeTokens) =>
   StyleSheet.create({
     header: {
-      gap: 4,
-    },
-    title: {
-      fontSize: 32,
-      fontWeight: "700",
-      color: colors.text,
+      gap: 2,
     },
     subtitle: {
       fontSize: 14,

@@ -44,6 +44,7 @@ export function TopicsScreen() {
 
   return (
     <Screen
+      useChromeInset={false}
       stickyFooter={
         <Button
           label="Continue"

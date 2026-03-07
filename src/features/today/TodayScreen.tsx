@@ -61,7 +61,7 @@ export function TodayScreen() {
 
   if (!todayQuote) {
     return (
-      <Screen>
+      <Screen edges={["bottom"]}>
         <EmptyState
           title="Today is waiting on a quote"
           body="The collection may be exhausted. Open the recovery screen to restart with repeats."
@@ -85,9 +85,8 @@ export function TodayScreen() {
         : "Day 1 starts today";
 
   return (
-    <Screen>
+    <Screen edges={["bottom"]}>
       <View style={styles.header}>
-        <Text style={styles.title}>Today</Text>
         <Text style={styles.subtitle}>{streakLabel}</Text>
       </View>
       {reminderOff ? (
@@ -247,12 +246,7 @@ export function TodayScreen() {
 const createStyles = (colors: ThemeTokens) =>
   StyleSheet.create({
     header: {
-      gap: 4,
-    },
-    title: {
-      fontSize: 32,
-      fontWeight: "700",
-      color: colors.text,
+      gap: 2,
     },
     subtitle: {
       fontSize: 14,

@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { router, useLocalSearchParams } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { router, useLocalSearchParams, useNavigation } from "expo-router";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { getAuthorById, getAuthorQuoteCount, getQuotesByAuthorId } from "@/core/authors";
 import { copyQuoteText, shareQuoteText } from "@/core/sharecard/quoteText";
@@ -43,8 +42,10 @@ export function AuthorScreen() {
     () => (Array.isArray(backLabel) ? backLabel[0] : backLabel) ?? "Back",
     [backLabel]
   );
+  const navigation = useNavigation();
   const { toggleSave } = useAppState();
   const [sort, setSort] = useState<AuthorQuoteSort>("default");
+  const [sortRefreshing, setSortRefreshing] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [copiedQuoteId, setCopiedQuoteId] = useState<string | null>(null);
   const [savingQuoteId, setSavingQuoteId] = useState<string | null>(null);
@@ -72,6 +73,8 @@ export function AuthorScreen() {
 
   useEffect(() => {
     let cancelled = false;
+    const isSortOnlyRefresh =
+      state.status === "ready" && state.author.id === normalizedAuthorId;
 
     const load = async () => {
       if (!normalizedAuthorId) {
@@ -79,11 +82,23 @@ export function AuthorScreen() {
         return;
       }
 
-      setState({ status: "loading" });
-      const author = await getAuthorById(normalizedAuthorId);
+      if (!isSortOnlyRefresh) {
+        setState({ status: "loading" });
+      } else {
+        setSortRefreshing(true);
+      }
+
+      const author =
+        isSortOnlyRefresh && state.status === "ready"
+          ? state.author
+          : await getAuthorById(normalizedAuthorId);
+
       if (!author) {
         if (!cancelled) {
           setState({ status: "not-found" });
+        }
+        if (isSortOnlyRefresh) {
+          setSortRefreshing(false);
         }
         return;
       }
@@ -94,12 +109,19 @@ export function AuthorScreen() {
       ]);
 
       if (!cancelled) {
-        setState({
-          status: "ready",
-          author,
-          quoteCount,
-          quotes,
-        });
+        if (isSortOnlyRefresh) {
+          setState((prev) =>
+            prev.status === "ready" ? { ...prev, quoteCount, quotes } : prev
+          );
+          setSortRefreshing(false);
+        } else {
+          setState({
+            status: "ready",
+            author,
+            quoteCount,
+            quotes,
+          });
+        }
       }
     };
 
@@ -107,8 +129,24 @@ export function AuthorScreen() {
 
     return () => {
       cancelled = true;
+      if (isSortOnlyRefresh) {
+        setSortRefreshing(false);
+      }
     };
   }, [normalizedAuthorId, sort]);
+
+  useEffect(() => {
+    navigation.setOptions({ headerBackTitle: normalizedBackLabel });
+  }, [navigation, normalizedBackLabel]);
+
+  useEffect(() => {
+    if (state.status === "ready") {
+      navigation.setOptions({
+        title: state.author.name,
+        headerBackTitle: normalizedBackLabel,
+      });
+    }
+  }, [state.status, state.status === "ready" ? state.author.name : "", normalizedBackLabel, navigation]);
 
   const handleToggleSave = async (quoteId: string) => {
     setSavingQuoteId(quoteId);
@@ -145,26 +183,17 @@ export function AuthorScreen() {
 
   if (state.status === "loading") {
     return (
-      <Screen>
-        <Pressable style={styles.backLink} onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={18} color={colors.text} />
-          <Text style={styles.backLabel}>{normalizedBackLabel}</Text>
-        </Pressable>
-        <EmptyState
-          title="Loading author"
-          body="Gathering quotes for this author."
-        />
+      <Screen edges={["bottom"]}>
+        <View style={styles.spinnerWrap}>
+          <ActivityIndicator size="large" color={colors.accent} />
+        </View>
       </Screen>
     );
   }
 
   if (state.status === "not-found") {
     return (
-      <Screen>
-        <Pressable style={styles.backLink} onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={18} color={colors.text} />
-          <Text style={styles.backLabel}>{normalizedBackLabel}</Text>
-        </Pressable>
+      <Screen edges={["bottom"]}>
         <EmptyState
           title="Author not found"
           body="This author page is unavailable or the link is no longer valid."
@@ -176,15 +205,8 @@ export function AuthorScreen() {
   const { author, quoteCount, quotes } = state;
 
   return (
-    <Screen>
-      <View style={styles.navRow}>
-        <Pressable style={styles.backLink} onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={18} color={colors.text} />
-          <Text style={styles.backLabel}>{normalizedBackLabel}</Text>
-        </Pressable>
-      </View>
-      <View style={styles.headerBlock}>
-        <Text style={styles.title}>{author.name}</Text>
+    <Screen edges={["bottom"]}>
+      <View style={styles.quoteCountRow}>
         <Text style={styles.subtitle}>{quoteCount} quotes</Text>
       </View>
       {author.shortBio || author.description ? (
@@ -211,6 +233,11 @@ export function AuthorScreen() {
           ))}
         </ScrollView>
       </View>
+      {sortRefreshing ? (
+        <View style={styles.spinnerAboveCards}>
+          <ActivityIndicator size="large" color={colors.accent} />
+        </View>
+      ) : null}
       {quotes.length === 0 ? (
         <EmptyState
           title="No quotes here yet"
@@ -238,31 +265,14 @@ export function AuthorScreen() {
 
 const createStyles = (colors: ThemeTokens) =>
   StyleSheet.create({
-    navRow: {
-      minHeight: 32,
+    spinnerWrap: {
+      flex: 1,
       justifyContent: "center",
-      marginTop: -2,
-    },
-    backLink: {
-      flexDirection: "row",
       alignItems: "center",
-      alignSelf: "flex-start",
-      gap: 2,
     },
-    backLabel: {
-      fontSize: 16,
-      lineHeight: 20,
-      color: colors.text,
-      fontWeight: "500",
-    },
-    headerBlock: {
-      gap: 4,
-      paddingTop: 4,
-    },
-    title: {
-      fontSize: 32,
-      fontWeight: "700",
-      color: colors.text,
+    quoteCountRow: {
+      marginTop: -4,
+      marginBottom: 2,
     },
     subtitle: {
       fontSize: 14,
@@ -292,5 +302,10 @@ const createStyles = (colors: ThemeTokens) =>
     sortScroller: {
       gap: 10,
       paddingHorizontal: 20,
+    },
+    spinnerAboveCards: {
+      paddingVertical: 24,
+      alignItems: "center",
+      justifyContent: "center",
     },
   });

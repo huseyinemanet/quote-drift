@@ -33,7 +33,10 @@ export function BottomChrome({
 
   useEffect(() => {
     onInsetChange(chromeHeight);
-  }, [chromeHeight, onInsetChange]);
+    if (__DEV__ && chromeHeight > 0) {
+      console.log("[BottomChrome] tabBarHeight:", tabBarHeight, "chromeHeight:", chromeHeight);
+    }
+  }, [chromeHeight, onInsetChange, tabBarHeight]);
 
   useEffect(() => {
     if (previousTabIndex.current === null) {

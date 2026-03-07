@@ -24,6 +24,7 @@ export function WelcomeScreen() {
 
   return (
     <Screen
+      useChromeInset={false}
       stickyFooter={
         <View style={styles.ctaBlock}>
           <Button

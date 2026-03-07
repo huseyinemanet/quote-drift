@@ -88,6 +88,7 @@ export function NotificationPrimerScreen() {
 
   return (
     <Screen
+      useChromeInset={false}
       stickyFooter={
         <>
           <Button
@@ -163,21 +164,30 @@ export function NotificationPrimerScreen() {
             <View style={styles.hoursCard}>
               <Text style={styles.hoursLabel}>Start</Text>
               {Platform.OS === "ios" ? (
-                <View style={styles.timeValueRow}>
-                  <Text style={styles.timeValueText}>{minutesToLabel(startMinute)}</Text>
-                  <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
-                </View>
-              ) : (
-                <Text style={styles.timeValueText}>{minutesToLabel(startMinute)}</Text>
-              )}
-              {Platform.OS === "ios" ? (
-                <DateTimePicker
-                  value={minuteToDate(startMinute)}
-                  mode="time"
-                  display="spinner"
-                  onChange={onStartChange}
-                  maximumDate={minuteToDate(endMinute - 30)}
-                />
+                <>
+                  <Pressable
+                    style={styles.timeValueRow}
+                    onPress={() => {
+                      setShowEndPicker(false);
+                      setShowStartPicker(true);
+                    }}
+                  >
+                    <Text style={styles.timeValueText}>{minutesToLabel(startMinute)}</Text>
+                    <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+                  </Pressable>
+                  {showStartPicker && (
+                    <DateTimePicker
+                      value={minuteToDate(startMinute)}
+                      mode="time"
+                      display="spinner"
+                      onChange={(_, selectedDate) => {
+                        onStartChange(_, selectedDate);
+                        setShowStartPicker(false);
+                      }}
+                      maximumDate={minuteToDate(endMinute - 30)}
+                    />
+                  )}
+                </>
               ) : (
                 <>
                   <Pressable
@@ -203,21 +213,30 @@ export function NotificationPrimerScreen() {
               )}
               <Text style={styles.hoursLabel}>End</Text>
               {Platform.OS === "ios" ? (
-                <View style={styles.timeValueRow}>
-                  <Text style={styles.timeValueText}>{minutesToLabel(endMinute)}</Text>
-                  <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
-                </View>
-              ) : (
-                <Text style={styles.timeValueText}>{minutesToLabel(endMinute)}</Text>
-              )}
-              {Platform.OS === "ios" ? (
-                <DateTimePicker
-                  value={minuteToDate(endMinute)}
-                  mode="time"
-                  display="spinner"
-                  onChange={onEndChange}
-                  minimumDate={minuteToDate(startMinute + 30)}
-                />
+                <>
+                  <Pressable
+                    style={styles.timeValueRow}
+                    onPress={() => {
+                      setShowStartPicker(false);
+                      setShowEndPicker(true);
+                    }}
+                  >
+                    <Text style={styles.timeValueText}>{minutesToLabel(endMinute)}</Text>
+                    <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+                  </Pressable>
+                  {showEndPicker && (
+                    <DateTimePicker
+                      value={minuteToDate(endMinute)}
+                      mode="time"
+                      display="spinner"
+                      onChange={(_, selectedDate) => {
+                        onEndChange(_, selectedDate);
+                        setShowEndPicker(false);
+                      }}
+                      minimumDate={minuteToDate(startMinute + 30)}
+                    />
+                  )}
+                </>
               ) : (
                 <>
                   <Pressable
