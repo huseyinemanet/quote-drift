@@ -42,7 +42,7 @@ export function LibraryScreen() {
             <Text style={styles.subtitle}>
               {savedOnly
                 ? `${savedCount} saved quotes in your library`
-                : "Search quotes, authors, or saved items"}
+                : "Search your library"}
             </Text>
           </View>
           <View style={styles.modeRow}>
@@ -106,7 +106,7 @@ export function LibraryScreen() {
             <Text style={styles.subtitle}>
               {savedOnly
                 ? `${savedCount} saved quotes in your library`
-                : "Search quotes, authors, or saved items"}
+                : "Search your library"}
             </Text>
           </View>
           <View style={styles.modeRow}>
@@ -177,6 +177,7 @@ const createStyles = (colors: ThemeTokens) =>
   StyleSheet.create({
     header: {
       gap: 2,
+      marginBottom: 4,
     },
     subtitle: {
       fontSize: 14,
@@ -197,6 +198,7 @@ const createStyles = (colors: ThemeTokens) =>
     },
     topicSection: {
       gap: 10,
+      marginTop: 12,
       marginHorizontal: -20,
     },
     topicLabel: {

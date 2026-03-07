@@ -99,7 +99,7 @@ export function TopicsScreen() {
         <Text style={styles.selectedLabel}>Your current mix</Text>
         <Text style={styles.selectedText}>
           {selected.length > 0
-            ? `You'll see more quotes about ${formatTopicList(selected)}.`
+            ? `You'll see more quotes about ${formatTopicList(selected)} first.`
             : "You can skip for now and personalise later in Settings."}
         </Text>
       </View>

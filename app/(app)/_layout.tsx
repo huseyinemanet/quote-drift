@@ -74,11 +74,11 @@ export default function TabLayout() {
           name="today"
           options={{
             title: "Today",
-            tabBarIcon: ({ focused, color, size }) => (
+            tabBarIcon: ({ focused, color }) => (
               <TabIcon
                 focused={focused}
                 color={color}
-                size={size}
+                size={24}
                 activeName="partly-sunny"
                 inactiveName="partly-sunny-outline"
               />
@@ -89,11 +89,11 @@ export default function TabLayout() {
           name="library"
           options={{
             title: "Library",
-            tabBarIcon: ({ focused, color, size }) => (
+            tabBarIcon: ({ focused, color }) => (
               <TabIcon
                 focused={focused}
                 color={color}
-                size={size}
+                size={24}
                 activeName="bookmark"
                 inactiveName="bookmark-outline"
               />
@@ -104,11 +104,11 @@ export default function TabLayout() {
           name="settings"
           options={{
             title: "Settings",
-            tabBarIcon: ({ focused, color, size }) => (
+            tabBarIcon: ({ focused, color }) => (
               <TabIcon
                 focused={focused}
                 color={color}
-                size={size}
+                size={24}
                 activeName="cog"
                 inactiveName="cog-outline"
               />

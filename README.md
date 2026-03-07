@@ -1,109 +1,109 @@
 # Quotify
 
-Offline-first daily quote app for iOS and Android. One quote per day, a searchable library, optional reminders, and an optional extra quote. No account required.
+Günlük alıntı uygulaması. Önce çevrimdışı çalışır, hesap istemez. Her gün bir alıntı, aranabilir kütüphane, isteğe bağlı hatırlatmalar ve günde bir tane ekstra alıntı hakkı var. Hepsi bu.
 
-**Stack:** Expo 55 · React Native 0.83 · TypeScript · Expo Router · SQLite · local notifications · rewarded ads (one extra quote) · iOS home screen widget
-
----
-
-## What it does
-
-- **Today** — Quote of the day, save/share, read streak, one optional extra quote (rewarded ad).
-- **Library** — Search, topic filters, saved-only mode, author pages.
-- **Settings** — Reminders (frequency, active hours, pause), test notification, support/privacy/sources, rate app.
-- **Widget** — Small and medium iOS home screen widgets for today’s quote.
-
-Everything works offline. Daily quote and library are free; the single extra quote per day is gated by an optional rewarded ad.
+**Teknik:** Expo 55 · React Native 0.83 · TypeScript · Expo Router · SQLite · yerel bildirimler · ödüllü reklam (ekstra alıntı için) · iOS ana ekran widget’ı
 
 ---
 
-## Quick start
+## Ne yapıyor?
+
+- **Bugün** — Günün alıntısı, kaydet / paylaş, okuma serisi, isteğe bağlı bir alıntı daha (ödüllü reklamla açılıyor).
+- **Kütüphane** — Arama, konu filtreleri, sadece kaydettiklerim, yazar sayfaları.
+- **Ayarlar** — Hatırlatmalar (sıklık, aktif saatler, duraklatma), test bildirimi, destek / gizlilik / kaynaklar, uygulamayı değerlendir.
+- **Widget** — iOS ana ekranda küçük ve orta boy widget’lar; günün alıntısını gösteriyor.
+
+Her şey çevrimdışı çalışıyor. Günlük alıntı ve kütüphane ücretsiz; günde bir tane ekstra alıntı isteğe bağlı ödüllü reklamla açılıyor.
+
+---
+
+## Hızlı başlangıç
 
 ```bash
 npm install
 npm start
 ```
 
-Then:
+Sonrası:
 
-- **iOS:** `npm run ios` (Xcode required)
-- **Android:** `npm run android` (Android Studio required)
+- **iOS:** `npm run ios` (Xcode gerekli)
+- **Android:** `npm run android` (Android Studio gerekli)
 - **Web:** `npm run web`
 
 ---
 
-## Project layout
+## Proje yapısı
 
 ```
-app/              Expo Router (screens, tabs, onboarding)
-src/core/         DB, quote engine, ads, notifications, bootstrap, widget sync
-src/features/     Today, Library, Settings, onboarding, layout
-src/ui/           Theme, Screen, Button, QuoteCard, etc.
-assets/           Bundled quotes.json and assets
-widgets/           iOS widget entrypoints
-docs/             Architecture, ads, sharing, QA, submission
-scripts/          build-quotes (corpus from author-quote.txt)
+app/              Ekranlar, sekmeler, onboarding (Expo Router)
+src/core/         Veritabanı, alıntı motoru, reklamlar, bildirimler, bootstrap, widget senkronu
+src/features/     Bugün, Kütüphane, Ayarlar, onboarding, layout
+src/ui/           Tema, ekran sarmalayıcı, butonlar, QuoteCard vb.
+assets/           quotes.json ve diğer varlıklar
+widgets/          iOS widget giriş noktaları
+docs/             Mimari, reklamlar, paylaşım, QA, gönderim notları
+scripts/          build-quotes (yazar–alıntı dosyasından corpus üretir)
 ```
 
 ---
 
-## Scripts
+## Komutlar
 
-| Command | Description |
-|--------|-------------|
-| `npm start` | Start Metro |
-| `npm run ios` | Run iOS app |
-| `npm run android` | Run Android app |
-| `npm run web` | Run web |
-| `npm run typecheck` | TypeScript check |
-| `npm test` | Jest tests |
-| `npm run build:quotes -- "<path-to-tsv>" [limit]` | Build `assets/quotes.json` from author-quote file |
-
----
-
-## Config
-
-- **App identity:** `app.json` + `app.config.ts` (name Quotify, scheme `quotify`, bundle ids).
-- **URLs:** Support, privacy, sources via `expo.extra` in config; set before release.
-- **Ads:** `EXPO_PUBLIC_ADS_ENV`, AdMob app/unit IDs; see [docs/ads.md](docs/ads.md). Rewarded ads need a native build (not Expo Go).
-- **Widget:** `expo-widgets` in `app.config.ts`; DailyQuoteWidget, systemSmall/systemMedium.
+| Komut | Açıklama |
+|--------|-----------|
+| `npm start` | Metro’yu başlatır |
+| `npm run ios` | iOS uygulamasını çalıştırır |
+| `npm run android` | Android uygulamasını çalıştırır |
+| `npm run web` | Web’de açar |
+| `npm run typecheck` | TypeScript kontrolü |
+| `npm test` | Jest testleri |
+| `npm run build:quotes -- "<tsv-dosya-yolu>" [limit]` | Yazar–alıntı dosyasından `assets/quotes.json` üretir |
 
 ---
 
-## Notifications
+## Yapılandırma
 
-Local-only. Optional reminders: 1–3 per day, configurable active hours (default 9:00–21:00), pause. App works fully if permission is denied.
+- **Uygulama kimliği:** `app.json` ve `app.config.ts` (isim Quotify, scheme `quotify`, bundle id’ler).
+- **URL’ler:** Destek, gizlilik, kaynaklar `expo.extra` üzerinden; yayına almadan önce doldurulmalı.
+- **Reklamlar:** `EXPO_PUBLIC_ADS_ENV`, AdMob uygulama / birim ID’leri; [docs/ads.md](docs/ads.md). Ödüllü reklamlar native build ister (Expo Go’da çalışmaz).
+- **Widget:** `app.config.ts` içinde `expo-widgets`; DailyQuoteWidget, systemSmall / systemMedium.
 
 ---
 
-## Quote corpus
+## Bildirimler
 
-Bundled in `assets/quotes.json`. Build from a tab-separated file (author, quote):
+Sadece yerel. Hatırlatmalar isteğe bağlı: günde 1–3 kez, aktif saatler ayarlanabilir (varsayılan 09:00–21:00), duraklatma var. İzin verilmezse uygulama yine tam çalışır.
+
+---
+
+## Alıntı verisi
+
+`assets/quotes.json` içinde paketleniyor. Sekmeyle ayrılmış (yazar, alıntı) bir dosyadan üretmek için:
 
 ```bash
-npm run build:quotes -- "/path/to/author-quote.txt" 5000
+npm run build:quotes -- "/yol/author-quote.txt" 5000
 ```
 
 ---
 
-## Docs
+## Dokümanlar
 
-- [Architecture](docs/architecture.md)
-- [Ads](docs/ads.md)
-- [Sharing](docs/sharing.md)
-- [QA checklist](docs/qa-checklist.md)
-- [Review notes](docs/review-notes.md)
-- [Submission checklist](docs/submission.md)
+- [Mimari](docs/architecture.md)
+- [Reklamlar](docs/ads.md)
+- [Paylaşım](docs/sharing.md)
+- [QA listesi](docs/qa-checklist.md)
+- [İnceleme notları](docs/review-notes.md)
+- [Gönderim listesi](docs/submission.md)
 - [Standalone build](docs/standalone-build.md)
 
 ---
 
-## Before release
+## Yayına almadan önce
 
-- Set production support/privacy/source URLs.
-- Configure production AdMob IDs.
-- Test reminders and rewarded ads on a real device.
-- Confirm widget bundle/group ids match iOS bundle id.
+- Destek / gizlilik / kaynak URL’lerini canlı değerlerle doldur.
+- AdMob ID’lerini production için ayarla.
+- Hatırlatmaları ve ödüllü reklamı gerçek cihazda dene.
+- Widget bundle / group id’lerinin iOS bundle id ile uyumlu olduğunu kontrol et.
 
 ---
 

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { router, useLocalSearchParams, useNavigation } from "expo-router";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View, ActivityIndicator } from "react-native";
 
 import { getAuthorById, getAuthorQuoteCount, getQuotesByAuthorId } from "@/core/authors";
 import { copyQuoteText, shareQuoteText } from "@/core/sharecard/quoteText";
@@ -229,6 +229,7 @@ export function AuthorScreen() {
               label={option.label}
               selected={sort === option.value}
               onPress={() => setSort(option.value)}
+              compact
             />
           ))}
         </ScrollView>

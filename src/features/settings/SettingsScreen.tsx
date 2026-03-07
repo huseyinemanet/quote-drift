@@ -293,7 +293,7 @@ export function SettingsScreen() {
         <Pressable style={styles.linkRow} onPress={handleShowOnboardingAgain}>
           <View style={styles.settingCopy}>
             <Text style={styles.linkLabel}>Show onboarding again</Text>
-            <Text style={styles.rowSubtitle}>View the welcome and topic selection screens again</Text>
+            <Text style={styles.rowSubtitle}>See the welcome screens again</Text>
           </View>
           <Text style={styles.linkChevron}>›</Text>
         </Pressable>

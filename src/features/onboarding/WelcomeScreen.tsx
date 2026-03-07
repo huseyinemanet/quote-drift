@@ -141,7 +141,7 @@ const createStyles = (colors: ThemeTokens) =>
     },
     ctaBlock: {
       marginTop: 4,
-      gap: 6,
+      gap: 4,
     },
     ctaMicrocopy: {
       fontSize: 13,
@@ -149,18 +149,19 @@ const createStyles = (colors: ThemeTokens) =>
       textAlign: "center",
     },
     previewPanel: {
-      gap: 14,
+      gap: 10,
       marginTop: 6,
       padding: 14,
+      paddingTop: 12,
       borderRadius: 16,
       backgroundColor: colors.surface,
       borderWidth: 1,
       borderColor: colors.border,
     },
     previewTopicLabel: {
-      fontSize: 12,
-      fontWeight: "700",
-      letterSpacing: 1,
+      fontSize: 11,
+      fontWeight: "600",
+      letterSpacing: 0.5,
       textTransform: "uppercase",
       color: colors.textMuted,
     },
@@ -175,7 +176,8 @@ const createStyles = (colors: ThemeTokens) =>
       width: "100%",
     },
     previewQuoteBlock: {
-      gap: 8,
+      gap: 6,
+      marginTop: -2,
     },
     quoteMark: {
       fontSize: 32,

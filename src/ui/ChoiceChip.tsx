@@ -15,14 +15,16 @@ export function ChoiceChip({
   selected,
   onPress,
   disabled = false,
+  compact = false,
 }: {
   label: string;
   selected: boolean;
   onPress: () => void;
   disabled?: boolean;
+  compact?: boolean;
 }) {
   const { colors } = useTheme();
-  const styles = createStyles(colors);
+  const styles = createStyles(colors, compact);
   const scale = useRef(new Animated.Value(1)).current;
   const opacity = useRef(new Animated.Value(1)).current;
 
@@ -34,7 +36,7 @@ export function ChoiceChip({
         useNativeDriver: true,
       }),
       Animated.timing(opacity, {
-        toValue: disabled ? 0.4 : 1,
+        toValue: disabled ? 0.35 : 1,
         duration: 180,
         useNativeDriver: true,
       }),
@@ -70,14 +72,14 @@ export function ChoiceChip({
   );
 }
 
-const createStyles = (colors: ThemeTokens) =>
+const createStyles = (colors: ThemeTokens, compact: boolean) =>
   StyleSheet.create({
     chip: {
       borderWidth: 1,
       borderColor: colors.border,
       backgroundColor: "transparent",
-      paddingHorizontal: 18,
-      paddingVertical: BUTTON_PADDING_VERTICAL,
+      paddingHorizontal: compact ? 12 : 18,
+      paddingVertical: compact ? 8 : BUTTON_PADDING_VERTICAL,
       borderRadius: BUTTON_BORDER_RADIUS,
     },
     selected: {
@@ -92,7 +94,7 @@ const createStyles = (colors: ThemeTokens) =>
     label: {
       color: colors.text,
       fontWeight: BUTTON_FONT_WEIGHT,
-      fontSize: BUTTON_FONT_SIZE,
+      fontSize: compact ? 14 : BUTTON_FONT_SIZE,
     },
     selectedLabel: {
       color: colors.background,

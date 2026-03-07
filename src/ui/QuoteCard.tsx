@@ -204,11 +204,11 @@ const createStyles = (colors: ThemeTokens) =>
     },
     meta: {
       alignSelf: "flex-start",
-      fontSize: 12,
+      fontSize: 13,
       color: colors.text,
       borderRadius: 999,
-      paddingHorizontal: 10,
-      paddingVertical: 6,
+      paddingHorizontal: 12,
+      paddingVertical: 7,
       backgroundColor: colors.background,
     },
     overlayMeta: {

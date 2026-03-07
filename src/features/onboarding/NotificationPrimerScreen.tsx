@@ -21,9 +21,9 @@ import { Screen } from "@/ui/Screen";
 import { ThemeTokens, useTheme } from "@/ui/theme";
 
 const FREQUENCY_OPTIONS: { value: 1 | 2 | 3; label: string }[] = [
-  { value: 1, label: "Once" },
-  { value: 2, label: "Twice" },
-  { value: 3, label: "Three times" },
+  { value: 1, label: "Once a day" },
+  { value: 2, label: "Twice a day" },
+  { value: 3, label: "Three times a day" },
 ];
 
 const DEFAULT_START_MINUTE = 540; // 9:00
@@ -48,8 +48,9 @@ export function NotificationPrimerScreen() {
 
   const showInfo = () => {
     Alert.alert(
-      "What changes if you say no?",
-      "Nothing essential changes. Today, Library, favourites, and About still work as normal."
+      "What happens if you skip reminders?",
+      "Nothing essential changes.\n\n• Today still works\n• Library and favourites still work\n• About and Settings still work",
+      [{ text: "Got it", style: "default" }]
     );
   };
 
@@ -99,7 +100,11 @@ export function NotificationPrimerScreen() {
             <Text style={styles.footerText}>
               You can change this later in Settings.
             </Text>
-          ) : null}
+          ) : (
+            <Text style={styles.footerText}>
+              You can set reminders later in Settings.
+            </Text>
+          )}
         </>
       }
     >
@@ -130,10 +135,12 @@ export function NotificationPrimerScreen() {
             thumbColor={colors.background}
           />
         </View>
-        <Pressable onPress={showInfo} style={styles.infoRow}>
-          <Ionicons name="information-circle-outline" size={20} color={colors.textMuted} />
-          <Text style={styles.infoText}>What changes if you say no?</Text>
-        </Pressable>
+        {!remindersEnabled ? (
+          <Pressable onPress={showInfo} style={styles.infoRow}>
+            <Ionicons name="information-circle-outline" size={20} color={colors.textMuted} />
+            <Text style={styles.infoText}>What happens if you skip reminders?</Text>
+          </Pressable>
+        ) : null}
         {remindersEnabled ? (
           <>
             <Text style={styles.sectionLabel}>How often</Text>
@@ -146,7 +153,7 @@ export function NotificationPrimerScreen() {
                 >
                   <Ionicons
                     name={frequency === option.value ? "radio-button-on" : "radio-button-off"}
-                    size={22}
+                    size={20}
                     color={frequency === option.value ? colors.text : colors.textMuted}
                   />
                   <Text
@@ -305,7 +312,7 @@ const createStyles = (colors: ThemeTokens) =>
       color: colors.textMuted,
     },
     header: {
-      marginTop: 20,
+      marginTop: 16,
       gap: 8,
     },
     title: {
@@ -325,7 +332,7 @@ const createStyles = (colors: ThemeTokens) =>
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      marginTop: 20,
+      marginTop: 16,
       paddingVertical: 12,
     },
     toggleLabel: {
@@ -357,7 +364,7 @@ const createStyles = (colors: ThemeTokens) =>
       flexDirection: "row",
       alignItems: "center",
       gap: 12,
-      paddingVertical: 14,
+      paddingVertical: 10,
     },
     radioLabel: {
       fontSize: 16,

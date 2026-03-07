@@ -110,6 +110,7 @@ export function TodayScreen() {
             <Pressable
               style={({ pressed }) => [
                 styles.saveButton,
+                todayQuote.saved && styles.saveButtonSaved,
                 savingQuoteId === todayQuote.id && styles.saveButtonDisabled,
                 pressed && savingQuoteId !== todayQuote.id && styles.saveButtonPressed,
               ]}
@@ -164,6 +165,7 @@ export function TodayScreen() {
           variant="secondary"
           disabled={oneMore.isAlreadyUnlocked}
           onPress={oneMore.handleOneMorePress}
+          style={oneMore.isAlreadyUnlocked ? styles.getAnotherQuoteDisabled : undefined}
         />
       </View>
       {extraQuote ? (
@@ -180,11 +182,12 @@ export function TodayScreen() {
             <View style={styles.row}>
               <View style={styles.buttonSlot}>
                 <Pressable
-                  style={({ pressed }) => [
-                    styles.saveButton,
-                    savingQuoteId === extraQuote.id && styles.saveButtonDisabled,
-                    pressed && savingQuoteId !== extraQuote.id && styles.saveButtonPressed,
-                  ]}
+              style={({ pressed }) => [
+                styles.saveButton,
+                extraQuote.saved && styles.saveButtonSaved,
+                savingQuoteId === extraQuote.id && styles.saveButtonDisabled,
+                pressed && savingQuoteId !== extraQuote.id && styles.saveButtonPressed,
+              ]}
                   onPress={() => handleToggleSave(extraQuote.id)}
                   disabled={savingQuoteId === extraQuote.id}
                 >
@@ -274,6 +277,10 @@ const createStyles = (colors: ThemeTokens) =>
       borderRadius: BUTTON_BORDER_RADIUS,
       backgroundColor: colors.surfaceMuted,
     },
+    saveButtonSaved: {
+      borderWidth: 1,
+      borderColor: colors.accentSoft,
+    },
     saveButtonPressed: {
       opacity: 0.82,
     },
@@ -323,12 +330,16 @@ const createStyles = (colors: ThemeTokens) =>
       marginTop: 4,
     },
     exploreBlock: {
-      gap: 10,
+      gap: 4,
     },
     exploreCopy: {
       fontSize: 14,
       lineHeight: 20,
       color: colors.textMuted,
+    },
+    getAnotherQuoteDisabled: {
+      paddingVertical: 8,
+      paddingHorizontal: 12,
     },
     extraSection: {
       gap: 12,

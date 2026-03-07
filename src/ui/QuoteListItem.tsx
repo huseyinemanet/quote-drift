@@ -34,7 +34,9 @@ export function QuoteListItem({
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const authorLabel = (
-    <Text style={styles.quoteAuthor}>{quote.author}</Text>
+    <Text style={[styles.quoteAuthor, onPressAuthor && styles.quoteAuthorLink]}>
+      {quote.author}
+    </Text>
   );
 
   return (
@@ -48,14 +50,14 @@ export function QuoteListItem({
             <Pressable accessibilityRole="button" onPress={onCopy} style={styles.iconButton}>
               <Ionicons
                 name={isCopyConfirmed ? "checkmark" : "copy-outline"}
-                size={18}
+                size={16}
                 color={isCopyConfirmed ? colors.text : colors.textMuted}
               />
             </Pressable>
           ) : null}
           {showShare && onShare ? (
             <Pressable accessibilityRole="button" onPress={onShare} style={styles.iconButton}>
-              <Ionicons name="share-outline" size={18} color={colors.textMuted} />
+              <Ionicons name="share-outline" size={16} color={colors.textMuted} />
             </Pressable>
           ) : null}
           <Pressable
@@ -72,8 +74,8 @@ export function QuoteListItem({
             ) : (
               <Ionicons
                 name={quote.saved ? "bookmark" : "bookmark-outline"}
-                size={22}
-                color={quote.saved ? colors.text : colors.textMuted}
+                size={20}
+                color={quote.saved ? colors.accent : colors.textMuted}
               />
             )}
           </Pressable>
@@ -125,6 +127,10 @@ const createStyles = (colors: ThemeTokens) =>
       fontWeight: "700",
       color: colors.text,
     },
+    quoteAuthorLink: {
+      color: colors.accent,
+      textDecorationLine: "underline",
+    },
     quoteMeta: {
       gap: 2,
       flex: 1,
@@ -144,9 +150,9 @@ const createStyles = (colors: ThemeTokens) =>
       alignItems: "center",
     },
     iconButton: {
-      width: 34,
-      height: 34,
-      borderRadius: 16,
+      width: 30,
+      height: 30,
+      borderRadius: 15,
       alignItems: "center",
       justifyContent: "center",
     },
