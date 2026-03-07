@@ -222,7 +222,7 @@ export function SettingsScreen() {
   };
 
   return (
-    <Screen edges={["bottom"]}>
+    <Screen edges={[]}>
       {denied ? (
         <Banner
           title="Reminders are denied at the system level"

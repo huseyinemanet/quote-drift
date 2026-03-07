@@ -35,7 +35,7 @@ export function LibraryScreen() {
   };
 
   return (
-    <Screen scroll={results.length > 0} edges={["bottom"]}>
+    <Screen scroll={results.length > 0} edges={[]}>
       {results.length === 0 ? (
         <View style={styles.emptyStateRoot}>
           <View style={styles.header}>

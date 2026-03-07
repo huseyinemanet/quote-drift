@@ -30,7 +30,7 @@ export function Screen({ children, scroll = true, padded = true, edges = ["top"]
   const { colors } = useTheme();
   const bottomChromeInset = useBottomChromeInset();
   const effectiveBottomInset = useChromeInset
-    ? Math.max(bottomChromeInset, MIN_BOTTOM_CHROME_INSET)
+    ? (bottomChromeInset > 0 ? bottomChromeInset : MIN_BOTTOM_CHROME_INSET)
     : bottomChromeInset;
   const paddingBottom = stickyFooter
     ? 24 + STICKY_FOOTER_PADDING_BOTTOM + effectiveBottomInset

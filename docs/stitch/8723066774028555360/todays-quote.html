@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Playfair+Display:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#a97d51",
+                        "background-light": "#f7f7f6",
+                        "background-dark": "#1d1915",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "serif": ["Playfair Display", "serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<title>Daily Reflection</title>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased">
+<div class="relative flex h-screen max-w-md mx-auto flex-col bg-background-light dark:bg-background-dark overflow-hidden">
+<!-- Header / Status Area -->
+<header class="flex items-center justify-between px-8 pt-12 pb-6">
+<div class="flex flex-col">
+<span class="text-[10px] uppercase tracking-[0.2em] text-primary font-bold">Tuesday, Oct 24</span>
+<h2 class="text-2xl font-serif italic text-slate-900 dark:text-slate-100">Daily Stillness</h2>
+</div>
+<div class="flex items-center gap-2 bg-primary/10 px-3 py-1.5 rounded-full">
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1">wb_sunny</span>
+<span class="text-xs font-medium text-primary tracking-wide">1-day streak</span>
+</div>
+</header>
+<!-- Main Quote Content -->
+<main class="flex-1 flex flex-col justify-center px-8 pb-12">
+<div class="relative group">
+<!-- Decorative element -->
+<div class="absolute -top-12 -left-4 text-primary/10 select-none">
+<span class="material-symbols-outlined text-8xl" style="font-variation-settings: 'FILL' 1">format_quote</span>
+</div>
+<div class="relative z-10 flex flex-col space-y-8">
+<h1 class="text-4xl md:text-5xl font-serif leading-[1.2] text-slate-800 dark:text-slate-200">
+                        “The soul always knows what to do to heal itself. The challenge is to <span class="italic underline decoration-primary/30 underline-offset-8">silence the mind</span>.”
+                    </h1>
+<div class="flex flex-col gap-1 border-l-2 border-primary/20 pl-4">
+<p class="text-lg font-serif italic text-slate-600 dark:text-slate-400">— Caroline Myss</p>
+<p class="text-[10px] uppercase tracking-widest text-slate-400 dark:text-slate-500">Medical Intuitive &amp; Author</p>
+</div>
+</div>
+<!-- Subtle Actions -->
+<div class="flex items-center gap-6 mt-16 pt-8 border-t border-primary/10">
+<button class="flex items-center gap-2 text-slate-400 hover:text-primary transition-colors group/btn">
+<span class="material-symbols-outlined text-xl group-hover/btn:fill-current">favorite</span>
+<span class="text-xs font-medium tracking-wide">Saved</span>
+</button>
+<button class="flex items-center gap-2 text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-xl">share</span>
+<span class="text-xs font-medium tracking-wide">Share</span>
+</button>
+<div class="flex-1"></div>
+<button class="flex items-center gap-2 text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-xl">content_copy</span>
+</button>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation -->
+<nav class="border-t border-primary/5 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md px-6 pb-8 pt-4">
+<div class="flex justify-around items-center">
+<a class="flex flex-col items-center gap-1.5 text-primary" href="#">
+<div class="relative">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1">auto_awesome</span>
+<div class="absolute -top-0.5 -right-0.5 size-1.5 bg-primary rounded-full border-2 border-background-light"></div>
+</div>
+<span class="text-[10px] font-bold uppercase tracking-wider">Today</span>
+</a>
+<a class="flex flex-col items-center gap-1.5 text-slate-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-2xl">menu_book</span>
+<span class="text-[10px] font-bold uppercase tracking-wider">Library</span>
+</a>
+<a class="flex flex-col items-center gap-1.5 text-slate-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-2xl">settings</span>
+<span class="text-[10px] font-bold uppercase tracking-wider">Settings</span>
+</a>
+</div>
+</nav>
+<!-- Background Aesthetic Elements -->
+<div class="fixed inset-0 pointer-events-none -z-10 opacity-30">
+<div class="absolute top-1/4 -right-20 size-64 bg-primary/10 blur-[100px] rounded-full"></div>
+<div class="absolute bottom-1/4 -left-20 size-64 bg-primary/5 blur-[80px] rounded-full"></div>
+</div>
+</div>
+</body></html>

@@ -1,12 +1,53 @@
 import { Ionicons } from "@expo/vector-icons";
+import { BlurView } from "expo-blur";
 import { Tabs } from "expo-router";
 import { useState } from "react";
-import { StyleSheet } from "react-native";
+import { Platform, StyleSheet, View } from "react-native";
 
 import { useAdBanner } from "@/core/ads/useAdBanner";
 import { BottomChrome } from "@/features/layout/BottomChrome";
 import { BottomChromeInsetProvider } from "@/features/layout/BottomChromeInset";
 import { useTheme } from "@/ui/theme";
+
+function HeaderBlurBackground() {
+  const { isDark, colors } = useTheme();
+  const tint = isDark ? "dark" : "light";
+  const overlayColor = isDark ? "rgba(0,0,0,0.15)" : "rgba(255,255,255,0.05)";
+  const fallbackBg = Platform.OS === "android" ? colors.surface : undefined;
+  return (
+    <View style={[StyleSheet.absoluteFillObject, fallbackBg && { backgroundColor: fallbackBg }]}>
+      <BlurView
+        tint={tint}
+        intensity={60}
+        style={StyleSheet.absoluteFillObject}
+      />
+      <View
+        style={[StyleSheet.absoluteFillObject, { backgroundColor: overlayColor }]}
+        pointerEvents="none"
+      />
+    </View>
+  );
+}
+
+function TabBarBlurBackground() {
+  const { isDark, colors } = useTheme();
+  const tint = isDark ? "dark" : "light";
+  const overlayColor = isDark ? "rgba(0,0,0,0.15)" : "rgba(255,255,255,0.05)";
+  const fallbackBg = Platform.OS === "android" ? colors.surface : undefined;
+  return (
+    <View style={[StyleSheet.absoluteFillObject, fallbackBg && { backgroundColor: fallbackBg }]}>
+      <BlurView
+        tint={tint}
+        intensity={60}
+        style={StyleSheet.absoluteFillObject}
+      />
+      <View
+        style={[StyleSheet.absoluteFillObject, { backgroundColor: overlayColor }]}
+        pointerEvents="none"
+      />
+    </View>
+  );
+}
 
 function TabIcon({
   focused,
@@ -48,10 +89,11 @@ export default function TabLayout() {
         screenOptions={{
           headerShown: true,
           headerStyle: {
-            backgroundColor: colors.surface,
+            backgroundColor: "transparent",
             borderBottomWidth: StyleSheet.hairlineWidth,
             borderBottomColor: colors.border,
           },
+          headerBackground: () => <HeaderBlurBackground />,
           headerShadowVisible: false,
           headerTintColor: colors.text,
           headerTitleStyle: {
@@ -62,12 +104,22 @@ export default function TabLayout() {
           headerLargeTitle: false,
           headerBlurEffect: undefined,
           contentStyle: { backgroundColor: colors.background },
+          sceneStyle: { marginBottom: 0, paddingBottom: 0 },
           tabBarActiveTintColor: colors.tabActive,
           tabBarInactiveTintColor: colors.tabInactive,
+          tabBarSafeAreaInsets: { bottom: 0 },
           tabBarStyle: {
-            backgroundColor: colors.surface,
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            backgroundColor: "transparent",
+            borderTopWidth: StyleSheet.hairlineWidth,
             borderTopColor: colors.border,
+            elevation: 0,
+            shadowOpacity: 0,
           },
+          tabBarBackground: () => <TabBarBlurBackground />,
         }}
       >
         <Tabs.Screen

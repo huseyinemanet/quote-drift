@@ -3,6 +3,7 @@ import { useState } from "react";
 import {
   Alert,
   LayoutAnimation,
+  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -29,6 +30,8 @@ const FREQUENCY_OPTIONS: { value: 1 | 2 | 3; label: string }[] = [
 const DEFAULT_START_MINUTE = 540; // 9:00
 const DEFAULT_END_MINUTE = 1260; // 21:00
 
+type TimeField = "start" | "end";
+
 export function NotificationPrimerScreen() {
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -43,8 +46,10 @@ export function NotificationPrimerScreen() {
   const [frequency, setFrequency] = useState<1 | 2 | 3>(1);
   const [startMinute, setStartMinute] = useState(DEFAULT_START_MINUTE);
   const [endMinute, setEndMinute] = useState(DEFAULT_END_MINUTE);
-  const [showStartPicker, setShowStartPicker] = useState(false);
-  const [showEndPicker, setShowEndPicker] = useState(false);
+  const [activeField, setActiveField] = useState<TimeField | null>(null);
+  const [tempTime, setTempTime] = useState<Date>(() => minuteToDate(DEFAULT_START_MINUTE));
+
+  const showTimePicker = activeField !== null;
 
   const showInfo = () => {
     Alert.alert(
@@ -71,20 +76,49 @@ export function NotificationPrimerScreen() {
     router.replace("/(app)/today");
   };
 
-  const onStartChange = (_: unknown, selectedDate?: Date) => {
-    if (Platform.OS === "android") setShowStartPicker(false);
-    if (selectedDate) {
-      const min = dateToMinute(selectedDate);
-      if (min < endMinute) setStartMinute(min);
-    }
+  const openStartPicker = () => {
+    setTempTime(minuteToDate(startMinute));
+    setActiveField("start");
   };
 
-  const onEndChange = (_: unknown, selectedDate?: Date) => {
-    if (Platform.OS === "android") setShowEndPicker(false);
-    if (selectedDate) {
-      const min = dateToMinute(selectedDate);
-      if (min > startMinute) setEndMinute(min);
+  const openEndPicker = () => {
+    setTempTime(minuteToDate(endMinute));
+    setActiveField("end");
+  };
+
+  const closeTimePicker = () => setActiveField(null);
+
+  const confirmTimePicker = () => {
+    if (activeField == null) return;
+    const minute = dateToMinute(tempTime);
+    if (activeField === "start") {
+      setStartMinute(minute);
+      if (minute >= endMinute) {
+        setEndMinute(Math.min(1439, minute + 30));
+      }
+    } else {
+      setEndMinute(minute);
+      if (minute <= startMinute) {
+        setStartMinute(Math.max(0, minute - 30));
+      }
     }
+    setActiveField(null);
+  };
+
+  const handleTimeChange = (_: unknown, selectedDate?: Date) => {
+    if (Platform.OS === "android" && activeField != null) {
+      const minute = selectedDate ? dateToMinute(selectedDate) : (activeField === "start" ? startMinute : endMinute);
+      if (activeField === "start") {
+        setStartMinute(minute);
+        if (minute >= endMinute) setEndMinute(Math.min(1439, minute + 30));
+      } else {
+        setEndMinute(minute);
+        if (minute <= startMinute) setStartMinute(Math.max(0, minute - 30));
+      }
+      setActiveField(null);
+      return;
+    }
+    if (selectedDate) setTempTime(selectedDate);
   };
 
   return (
@@ -170,107 +204,69 @@ export function NotificationPrimerScreen() {
             <Text style={styles.sectionLabel}>Reminder hours</Text>
             <View style={styles.hoursCard}>
               <Text style={styles.hoursLabel}>Start</Text>
-              {Platform.OS === "ios" ? (
-                <>
-                  <Pressable
-                    style={styles.timeValueRow}
-                    onPress={() => {
-                      setShowEndPicker(false);
-                      setShowStartPicker(true);
-                    }}
-                  >
-                    <Text style={styles.timeValueText}>{minutesToLabel(startMinute)}</Text>
-                    <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
-                  </Pressable>
-                  {showStartPicker && (
-                    <DateTimePicker
-                      value={minuteToDate(startMinute)}
-                      mode="time"
-                      display="spinner"
-                      onChange={(_, selectedDate) => {
-                        onStartChange(_, selectedDate);
-                        setShowStartPicker(false);
-                      }}
-                      maximumDate={minuteToDate(endMinute - 30)}
-                    />
-                  )}
-                </>
-              ) : (
-                <>
-                  <Pressable
-                    style={styles.timeRow}
-                    onPress={() => {
-                      setShowEndPicker(false);
-                      setShowStartPicker(true);
-                    }}
-                  >
-                    <Text style={styles.timeValue}>{minutesToLabel(startMinute)}</Text>
-                    <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
-                  </Pressable>
-                  {showStartPicker && (
-                    <DateTimePicker
-                      value={minuteToDate(startMinute)}
-                      mode="time"
-                      display="default"
-                      onChange={onStartChange}
-                      maximumDate={minuteToDate(endMinute - 30)}
-                    />
-                  )}
-                </>
-              )}
+              <Pressable
+                style={styles.timeRow}
+                onPress={openStartPicker}
+              >
+                <Text style={styles.timeValue}>{minutesToLabel(startMinute)}</Text>
+                <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+              </Pressable>
               <Text style={styles.hoursLabel}>End</Text>
-              {Platform.OS === "ios" ? (
-                <>
-                  <Pressable
-                    style={styles.timeValueRow}
-                    onPress={() => {
-                      setShowStartPicker(false);
-                      setShowEndPicker(true);
-                    }}
-                  >
-                    <Text style={styles.timeValueText}>{minutesToLabel(endMinute)}</Text>
-                    <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
-                  </Pressable>
-                  {showEndPicker && (
-                    <DateTimePicker
-                      value={minuteToDate(endMinute)}
-                      mode="time"
-                      display="spinner"
-                      onChange={(_, selectedDate) => {
-                        onEndChange(_, selectedDate);
-                        setShowEndPicker(false);
-                      }}
-                      minimumDate={minuteToDate(startMinute + 30)}
-                    />
-                  )}
-                </>
-              ) : (
-                <>
-                  <Pressable
-                    style={styles.timeRow}
-                    onPress={() => {
-                      setShowStartPicker(false);
-                      setShowEndPicker(true);
-                    }}
-                  >
-                    <Text style={styles.timeValue}>{minutesToLabel(endMinute)}</Text>
-                    <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
-                  </Pressable>
-                  {showEndPicker && (
-                    <DateTimePicker
-                      value={minuteToDate(endMinute)}
-                      mode="time"
-                      display="default"
-                      onChange={onEndChange}
-                      minimumDate={minuteToDate(startMinute + 30)}
-                    />
-                  )}
-                </>
-              )}
+              <Pressable
+                style={styles.timeRow}
+                onPress={openEndPicker}
+              >
+                <Text style={styles.timeValue}>{minutesToLabel(endMinute)}</Text>
+                <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+              </Pressable>
             </View>
           </>
         ) : null}
       </ScrollView>
+      {showTimePicker ? (
+        Platform.OS === "ios" ? (
+          <Modal
+            visible
+            transparent
+            animationType="slide"
+            onRequestClose={closeTimePicker}
+          >
+            <Pressable style={styles.modalOverlay} onPress={closeTimePicker}>
+              <Pressable style={styles.modalContent} onPress={(e) => e.stopPropagation()}>
+                <View style={styles.modalHeader}>
+                  <Pressable onPress={closeTimePicker} hitSlop={12}>
+                    <Text style={[styles.modalButton, styles.modalCancel]}>Cancel</Text>
+                  </Pressable>
+                  <Text style={styles.modalTitle}>
+                    {activeField === "start" ? "Start time" : "End time"}
+                  </Text>
+                  <Pressable onPress={confirmTimePicker} hitSlop={12}>
+                    <Text style={[styles.modalButton, styles.modalDone]}>Done</Text>
+                  </Pressable>
+                </View>
+                <DateTimePicker
+                  value={tempTime}
+                  mode="time"
+                  display="spinner"
+                  onChange={handleTimeChange}
+                  style={styles.picker}
+                />
+              </Pressable>
+            </Pressable>
+          </Modal>
+        ) : (
+          <>
+            <DateTimePicker
+              value={activeField === "start" ? minuteToDate(startMinute) : minuteToDate(endMinute)}
+              mode="time"
+              display="default"
+              onChange={handleTimeChange}
+              maximumDate={activeField === "start" ? minuteToDate(endMinute - 1) : undefined}
+              minimumDate={activeField === "end" ? minuteToDate(startMinute + 1) : undefined}
+            />
+          </>
+        )
+      ) : null}
     </Screen>
   );
 }
@@ -387,18 +383,6 @@ const createStyles = (colors: ThemeTokens) =>
       fontWeight: "700",
       color: colors.text,
     },
-    timeValueText: {
-      fontSize: 17,
-      fontWeight: "600",
-      color: colors.text,
-      marginBottom: 4,
-    },
-    timeValueRow: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      marginBottom: 4,
-    },
     timeRow: {
       flexDirection: "row",
       alignItems: "center",
@@ -414,6 +398,46 @@ const createStyles = (colors: ThemeTokens) =>
       fontSize: 17,
       fontWeight: "600",
       color: colors.text,
+    },
+    modalOverlay: {
+      flex: 1,
+      justifyContent: "flex-end",
+      backgroundColor: "rgba(0,0,0,0.4)",
+    },
+    modalContent: {
+      backgroundColor: colors.background,
+      borderTopLeftRadius: 16,
+      borderTopRightRadius: 16,
+      paddingBottom: 34,
+    },
+    modalHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    modalTitle: {
+      fontSize: 16,
+      fontWeight: "600",
+      color: colors.text,
+    },
+    modalButton: {
+      fontSize: 16,
+      minWidth: 64,
+    },
+    modalCancel: {
+      color: colors.textMuted,
+    },
+    modalDone: {
+      fontWeight: "600",
+      color: colors.accent,
+      textAlign: "right",
+    },
+    picker: {
+      backgroundColor: colors.background,
     },
     footerText: {
       fontSize: 13,

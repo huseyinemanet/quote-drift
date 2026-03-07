@@ -1,11 +1,12 @@
 import { router } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 import { useAppState } from "@/core/bootstrap";
 import { getDayKey } from "@/core/date";
 import { selectionHaptic } from "@/core/haptics";
+import { updateStreak, type UpdateStreakResult } from "@/core/streak/streak";
 import {
   getQuoteCardBackgroundIndex,
   QUOTE_CARD_BACKGROUNDS,
@@ -28,11 +29,12 @@ export function TodayScreen() {
   const {
     todayQuote,
     extraQuote,
-    streak,
     notificationSettings,
     claimExtraQuote,
     toggleSave,
   } = useAppState();
+  const [streakResult, setStreakResult] = useState<UpdateStreakResult | null>(null);
+  const [visibleMilestone, setVisibleMilestone] = useState<number | null>(null);
   const todayShare = useShareQuote(todayQuote);
   const extraShare = useShareQuote(extraQuote);
   const oneMore = useOneMoreGate({
@@ -49,6 +51,31 @@ export function TodayScreen() {
   const [isExtraExpanded, setIsExtraExpanded] = useState(false);
   const [savingQuoteId, setSavingQuoteId] = useState<string | null>(null);
 
+  // Streak is updated when the Today quote becomes available (not on generic app launch); at most once per calendar day.
+  useEffect(() => {
+    if (!todayQuote) return;
+    let cancelled = false;
+    updateStreak().then((result) => {
+      if (!cancelled) {
+        setStreakResult(result);
+        // Milestone only when streak actually increased this session (isNewDay); same-day revisits don't re-trigger.
+        if (result.isNewDay && result.milestoneReached != null) {
+          setVisibleMilestone(result.milestoneReached);
+        }
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [todayQuote]);
+
+  // Auto-hide milestone celebration after a few seconds.
+  useEffect(() => {
+    if (visibleMilestone == null) return;
+    const t = setTimeout(() => setVisibleMilestone(null), 5000);
+    return () => clearTimeout(t);
+  }, [visibleMilestone]);
+
   const handleToggleSave = async (quoteId: string) => {
     void selectionHaptic();
     setSavingQuoteId(quoteId);
@@ -61,7 +88,7 @@ export function TodayScreen() {
 
   if (!todayQuote) {
     return (
-      <Screen edges={["bottom"]}>
+      <Screen edges={[]}>
         <EmptyState
           title="Today is waiting on a quote"
           body="The collection may be exhausted. Open the recovery screen to restart with repeats."
@@ -77,18 +104,22 @@ export function TodayScreen() {
   const reminderOff =
     !notificationSettings.enabled ||
     notificationSettings.permission_status !== "granted";
+
   const streakLabel =
-    streak >= 7
-      ? `🔥 ${streak} day streak`
-      : streak > 0
-        ? `${streak} day read streak`
-        : "Day 1 starts today";
+    streakResult == null
+      ? null
+      : `🔥 ${streakResult.currentStreak}-day streak`;
+
+  const MILESTONE_MESSAGES: Record<number, string> = {
+    3: "Nice start.",
+    7: "A full week of inspiration.",
+    14: "Two weeks strong.",
+    30: "You're building a habit.",
+    100: "Now that's consistency.",
+  };
 
   return (
-    <Screen edges={["bottom"]}>
-      <View style={styles.header}>
-        <Text style={styles.subtitle}>{streakLabel}</Text>
-      </View>
+    <Screen edges={[]}>
       {reminderOff ? (
         <Banner
           title="Reminders are currently off"
@@ -104,6 +135,15 @@ export function TodayScreen() {
         background={QUOTE_CARD_BACKGROUNDS[getQuoteCardBackgroundIndex(getDayKey())]}
         hideAttribution
       />
+      {streakLabel != null ? (
+        <Text style={styles.streakLabel}>{streakLabel}</Text>
+      ) : null}
+      {visibleMilestone != null && MILESTONE_MESSAGES[visibleMilestone] ? (
+        <Banner
+          title={`🔥 ${visibleMilestone}-day streak`}
+          body={MILESTONE_MESSAGES[visibleMilestone]}
+        />
+      ) : null}
       <View style={styles.actionsBlock}>
         <View style={styles.row}>
           <View style={styles.buttonSlot}>
@@ -254,6 +294,11 @@ const createStyles = (colors: ThemeTokens) =>
     subtitle: {
       fontSize: 14,
       color: colors.textMuted,
+    },
+    streakLabel: {
+      fontSize: 14,
+      color: colors.textMuted,
+      marginTop: 8,
     },
     row: {
       flexDirection: "row",
