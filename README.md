@@ -32,7 +32,87 @@ Sonrası:
 
 ---
 
-## Proje yapısı
+## Caner için kurulum (adım adım)
+
+Projeyi kendi bilgisayarına çekip ilk kez çalıştırmak için aşağıdaki adımları sırayla uygula. Ortam hazırsa 5 dakikada ayağa kalkar.
+
+### 1. Gereksinimler
+
+- **Node.js** — v18 veya üzeri (tercihen LTS). Kontrol: `node -v`
+- **npm** — Node ile gelir. Kontrol: `npm -v`
+- **Git** — Repoyu klonlamak için. Kontrol: `git --version`
+
+**İstersen sadece web’de çalıştırmak için:** Bunlar yeterli; Xcode/Android Studio gerekmez.
+
+**iOS simülatör veya cihaz için:** Mac + **Xcode** (App Store’dan). Xcode açılıp bir kez lisans kabul edilmeli.
+
+**Android emülatör veya cihaz için:** **Android Studio** + SDK. İlk kez açıldığında SDK kurulumu tamamlanmalı.
+
+### 2. Projeyi çek (clone)
+
+Bilgisayarında çalışmak istediğin klasöre gir (örn. `Projects`), sonra:
+
+```bash
+git clone https://github.com/yabastudio/Quotify.git
+cd Quotify
+```
+
+(Fork’ladıysan kendi repo URL’ini kullan: `git clone https://github.com/CANER_KULLANICI_ADI/Quotify.git`)
+
+### 3. Bağımlılıkları kur
+
+Proje klasöründeyken:
+
+```bash
+npm install
+```
+
+Bu komut `package.json`’daki tüm paketleri indirir. İlk seferde birkaç dakika sürebilir; hata almazsan devam et.
+
+### 4. Uygulamayı çalıştır
+
+**Metro’yu başlat:**
+
+```bash
+npm start
+```
+
+Tarayıcıda veya terminalde Expo sayfası açılır. Oradan:
+
+- **Web’de denemek için:** Terminalde `w` tuşuna bas veya `npm run web` çalıştır. Uygulama tarayıcıda açılır.
+- **iOS simülatör:** Mac’te ve Xcode kuruluysa terminalde `i` tuşuna bas veya yeni bir terminalde `npm run ios`.
+- **Android emülatör:** Android Studio ve emülatör hazırsa terminalde `a` tuşuna bas veya `npm run android`.
+
+**Not:** Reklamlar ve bazı native özellikler Expo Go’da tam çalışmaz; gerçek davranış için `npm run ios` veya `npm run android` ile native build gerekir (Xcode/Android Studio şart).
+
+### 5. Ortam değişkenleri (.env) — isteğe bağlı
+
+İlk kurulumda **.env dosyası zorunlu değil.** Uygulama test reklam ID’leri ile açılır.
+
+Production reklamları veya kendi AdMob hesabını kullanmak istersen:
+
+1. Proje kökünde `.env.example` dosyasını kopyala:  
+   `cp .env.example .env`
+2. `.env` dosyasını açıp gerekli değerleri doldur (AdMob ID’leri vb.).  
+   Detay: [docs/ads.md](docs/ads.md).
+
+### 6. Özet komutlar (kopyala-yapıştır)
+
+```bash
+# Projeyi çek
+git clone https://github.com/yabastudio/Quotify.git
+cd Quotify
+
+# Kur
+npm install
+
+# Çalıştır (Metro açılır; w=web, i=iOS, a=Android)
+npm start
+```
+
+Takıldığın yerde: README’deki **Caner için notlar** bölümünde bildirim, widget ve diğer to-do’lar var; onları sonra tamamlayabilirsin.
+
+---
 
 ```
 app/              Ekranlar, sekmeler, onboarding (Expo Router)
