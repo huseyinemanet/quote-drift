@@ -2,7 +2,7 @@
 
 Günlük alıntı uygulaması. Önce çevrimdışı çalışır, hesap istemez. Her gün bir alıntı, aranabilir kütüphane, isteğe bağlı hatırlatmalar ve günde bir tane ekstra alıntı hakkı var. Hepsi bu.
 
-**Teknik:** Expo 55 · React Native 0.83 · TypeScript · Expo Router · SQLite · yerel bildirimler · ödüllü reklam (ekstra alıntı için) · iOS ana ekran widget’ı
+**Teknik:** Expo 55 · React Native 0.83 · TypeScript · Expo Router · SQLite · yerel bildirimler · ödüllü reklam (ekstra alıntı için) · iOS ana ekran widget’ı · **ikonlar: Lucide** (`lucide-react-native`)
 
 ---
 
@@ -47,6 +47,20 @@ scripts/          build-quotes (yazar–alıntı dosyasından corpus üretir)
 
 ---
 
+## Teknoloji özeti
+
+| Alan | Kullanılan |
+|------|------------|
+| Framework | Expo 55, React Native 0.83, Expo Router |
+| Dil | TypeScript |
+| Veri | SQLite (expo-sqlite) |
+| İkonlar | **Lucide** (`lucide-react-native`) |
+| Bildirimler | expo-notifications (yerel) |
+| Reklam | react-native-google-mobile-ads (ödüllü) |
+| Widget | expo-widgets (iOS) |
+
+---
+
 ## Komutlar
 
 | Komut | Açıklama |
@@ -67,6 +81,41 @@ scripts/          build-quotes (yazar–alıntı dosyasından corpus üretir)
 - **URL’ler:** Destek, gizlilik, kaynaklar `expo.extra` üzerinden; yayına almadan önce doldurulmalı.
 - **Reklamlar:** `EXPO_PUBLIC_ADS_ENV`, AdMob uygulama / birim ID’leri; [docs/ads.md](docs/ads.md). Ödüllü reklamlar native build ister (Expo Go’da çalışmaz).
 - **Widget:** `app.config.ts` içinde `expo-widgets`; DailyQuoteWidget, systemSmall / systemMedium.
+
+---
+
+## Caner için notlar — Eksikler ve yapılacaklar
+
+Bu bölüm projede şu an tam çalışmayan veya tamamlanması gereken öğeleri topluyor. To-do formatında; dönüp tek tek tamamlanabilir.
+
+### Bildirim sistemi (şu an çalışmıyor)
+
+- **Durum:** Yerel bildirimler (hatırlatmalar) için **Apple Developer Program hesabı** gerektiği başta bilinmiyordu; bu yüzden şu an tam çalışmıyor.
+- **Yapılacaklar:**
+  - [ ] Apple Developer Program’a üye olun (yıllık ücret; App Store dağıtımı için zaten gerekli).
+  - [ ] [Apple Developer](https://developer.apple.com) → Certificates, Identifiers & Profiles → Identifiers → uygulama Bundle ID’si (örn. `com.huseyinemanet.quotify`) → **Push Notifications** capability’sini açın. (Yerel bildirimler için bile bu capability’nin açık olması bazı senaryolarda gerekebilir.)
+  - [ ] Xcode’da ilgili target için **Signing & Capabilities** sekmesinde Push Notifications’ın eklendiğini doğrulayın.
+  - [ ] Gerçek cihazda (simülatörde değil) hatırlatma açıp “Test reminder” ile bildirimin gelmesini test edin.
+- **Not:** Uygulama sadece **yerel** bildirim kullanıyor (sunucu push’u yok). Yine de dağıtım ve bazı cihazlarda düzgün çalışması için Developer hesabı ve gerekirse capability ayarı şart.
+
+### iOS widget — “Please adopt containerBackground API”
+
+- **Durum:** iPhone’da widget eklenince sistem **“Please adopt containerBackground API”** uyarısı veriyor; widget tam anlamıyla aktif değil.
+- **Sebep:** iOS 17’den itibaren WidgetKit, arka planın nasıl gösterileceğini tanımlamak için `containerBackground(for: .widget)` API’sini kullanmayı zorunlu kılıyor. expo-widgets ile üretilen native widget kodu bu API’yi henüz kullanmıyor olabilir.
+- **Yapılacaklar:**
+  - [ ] `npx expo prebuild` (veya ilgili build) sonrası oluşan **iOS widget extension** içindeki Swift/SwiftUI view’ı bulun (genelde `ios/` altında widget extension target’ında).
+  - [ ] Widget’ın ana view’ına `.containerBackground(for: .widget) { ... }` ekleyin. Arka plan rengi için örn. `Color(theme.background)` veya mevcut tasarıma uygun bir view kullanın. Örnek (Swift):  
+    `\.containerBackground(for: .widget) { Color(.systemBackground) }` veya tasarımda kullanılan renk.
+  - [ ] iOS 16 uyumluluğu için, mümkünse `#available(iOS 17.0, *)` ile sadece iOS 17+’da `containerBackground`, öncesinde `background` kullanın.
+  - [ ] expo-widgets sürümünü kontrol edin; ileride bu API’yi destekleyen bir güncelleme çıkarsa güncelleyin.
+- **Referans:** [Apple – Displaying the right widget background](https://developer.apple.com/documentation/widgetkit/displaying-the-right-widget-background), Stack Overflow: “Adopt containerBackground API - iOS 17 widget”.
+
+### Diğer eksikler / to-do’lar
+
+- [ ] **Destek / Gizlilik / Kaynak URL’leri:** `app.json` veya `app.config.ts` içindeki `expo.extra` (supportUrl, privacyUrl, sourcesUrl) şu an placeholder (örn. `https://www.example.com/`). Yayına almadan canlı URL’lerle güncellenmeli.
+- [ ] **AdMob production:** Production’da gerçek AdMob uygulama ve birim ID’leri kullanılmalı; `EXPO_PUBLIC_ADS_ENV=production` ve ilgili `EXPO_PUBLIC_ADMOB_*` env’ler set edilmeli. [docs/ads.md](docs/ads.md).
+- [ ] **Widget bundle / group id:** `app.config.ts` içinde widget `bundleIdentifier` ve `groupIdentifier` ana uygulama bundle id’si ile uyumlu; farklı bir bundle id kullanılıyorsa bu değerler güncellenmeli.
+- [ ] **Bildirim ve ödüllü reklam:** Gerçek cihazda hatırlatma zamanlaması ve “One more” ödüllü reklam akışı son kez test edilmeli (Expo Go’da reklamlar çalışmaz; dev client veya release build gerekir).
 
 ---
 
