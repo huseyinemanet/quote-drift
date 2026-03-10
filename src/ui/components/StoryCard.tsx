@@ -1,11 +1,11 @@
 import { StyleSheet, Text, View } from "react-native";
 
 import type { ShareableQuote } from "@/core/types";
+import { STORY_HEIGHT, STORY_WIDTH } from "@/core/sharecard/dimensions";
 import { getStoryTypographyPreset } from "@/core/sharecard/storyTypography";
 import { lightTheme } from "@/ui/theme";
 
-const STORY_WIDTH = 1080;
-const STORY_HEIGHT = 1920;
+/** Share card uses light theme only so the exported image has a consistent look across devices and apps. */
 
 export function StoryCard({ quote }: { quote: ShareableQuote }) {
   const preset = getStoryTypographyPreset(quote.text);

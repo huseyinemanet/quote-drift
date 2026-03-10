@@ -1,13 +1,27 @@
-import { Bookmark, CloudSun, Settings } from "lucide-react-native";
+import { Bookmark, ChevronLeft, CloudSun, Settings } from "lucide-react-native";
 import { BlurView } from "expo-blur";
-import { Tabs } from "expo-router";
+import { router, Tabs } from "expo-router";
 import { useState } from "react";
-import { Platform, StyleSheet, View } from "react-native";
+import { Platform, Pressable, StyleSheet, View } from "react-native";
 
 import { useAdBanner } from "@/core/ads/useAdBanner";
 import { BottomChrome } from "@/features/layout/BottomChrome";
 import { BottomChromeInsetProvider } from "@/features/layout/BottomChromeInset";
 import { useTheme } from "@/ui/theme";
+
+function ReflectionsBackButton() {
+  const { colors } = useTheme();
+  return (
+    <Pressable
+      onPress={() => router.back()}
+      style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1, padding: 8, marginLeft: 4 })}
+      accessibilityRole="button"
+      accessibilityLabel="Back"
+    >
+      <ChevronLeft size={28} color={colors.text} />
+    </Pressable>
+  );
+}
 
 /** iOS nav bar: native-style blur + subtle tint (blur visible, light mode not washed out). */
 function HeaderBlurBackground() {
@@ -188,6 +202,14 @@ export default function TabLayout() {
                 IconComponent={Settings}
               />
             ),
+          }}
+        />
+        <Tabs.Screen
+          name="reflections"
+          options={{
+            title: "My reflections",
+            href: null,
+            headerLeft: () => <ReflectionsBackButton />,
           }}
         />
       </Tabs>

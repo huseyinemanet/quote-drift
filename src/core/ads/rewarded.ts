@@ -37,6 +37,25 @@ class RewardedManager {
   private resolveShow: ((result: RewardedShowResult) => void) | null = null;
   private activeSessionId = 0;
   private rewardEarnedSessionId: number | null = null;
+  private loadTimeoutId: ReturnType<typeof setTimeout> | null = null;
+  private showTimeoutId: ReturnType<typeof setTimeout> | null = null;
+
+  private static readonly PRELOAD_TIMEOUT_MS = 18000;
+  private static readonly SHOW_TIMEOUT_MS = 120000;
+
+  private clearLoadTimeout() {
+    if (this.loadTimeoutId !== null) {
+      clearTimeout(this.loadTimeoutId);
+      this.loadTimeoutId = null;
+    }
+  }
+
+  private clearShowTimeout() {
+    if (this.showTimeoutId !== null) {
+      clearTimeout(this.showTimeoutId);
+      this.showTimeoutId = null;
+    }
+  }
 
   subscribe(listener: Listener) {
     this.listeners.add(listener);
@@ -82,6 +101,7 @@ class RewardedManager {
 
     this.preloadPromise = Promise.resolve().then(() => {
       this.cleanupCurrentAd();
+      this.clearLoadTimeout();
 
       const rewardedAd = RewardedAd.createForAdRequest(rewardedUnitId, {
         requestNonPersonalizedAdsOnly: true,
@@ -91,6 +111,7 @@ class RewardedManager {
       this.rewardedAd = rewardedAd;
       this.unsubscribeFns = [
         rewardedAd.addAdEventListener(RewardedAdEventType.LOADED, () => {
+          this.clearLoadTimeout();
           this.preloadPromise = null;
           this.updateSnapshot({
             status: "ready",
@@ -121,14 +142,28 @@ class RewardedManager {
         }),
         rewardedAd.addAdEventListener(AdEventType.ERROR, (error) => {
           console.info("Rewarded ad failed.", error);
+          this.clearLoadTimeout();
           this.finishShow("error", "A short ad is unavailable right now.");
         }),
       ];
 
       try {
         rewardedAd.load();
+        this.loadTimeoutId = setTimeout(() => {
+          if (this.snapshot.status === "loading") {
+            this.clearLoadTimeout();
+            this.cleanupCurrentAd();
+            this.preloadPromise = null;
+            this.updateSnapshot({
+              status: "error",
+              isReady: false,
+              lastError: "A short ad is unavailable right now.",
+            });
+          }
+        }, RewardedManager.PRELOAD_TIMEOUT_MS);
       } catch (error) {
         console.info("Rewarded ad load failed.", error);
+        this.clearLoadTimeout();
         this.cleanupCurrentAd();
         this.preloadPromise = null;
         this.updateSnapshot({
@@ -166,6 +201,12 @@ class RewardedManager {
 
     try {
       await this.rewardedAd.show();
+      this.showTimeoutId = setTimeout(() => {
+        if (this.resolveShow !== null) {
+          console.info("Rewarded ad show timeout.");
+          this.finishShow("closed");
+        }
+      }, RewardedManager.SHOW_TIMEOUT_MS);
     } catch (error) {
       console.info("Rewarded ad show failed.", error);
       this.finishShow("error", "A short ad is unavailable right now.");
@@ -175,6 +216,7 @@ class RewardedManager {
   }
 
   private finishShow(result: RewardedShowResult, message: string | null = null) {
+    this.clearShowTimeout();
     this.resolveShow?.(result);
     this.resolveShow = null;
     this.showPromise = null;

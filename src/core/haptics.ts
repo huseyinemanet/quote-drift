@@ -13,3 +13,16 @@ export async function selectionHaptic() {
     // Ignore unavailable native haptics in stale dev builds.
   }
 }
+
+export async function successHaptic() {
+  try {
+    const H = Haptics as typeof Haptics & {
+      notificationAsync?: (type: "success" | "warning" | "error") => Promise<void>;
+    };
+    if (typeof H.notificationAsync === "function") {
+      await H.notificationAsync("success");
+    }
+  } catch {
+    // Ignore
+  }
+}

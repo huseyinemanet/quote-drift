@@ -14,9 +14,9 @@ const PREVIEW_QUOTE = {
 } as const;
 
 const TRUST_POINTS: { Icon: React.ComponentType<{ size: number; color: string }>; label: string }[] = [
-  { Icon: Wifi, label: "Works offline" },
+  { Icon: Wifi, label: "Read and save offline" },
   { Icon: UserCircle, label: "No account needed" },
-  { Icon: Lock, label: "Stays on device" },
+  { Icon: Lock, label: "Your quotes and favourites stay on device" },
 ];
 
 export function WelcomeScreen() {

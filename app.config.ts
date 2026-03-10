@@ -61,8 +61,10 @@ const baseConfig: ExpoConfig = {
   ],
   extra: {
     supportUrl: "https://www.example.com/",
+    // Before release: set to your real Privacy Policy URL. Policy should mention AdMob and Firebase (Crashlytics). See docs/app-privacy-declaration.md.
     privacyUrl: "https://www.example.com/",
-    sourcesUrl: "https://www.example.com/",
+    sourcesUrl: "https://yaba.studio/quotify/sources",
+    photoCreditsUrl: "https://yaba.studio/quotify/photo-credits",
   },
 };
 
@@ -131,8 +133,14 @@ export default (): ExpoConfig => ({
           {
             name: "DailyQuoteWidget",
             displayName: "Daily Quote",
-            description: "See today's Quotify reflection on your Home Screen.",
-            supportedFamilies: ["systemSmall", "systemMedium"],
+            description: "See today's Quotify reflection on your Home Screen and Lock Screen.",
+            supportedFamilies: [
+              "systemSmall",
+              "systemMedium",
+              "accessoryRectangular",
+              "accessoryInline",
+              "accessoryCircular",
+            ],
           },
         ],
       },
@@ -144,9 +152,14 @@ export default (): ExpoConfig => ({
         androidAppId,
       },
     ],
+    "./plugins/withQuotifyWatch.js",
+    "./plugins/withQuotifySiriIntent.js",
   ],
   extra: {
     ...baseConfig.extra,
+    eas: {
+      projectId: "ad0c469b-93c6-4453-a38d-3be8be8bf96f",
+    },
     admob: {
       iosAppId,
       androidAppId,

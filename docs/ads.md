@@ -37,3 +37,14 @@ The daily quote, library, search, favourites, sharing, and notification settings
 - The modal always includes `Not now`.
 - No quote unlock occurs unless the rewarded ad completes and the reward is earned.
 - If the ad is unavailable, skipped, closed early, or fails, the app stays usable and no extra quote is granted.
+
+## Rewarded ad – failure handling
+The app is written so that the user can always continue using it normally, and the extra quote is only granted when the rewarded ad completes and the reward is earned. All of the following are handled without breaking the app:
+
+- **Ad failed to load** – Modal shows an error state; user can tap "Not now" and continue.
+- **Ad closed early** – No reward; modal closes; optional toast explains that the ad was closed before completing.
+- **Reward callback never fires** – Treated as closed without reward (no unlock).
+- **Network offline** – Preload times out after ~18s; modal shows unavailable and user can close it.
+- **Show hangs (CLOSED/ERROR never fire)** – A safety timeout (~2 minutes) resolves the flow as closed so the UI never stays stuck.
+
+Implementation: [src/core/ads/rewarded.ts](../src/core/ads/rewarded.ts) (preload timeout, show timeout), [src/features/today/useOneMoreGate.ts](../src/features/today/useOneMoreGate.ts) (toast and modal state).

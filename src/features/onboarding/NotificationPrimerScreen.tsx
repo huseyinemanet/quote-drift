@@ -21,6 +21,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 
 import { useAppState } from "@/core/bootstrap";
 import { dateToMinute, minuteToDate, minutesToLabel } from "@/core/date";
+import { useIsTablet } from "@/features/layout/useBreakpoint";
 import { createOnboardingProgressStyles } from "@/features/onboarding/onboardingProgressStyles";
 import { Button } from "@/ui/Button";
 import { Screen } from "@/ui/Screen";
@@ -39,6 +40,7 @@ type TimeField = "start" | "end";
 
 export function NotificationPrimerScreen() {
   const { colors } = useTheme();
+  const isTablet = useIsTablet();
   const styles = createStyles(colors);
   const params = useLocalSearchParams<{ topics?: string }>();
   const {
@@ -53,11 +55,23 @@ export function NotificationPrimerScreen() {
   const [endMinute, setEndMinute] = useState(DEFAULT_END_MINUTE);
   const [activeField, setActiveField] = useState<TimeField | null>(null);
   const [tempTime, setTempTime] = useState<Date>(() => minuteToDate(DEFAULT_START_MINUTE));
+  const [pickerReady, setPickerReady] = useState(false);
 
   const overlayOpacity = useRef(new Animated.Value(0)).current;
   const sheetTranslateY = useRef(new Animated.Value(Dimensions.get("window").height)).current;
 
   const showTimePicker = activeField !== null;
+
+  useEffect(() => {
+    if (activeField == null) {
+      setPickerReady(false);
+      return;
+    }
+    const id = requestAnimationFrame(() => {
+      setPickerReady(true);
+    });
+    return () => cancelAnimationFrame(id);
+  }, [activeField]);
 
   useEffect(() => {
     if (activeField != null) {
@@ -210,12 +224,16 @@ export function NotificationPrimerScreen() {
                 }}
                 trackColor={{ false: colors.border, true: colors.accent }}
                 thumbColor={colors.background}
+                accessibilityLabel="Enable reminders"
+                accessibilityState={{ checked: remindersEnabled }}
               />
             </View>
             <Text style={styles.toggleHelper}>
               Optional. Set this up now or later in Settings.
             </Text>
             <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Set this up later"
               onPress={showInfo}
               style={({ pressed }) => [
                 styles.disclosureRow,
@@ -238,6 +256,8 @@ export function NotificationPrimerScreen() {
                 }}
                 trackColor={{ false: colors.border, true: colors.accent }}
                 thumbColor={colors.background}
+                accessibilityLabel="Enable reminders"
+                accessibilityState={{ checked: remindersEnabled }}
               />
             </View>
             <View style={styles.settingsBlock}>
@@ -246,6 +266,9 @@ export function NotificationPrimerScreen() {
               {FREQUENCY_OPTIONS.map((option) => (
                 <Pressable
                   key={option.value}
+                  accessibilityRole="button"
+                  accessibilityLabel={option.label}
+                  accessibilityState={{ selected: frequency === option.value }}
                   style={({ pressed }) => [
                     styles.radioRow,
                     pressed && styles.radioRowPressed,
@@ -278,6 +301,8 @@ export function NotificationPrimerScreen() {
               Reminder hours
             </Text>
             <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Start time, ${minutesToLabel(startMinute)}`}
               style={({ pressed }) => [
                 styles.timeRow,
                 pressed && styles.timeRowPressed,
@@ -293,6 +318,8 @@ export function NotificationPrimerScreen() {
               </View>
             </Pressable>
             <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`End time, ${minutesToLabel(endMinute)}`}
               style={({ pressed }) => [
                 styles.timeRow,
                 styles.timeRowSecond,
@@ -319,6 +346,7 @@ export function NotificationPrimerScreen() {
             transparent
             animationType="none"
             onRequestClose={closeTimePicker}
+            {...(isTablet && { presentationStyle: "formSheet" })}
           >
             <Animated.View style={[styles.modalOverlay, { opacity: overlayOpacity }]}>
               <Pressable style={StyleSheet.absoluteFill} onPress={closeTimePicker} />
@@ -330,6 +358,8 @@ export function NotificationPrimerScreen() {
               >
                 <View style={styles.modalHeader}>
                   <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Cancel"
                     onPress={closeTimePicker}
                     hitSlop={12}
                     style={({ pressed }) => [pressed && styles.modalButtonPressed]}
@@ -340,6 +370,8 @@ export function NotificationPrimerScreen() {
                     {activeField === "start" ? "Start time" : "End time"}
                   </Text>
                   <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Done"
                     onPress={confirmTimePicker}
                     hitSlop={12}
                     style={({ pressed }) => [pressed && styles.modalButtonPressed]}
@@ -348,16 +380,18 @@ export function NotificationPrimerScreen() {
                   </Pressable>
                 </View>
                 <View style={styles.pickerContainer}>
-                  <DateTimePicker
-                    value={tempTime}
-                    mode="time"
-                    display="spinner"
-                    onChange={handleTimeChange}
-                    style={styles.picker}
-                    themeVariant={
-                      (Appearance.getColorScheme() === "dark" ? "dark" : "light") as "light" | "dark"
-                    }
-                  />
+                  {pickerReady ? (
+                    <DateTimePicker
+                      value={tempTime}
+                      mode="time"
+                      display="spinner"
+                      onChange={handleTimeChange}
+                      style={styles.picker}
+                      themeVariant={
+                        (Appearance.getColorScheme() === "dark" ? "dark" : "light") as "light" | "dark"
+                      }
+                    />
+                  ) : null}
                 </View>
               </Animated.View>
             </Animated.View>

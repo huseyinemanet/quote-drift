@@ -16,6 +16,10 @@
 - Exhausted-state recovery works without ads or notifications.
 - Local reminders stay inside configured active hours.
 - Test notification uses fixed copy and does not consume a quote.
+- iOS widget (Daily Quote on Home Screen and Lock Screen) shows today’s quote; tap opens the app. Verify on a real device or TestFlight once the Developer account is active.
+
+## App Privacy (App Store Connect)
+- App Privacy form in App Store Connect is filled with all data types collected by AdMob and Firebase (Crashlytics). See [app-privacy-declaration.md](app-privacy-declaration.md) for the exact list and how to fill the form.
 
 ## Monetization Checks
 - Sticky banner appears above the tab bar only when loaded.

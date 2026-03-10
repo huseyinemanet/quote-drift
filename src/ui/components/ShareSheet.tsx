@@ -1,6 +1,7 @@
-import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { Modal, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { useIsTablet } from "@/features/layout/useBreakpoint";
 import { Button } from "@/ui/Button";
 import { ThemeTokens, useTheme } from "@/ui/theme";
 
@@ -22,6 +23,7 @@ export function ShareSheet({
   onCopyText,
 }: Props) {
   const { colors } = useTheme();
+  const isTablet = useIsTablet();
   const styles = createStyles(colors);
 
   return (
@@ -30,11 +32,12 @@ export function ShareSheet({
       transparent
       visible={visible}
       onRequestClose={onClose}
+      {...(Platform.OS === "ios" && isTablet && { presentationStyle: "formSheet" })}
     >
-      <View style={styles.root}>
+      <View style={[styles.root, isTablet && styles.rootTablet]}>
         <Pressable style={styles.scrim} onPress={isPreparing ? undefined : onClose} />
-        <SafeAreaView edges={["bottom"]} style={styles.sheetWrap}>
-          <View style={styles.sheet}>
+        <SafeAreaView edges={["bottom"]} style={[styles.sheetWrap, isTablet && styles.sheetWrapTablet]}>
+          <View style={[styles.sheet, isTablet && styles.sheetTablet]}>
             <View style={styles.handle} />
             <Text style={styles.title}>Share quote</Text>
             <Text style={styles.body}>
@@ -74,12 +77,21 @@ const createStyles = (colors: ThemeTokens) =>
       flex: 1,
       justifyContent: "flex-end",
     },
+    rootTablet: {
+      justifyContent: "center",
+      alignItems: "center",
+    },
     scrim: {
       ...StyleSheet.absoluteFillObject,
       backgroundColor: "rgba(0, 0, 0, 0.28)",
     },
     sheetWrap: {
       justifyContent: "flex-end",
+    },
+    sheetWrapTablet: {
+      justifyContent: "center",
+      width: "100%",
+      maxWidth: 400,
     },
     sheet: {
       backgroundColor: colors.surface,
@@ -91,6 +103,11 @@ const createStyles = (colors: ThemeTokens) =>
       gap: 12,
       borderTopWidth: 1,
       borderColor: colors.border,
+    },
+    sheetTablet: {
+      borderRadius: 28,
+      borderTopWidth: 1,
+      alignSelf: "center",
     },
     handle: {
       width: 44,

@@ -99,4 +99,31 @@ describe("useOneMoreGate", () => {
     expect(claimExtraQuote).not.toHaveBeenCalled();
     expect(result.current.toastMessage).toBe("A short ad is unavailable right now.");
   });
+
+  it("closes modal and shows toast when ad is closed early (no unlock)", async () => {
+    (getRemainingQuoteCount as jest.Mock).mockResolvedValue(5);
+    (showRewardedAd as jest.Mock).mockResolvedValue("closed");
+    const claimExtraQuote = jest.fn().mockResolvedValue("success");
+
+    const { result } = renderHook(() =>
+      useOneMoreGate({
+        extraQuote: null,
+        claimExtraQuote,
+        onExhausted: jest.fn(),
+      })
+    );
+
+    await act(async () => {
+      await result.current.handleOneMorePress();
+    });
+    expect(result.current.isOpen).toBe(true);
+
+    await act(async () => {
+      await result.current.handleWatchAd();
+    });
+
+    expect(claimExtraQuote).not.toHaveBeenCalled();
+    expect(result.current.isOpen).toBe(false);
+    expect(result.current.toastMessage).toBe("Ad was closed before completing.");
+  });
 });

@@ -74,4 +74,16 @@ describe("widget payload", () => {
 
     expect(truncated.length).toBeLessThanOrEqual(200);
   });
+
+  it("truncates accessoryCircular to short label length", () => {
+    expect(truncateQuoteForWidget("Daily Quote", "accessoryCircular")).toBe(
+      "Daily Quote"
+    );
+    const truncated = truncateQuoteForWidget(
+      "A quote that is too long for the circular lock screen widget.",
+      "accessoryCircular"
+    );
+    expect(truncated.length).toBeLessThanOrEqual(20);
+    expect(truncated.endsWith("…")).toBe(true);
+  });
 });

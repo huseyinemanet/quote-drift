@@ -50,6 +50,8 @@ export function ChoiceChip({
     <Animated.View style={{ transform: [{ scale }], opacity }}>
       <Pressable
         accessibilityRole="button"
+        accessibilityLabel={label}
+        accessibilityState={{ selected }}
         disabled={disabled}
         onPress={() => {
           void selectionHaptic();

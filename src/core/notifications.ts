@@ -2,11 +2,12 @@ import * as Notifications from "expo-notifications";
 import { Linking, Platform } from "react-native";
 
 import {
+  APP_STATE_KEYS,
   DEFAULT_NOTIFICATION_SETTINGS,
   NOTIFICATION_CHANNEL_ID,
 } from "./constants";
 import { addDays, getDayKey } from "./date";
-import { enqueueDbWrite, getDb } from "./db";
+import { enqueueDbWrite, getDb, setAppState } from "./db";
 import {
   cancelFailedNotificationReservation,
   clearFutureNotificationReservations,
@@ -19,6 +20,12 @@ import type {
   ScheduleReservation,
 } from "./types";
 import { buildScheduleTimes, buildTestNotificationPayload } from "./scheduleUtils";
+
+/**
+ * Notification permission must only be requested after the user has opted in
+ * (e.g. onboarding reminder toggle ON, or Settings reminders ON).
+ * Do not call requestNotificationPermission on app launch.
+ */
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -223,4 +230,15 @@ export async function pauseNotifications(days: number) {
 
 export async function openSystemSettings() {
   await Linking.openSettings();
+}
+
+/**
+ * Persists current timezone offset after a notification sync.
+ * Used so schedule can be re-run when timezone/DST changes (e.g. on next app foreground).
+ */
+export async function persistTimezoneOffsetAfterSync(): Promise<void> {
+  await setAppState(
+    APP_STATE_KEYS.lastNotificationTimezoneOffset,
+    String(new Date().getTimezoneOffset())
+  );
 }

@@ -76,4 +76,21 @@ describe("quote selection invariants", () => {
       expect(minute).toBeLessThanOrEqual(1230);
     }
   });
+
+  it("builds schedule times for next day when reference is after active window", () => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date(Date.UTC(2026, 2, 6, 23, 0, 0, 0)));
+    const ref = new Date();
+    const times = buildScheduleTimes(570, 1230, 3, ref);
+    jest.useRealTimers();
+
+    expect(times).toHaveLength(3);
+    const nextDay = new Date(Date.UTC(2026, 2, 7, 0, 0, 0, 0));
+    for (const t of times) {
+      expect(t.getTime()).toBeGreaterThanOrEqual(nextDay.getTime());
+      const minute = t.getHours() * 60 + t.getMinutes();
+      expect(minute).toBeGreaterThanOrEqual(570);
+      expect(minute).toBeLessThanOrEqual(1230);
+    }
+  });
 });

@@ -7,6 +7,9 @@ import type { WidgetDisplayFamily, WidgetQuotePayload, WidgetTheme } from "./typ
 
 const SMALL_QUOTE_LIMIT = 120;
 const MEDIUM_QUOTE_LIMIT = 200;
+const ACCESSORY_INLINE_QUOTE_LIMIT = 50;
+const ACCESSORY_RECTANGULAR_QUOTE_LIMIT = 100;
+const ACCESSORY_CIRCULAR_LABEL_LIMIT = 20;
 const DEFAULT_DEEP_LINK = "quotify://today";
 const PLACEHOLDER_TEXT = "Open Quotify to load today's quote.";
 const PLACEHOLDER_AUTHOR = "Quotify";
@@ -22,7 +25,20 @@ export const widgetQuotePayloadSchema = z.object({
 });
 
 function getCharacterLimit(family: WidgetDisplayFamily) {
-  return family === "systemSmall" ? SMALL_QUOTE_LIMIT : MEDIUM_QUOTE_LIMIT;
+  switch (family) {
+    case "systemSmall":
+      return SMALL_QUOTE_LIMIT;
+    case "systemMedium":
+      return MEDIUM_QUOTE_LIMIT;
+    case "accessoryRectangular":
+      return ACCESSORY_RECTANGULAR_QUOTE_LIMIT;
+    case "accessoryInline":
+      return ACCESSORY_INLINE_QUOTE_LIMIT;
+    case "accessoryCircular":
+      return ACCESSORY_CIRCULAR_LABEL_LIMIT;
+    default:
+      return MEDIUM_QUOTE_LIMIT;
+  }
 }
 
 function normalizeText(text: string) {

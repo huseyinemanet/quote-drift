@@ -7,13 +7,16 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "ios:release": "expo run:ios --configuration Release",
+    "ios:clean": "cd ios && xcodebuild clean -workspace Quotify.xcworkspace -scheme Quotify -configuration Release 2>/dev/null || true && cd ..",
     "web": "expo start --web",
     "build:quotes": "node ./scripts/build-quotes.mjs",
     "test": "jest --runInBand",
     "typecheck": "tsc --noEmit",
-    "postinstall": "patch-package && node scripts/ensure-expo-metro-config-symlink.cjs"
+    "postinstall": "patch-package && node scripts/patch-expo-widgets-container-background.cjs && node scripts/ensure-expo-metro-config-symlink.cjs",
+    "eas-build-post-install": "node scripts/eas-inject-google-services.js"
   },
   "dependencies": {
+    "quotify-siri-quote": "file:./modules/quotify-siri-quote",
     "@expo-google-fonts/source-serif-4": "^0.4.1",
     "@expo/ui": "56.0.0-canary-20260305-5163746",
     "@react-native-async-storage/async-storage": "2.2.0",

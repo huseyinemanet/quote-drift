@@ -1,6 +1,6 @@
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { PropsWithChildren } from "react";
-import { useColorScheme } from "react-native";
+import { AppState, Appearance, InteractionManager, useColorScheme } from "react-native";
 
 import { APP_STATE_KEYS } from "./constants";
 import { getDayKey } from "./date";
@@ -8,12 +8,15 @@ import { getAppState, getDb, runMigrations, setAppState } from "./db";
 import { importQuotesIfNeeded } from "./importQuotes";
 import { cleanupTempFiles } from "./sharecard/cleanupTempFiles";
 import { syncTodayWidgetTimeline } from "./widget/sync";
+import { syncQuotesToWatch } from "./watch/syncWatch";
+import { syncSiriQuote } from "./siriQuote";
 import { initializeMobileAds } from "./ads/admob";
 import {
   getNotificationPermissionStatus,
   getNotificationSettings,
   pauseNotifications,
   persistNotificationSettings,
+  persistTimezoneOffsetAfterSync,
   requestNotificationPermission,
   sendTestNotification,
   syncNotificationSchedule,
@@ -158,6 +161,7 @@ export function AppProvider({ children }: PropsWithChildren) {
   const [topics, setTopics] = useState<string[]>([]);
   const [selectedTopics, setSelectedTopicsState] = useState<string[]>([]);
   const [savedCount, setSavedCount] = useState(0);
+  const notificationSyncInProgressRef = useRef(false);
 
   const refreshAllInternal = async (
     shouldSyncWidget: boolean,
@@ -180,6 +184,7 @@ export function AppProvider({ children }: PropsWithChildren) {
         if (isCancelled?.()) return;
         if (primary.type === "success") {
           setTodayQuote(primary.data);
+          syncSiriQuote(primary.data);
           if (shouldSyncWidget) {
             syncTodayWidgetTimeline({
               quote: primary.data,
@@ -189,6 +194,7 @@ export function AppProvider({ children }: PropsWithChildren) {
         } else {
           setTodayQuote(null);
           setSnapshot((current) => ({ ...current, state: "exhausted" }));
+          syncSiriQuote(null);
           if (shouldSyncWidget) {
             syncTodayWidgetTimeline({
               quote: null,
@@ -199,14 +205,22 @@ export function AppProvider({ children }: PropsWithChildren) {
         const extra = await getExtraTodayQuote(getDayKey());
         if (isCancelled?.()) return;
         setExtraQuote(extra);
+        if (shouldSyncWidget) {
+          syncQuotesToWatch({
+            todayQuote: primary.type === "success" ? primary.data : null,
+            extraQuote: extra,
+          });
+        }
       } else {
         setTodayQuote(null);
         setExtraQuote(null);
+        syncSiriQuote(null);
         if (shouldSyncWidget) {
           syncTodayWidgetTimeline({
             quote: null,
             scheme: systemScheme === "dark" ? "dark" : "light",
           });
+          syncQuotesToWatch({ todayQuote: null, extraQuote: null });
         }
       }
     } catch (err) {
@@ -243,11 +257,16 @@ export function AppProvider({ children }: PropsWithChildren) {
     if (process.env.EXPO_PUBLIC_DISABLE_ADMOB === "1") {
       return;
     }
-    const delay = 2000;
-    const t = setTimeout(() => {
-      void initializeMobileAds();
-    }, delay);
-    return () => clearTimeout(t);
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    const cancel = InteractionManager.runAfterInteractions(() => {
+      timeoutId = setTimeout(() => {
+        void initializeMobileAds();
+      }, 500);
+    });
+    return () => {
+      cancel.cancel();
+      if (timeoutId != null) clearTimeout(timeoutId);
+    };
   }, []);
 
   const value = useMemo<AppContextValue>(
@@ -291,6 +310,9 @@ export function AppProvider({ children }: PropsWithChildren) {
           setExtraQuote(result.data);
           setSnapshot((current) => ({ ...current, state: "ready" }));
           setSavedCount(await getSavedCount());
+          if (todayQuote) {
+            syncQuotesToWatch({ todayQuote, extraQuote: result.data });
+          }
           return "success";
         }
 
@@ -350,6 +372,45 @@ export function AppProvider({ children }: PropsWithChildren) {
       cancelled = true;
     };
   }, [snapshot.notificationSettings.permission_status]);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", (nextState) => {
+      if (nextState !== "active") return;
+      if (notificationSyncInProgressRef.current) return;
+      notificationSyncInProgressRef.current = true;
+      void (async () => {
+        try {
+          const currentOffset = new Date().getTimezoneOffset();
+          const storedRaw = await getAppState(
+            APP_STATE_KEYS.lastNotificationTimezoneOffset
+          );
+          const storedOffset =
+            storedRaw !== null ? Number(storedRaw) : null;
+          if (storedOffset !== null && storedOffset !== currentOffset) {
+            // Timezone or DST changed; sync below reschedules for current local time.
+          }
+
+          const status = await getNotificationPermissionStatus();
+          const next = await persistNotificationSettings({ permission_status: status });
+          setSnapshot((current) => ({ ...current, notificationSettings: next }));
+          await syncNotificationSchedule(next);
+          await persistTimezoneOffsetAfterSync();
+
+          // Push current day's quote to widget so it shows real content (not placeholder).
+          const dayKey = getDayKey();
+          const primary = await getOrCreateTodayQuote(dayKey);
+          const scheme = Appearance.getColorScheme() === "dark" ? "dark" : "light";
+          syncTodayWidgetTimeline({
+            quote: primary.type === "success" ? primary.data : null,
+            scheme,
+          });
+        } finally {
+          notificationSyncInProgressRef.current = false;
+        }
+      })();
+    });
+    return () => subscription.remove();
+  }, []);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }

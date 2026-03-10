@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from "react-native";
 import type { ReactNode } from "react";
 
-import { ThemeTokens, useTheme } from "./theme";
+import { MAX_FONT_SIZE_MULTIPLIER, ThemeTokens, useTheme } from "./theme";
 
 export function EmptyState({
   title,
@@ -20,8 +20,8 @@ export function EmptyState({
   return (
     <View style={[styles.container, fillVertical && styles.containerFill]}>
       {icon ? <View style={styles.iconWrap}>{icon}</View> : null}
-      <Text style={[styles.title, fillVertical && styles.titleCentered]}>{title}</Text>
-      <Text style={[styles.body, fillVertical && styles.bodyCentered]}>{body}</Text>
+      <Text maxFontSizeMultiplier={MAX_FONT_SIZE_MULTIPLIER} style={[styles.title, fillVertical && styles.titleCentered]}>{title}</Text>
+      <Text maxFontSizeMultiplier={MAX_FONT_SIZE_MULTIPLIER} style={[styles.body, fillVertical && styles.bodyCentered]}>{body}</Text>
     </View>
   );
 }

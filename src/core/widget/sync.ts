@@ -10,6 +10,10 @@ import {
 import { createDailyQuoteWidget } from "./layout";
 import type { WidgetQuotePayload, WidgetTheme } from "./types";
 
+/**
+ * Builds timeline entries for the Daily Quote widget. Each entry's props include
+ * `deepLink` (quotify://today) so the native widget can set widgetURL for tap-to-open.
+ */
 export function buildTodayWidgetTimelineEntries(args?: {
   quote?: QuoteView | null;
   scheme?: WidgetTheme;

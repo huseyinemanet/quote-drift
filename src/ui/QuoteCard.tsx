@@ -3,6 +3,7 @@ import {
   Image,
   Linking,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -12,7 +13,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import type { QuoteView } from "@/core/types";
 import type { QuoteCardBackground } from "@/features/today/quoteCardBackgrounds";
 
-import { ThemeTokens, useTheme } from "./theme";
+import { MAX_FONT_SIZE_MULTIPLIER, ThemeTokens, useTheme } from "./theme";
 
 const OVERLAY_GRADIENT = ["transparent", "rgba(0,0,0,0.25)", "rgba(0,0,0,0.6)"] as const;
 const OVERLAY_LOCATIONS = [0, 0.5, 1] as const;
@@ -27,6 +28,8 @@ export function QuoteCard({
   onToggleExpanded,
   maxCollapsedLines = 8,
   background,
+  style,
+  fillHeight = false,
 }: {
   quote: QuoteView;
   eyebrow: string;
@@ -39,18 +42,22 @@ export function QuoteCard({
   background?: QuoteCardBackground;
   /** When true, hides the photo attribution (e.g. for use when credit is shown in Settings/About). */
   hideAttribution?: boolean;
+  /** Optional style applied to the root card View (e.g. flex: 1 for fill-height layouts). */
+  style?: React.ComponentProps<typeof View>["style"];
+  /** When true, card content is wrapped in a ScrollView so long quotes don't clip; use when card is in a flex container. */
+  fillHeight?: boolean;
 }) {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const overlay = Boolean(background);
   const [imageLoadFailed, setImageLoadFailed] = useState(false);
   const showAttribution = overlay && !imageLoadFailed && !hideAttribution;
-  const authorLabel = <Text style={[styles.author, overlay && styles.overlayText]}>{quote.author}</Text>;
+  const authorLabel = <Text maxFontSizeMultiplier={MAX_FONT_SIZE_MULTIPLIER} style={[styles.author, overlay && styles.overlayText]}>{quote.author}</Text>;
   const [isTruncated, setIsTruncated] = useState(false);
   const canCollapse = quote.text.length > 150 || isTruncated || isExpanded;
 
   return (
-    <View style={[styles.card, overlay && styles.cardOverlay]}>
+    <View style={[styles.card, overlay && styles.cardOverlay, style]}>
       {background ? (
         <>
           {imageLoadFailed ? (
@@ -84,65 +91,137 @@ export function QuoteCard({
           />
         </>
       ) : null}
-      <View style={styles.content}>
-        <Text style={[styles.eyebrow, overlay && styles.overlayEyebrow]}>{eyebrow}</Text>
-        <Text
-          onTextLayout={(event) => {
-            if (isExpanded) return;
-            setIsTruncated(event.nativeEvent.lines.length > maxCollapsedLines);
-          }}
-          numberOfLines={isExpanded ? undefined : maxCollapsedLines}
-          style={[styles.text, overlay && styles.overlayText]}
+      {fillHeight ? (
+        <ScrollView
+          style={styles.fillHeightScroll}
+          contentContainerStyle={styles.fillHeightScrollContent}
+          showsVerticalScrollIndicator={false}
         >
-          {quote.text}
-        </Text>
-        {canCollapse && onToggleExpanded ? (
-          <Pressable
-            accessibilityRole="button"
-            onPress={onToggleExpanded}
-            style={({ pressed }) => [pressed && styles.expandPressed]}
-          >
-            <Text style={[styles.expandLabel, overlay && styles.overlayMuted]}>
-              {isExpanded ? "Show less" : "Read full quote"}
+          <View style={styles.content}>
+            <Text maxFontSizeMultiplier={MAX_FONT_SIZE_MULTIPLIER} style={[styles.eyebrow, overlay && styles.overlayEyebrow]}>{eyebrow}</Text>
+            <Text
+              onTextLayout={(event) => {
+                if (isExpanded) return;
+                setIsTruncated(event.nativeEvent.lines.length > maxCollapsedLines);
+              }}
+              numberOfLines={isExpanded ? undefined : maxCollapsedLines}
+              style={[styles.text, overlay && styles.overlayText]}
+            >
+              {quote.text}
             </Text>
-          </Pressable>
-        ) : null}
-        {!hideAuthor ? (
-          onPressAuthor ? (
+            {canCollapse && onToggleExpanded ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={isExpanded ? "Show less" : "Read full quote"}
+                onPress={onToggleExpanded}
+                style={({ pressed }) => [pressed && styles.expandPressed]}
+              >
+                <Text style={[styles.expandLabel, overlay && styles.overlayMuted]}>
+                  {isExpanded ? "Show less" : "Read full quote"}
+                </Text>
+              </Pressable>
+            ) : null}
+            {!hideAuthor ? (
+              onPressAuthor ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`View author, ${quote.author}`}
+                  onPress={onPressAuthor}
+                  style={({ pressed }) => [pressed && styles.authorPressed]}
+                >
+                  {authorLabel}
+                </Pressable>
+              ) : (
+                authorLabel
+              )
+            ) : null}
+            <View style={styles.metaRow}>
+              {quote.primaryTag ? (
+                <Text style={[styles.meta, overlay && styles.overlayMeta]}>
+                  #{quote.primaryTag}
+                </Text>
+              ) : null}
+            </View>
+            {showAttribution && background ? (
+              <Pressable
+                style={({ pressed }) => [
+                  styles.attributionWrap,
+                  pressed && styles.attributionPressed,
+                ]}
+                onPress={() => background.attributionUrl && Linking.openURL(background.attributionUrl)}
+                accessibilityRole="link"
+                accessibilityLabel={background.attribution}
+              >
+                <Text style={styles.attribution} numberOfLines={1}>
+                  {background.attribution}
+                </Text>
+              </Pressable>
+            ) : null}
+          </View>
+        </ScrollView>
+      ) : (
+        <View style={styles.content}>
+          <Text maxFontSizeMultiplier={MAX_FONT_SIZE_MULTIPLIER} style={[styles.eyebrow, overlay && styles.overlayEyebrow]}>{eyebrow}</Text>
+          <Text
+            onTextLayout={(event) => {
+              if (isExpanded) return;
+              setIsTruncated(event.nativeEvent.lines.length > maxCollapsedLines);
+            }}
+            numberOfLines={isExpanded ? undefined : maxCollapsedLines}
+            style={[styles.text, overlay && styles.overlayText]}
+          >
+            {quote.text}
+          </Text>
+          {canCollapse && onToggleExpanded ? (
             <Pressable
               accessibilityRole="button"
-              onPress={onPressAuthor}
-              style={({ pressed }) => [pressed && styles.authorPressed]}
+              accessibilityLabel={isExpanded ? "Show less" : "Read full quote"}
+              onPress={onToggleExpanded}
+              style={({ pressed }) => [pressed && styles.expandPressed]}
             >
-              {authorLabel}
+              <Text style={[styles.expandLabel, overlay && styles.overlayMuted]}>
+                {isExpanded ? "Show less" : "Read full quote"}
+              </Text>
             </Pressable>
-          ) : (
-            authorLabel
-          )
-        ) : null}
-        <View style={styles.metaRow}>
-          {quote.primaryTag ? (
-            <Text style={[styles.meta, overlay && styles.overlayMeta]}>
-              #{quote.primaryTag}
-            </Text>
+          ) : null}
+          {!hideAuthor ? (
+            onPressAuthor ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`View author, ${quote.author}`}
+                onPress={onPressAuthor}
+                style={({ pressed }) => [pressed && styles.authorPressed]}
+              >
+                {authorLabel}
+              </Pressable>
+            ) : (
+              authorLabel
+            )
+          ) : null}
+          <View style={styles.metaRow}>
+            {quote.primaryTag ? (
+              <Text style={[styles.meta, overlay && styles.overlayMeta]}>
+                #{quote.primaryTag}
+              </Text>
+            ) : null}
+          </View>
+          {showAttribution && background ? (
+            <Pressable
+              style={({ pressed }) => [
+                styles.attributionWrap,
+                pressed && styles.attributionPressed,
+              ]}
+              onPress={() => background.attributionUrl && Linking.openURL(background.attributionUrl)}
+              accessibilityRole="link"
+              accessibilityLabel={background.attribution}
+            >
+              <Text style={styles.attribution} numberOfLines={1}>
+                {background.attribution}
+              </Text>
+            </Pressable>
           ) : null}
         </View>
-        {showAttribution && background ? (
-          <Pressable
-            style={({ pressed }) => [
-              styles.attributionWrap,
-              pressed && styles.attributionPressed,
-            ]}
-            onPress={() => background.attributionUrl && Linking.openURL(background.attributionUrl)}
-            accessibilityRole="link"
-            accessibilityLabel={background.attribution}
-          >
-            <Text style={styles.attribution} numberOfLines={1}>
-              {background.attribution}
-            </Text>
-          </Pressable>
-        ) : null}
-      </View>
+      )}
     </View>
   );
 }
@@ -174,6 +253,13 @@ const createStyles = (colors: ThemeTokens) =>
     content: {
       gap: 14,
       zIndex: 1,
+    },
+    fillHeightScroll: {
+      flex: 1,
+      zIndex: 1,
+    },
+    fillHeightScrollContent: {
+      flexGrow: 1,
     },
     eyebrow: {
       fontSize: 13,

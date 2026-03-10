@@ -4,6 +4,7 @@ export const APP_STATE_KEYS = {
   onboardingComplete: "onboarding_complete",
   selectedTopics: "selected_topics",
   adBannerHiddenUntil: "ad_banner_hidden_until",
+  lastNotificationTimezoneOffset: "last_notification_timezone_offset",
 } as const;
 
 export const DEFAULT_NOTIFICATION_SETTINGS = {

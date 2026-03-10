@@ -75,31 +75,39 @@ export function useOneMoreGate({
     }
 
     setIsSubmitting(true);
-    const result = await showRewardedAd();
+    try {
+      const result = await showRewardedAd();
 
-    if (result === "reward-earned") {
-      const claimResult = await claimExtraQuote();
+      if (result === "reward-earned") {
+        const claimResult = await claimExtraQuote();
+        setIsSubmitting(false);
+        setIsOpen(false);
+
+        if (claimResult === "exhausted") {
+          onExhausted();
+          return;
+        }
+
+        if (claimResult === "already-claimed") {
+          setToastMessage("Already unlocked today.");
+          return;
+        }
+
+        setToastMessage("Unlocked one more quote.");
+        return;
+      }
+
       setIsSubmitting(false);
       setIsOpen(false);
 
-      if (claimResult === "exhausted") {
-        onExhausted();
-        return;
+      if (result === "error" || result === "not-ready") {
+        setToastMessage("A short ad is unavailable right now.");
+      } else if (result === "closed") {
+        setToastMessage("Ad was closed before completing.");
       }
-
-      if (claimResult === "already-claimed") {
-        setToastMessage("Already unlocked today.");
-        return;
-      }
-
-      setToastMessage("Unlocked one more quote.");
-      return;
-    }
-
-    setIsSubmitting(false);
-    setIsOpen(false);
-
-    if (result === "error" || result === "not-ready") {
+    } catch {
+      setIsSubmitting(false);
+      setIsOpen(false);
       setToastMessage("A short ad is unavailable right now.");
     }
   };

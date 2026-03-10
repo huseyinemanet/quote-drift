@@ -1,0 +1,48 @@
+# Same as .gitignore but include /ios and /android so EAS uploads them.
+# That avoids prebuild-on-server and "spawn pod ENOENT" (pod is in PATH when using existing ios).
+# See: https://docs.expo.dev/build-reference/easignore/
+
+# dependencies
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native (keep these excluded from git, but we still ignore .kotlin and keys)
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Metro
+.metro-health-check*
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
+.DS_Store
+*.pem
+
+# local env files
+.env
+.env*.local
+
+# Firebase / Google (do not upload to EAS; use EAS Secrets if needed)
+GoogleService-Info.plist
+google-services.json
+
+# typescript
+*.tsbuildinfo
+
+# Include native folders for EAS (they are in .gitignore but we want them uploaded)
+!/ios
+!/android

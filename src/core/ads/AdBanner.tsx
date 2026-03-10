@@ -3,6 +3,7 @@ import type { ComponentType } from "react";
 import { useMemo } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 
+import { useIsTablet } from "@/features/layout/useBreakpoint";
 import { BUTTON_BORDER_RADIUS } from "@/ui/buttonMetrics";
 import { ThemeTokens, useTheme } from "@/ui/theme";
 
@@ -16,7 +17,8 @@ const BANNER_WIDTH = 320;
 
 export function AdBanner({ state }: { state: AdBannerState }) {
   const { colors } = useTheme();
-  const styles = createStyles(colors);
+  const isTablet = useIsTablet();
+  const styles = createStyles(colors, isTablet);
   const googleMobileAds = getGoogleMobileAdsModule();
 
   const BannerAdComponent = googleMobileAds?.BannerAd as
@@ -89,7 +91,7 @@ export function AdBanner({ state }: { state: AdBannerState }) {
   );
 }
 
-const createStyles = (colors: ThemeTokens) =>
+const createStyles = (colors: ThemeTokens, isTablet: boolean) =>
   StyleSheet.create({
     container: {
       backgroundColor: colors.surfaceMuted,
@@ -110,13 +112,14 @@ const createStyles = (colors: ThemeTokens) =>
     row: {
       flexDirection: "row",
       alignItems: "center",
+      ...(isTablet && { justifyContent: "center" }),
     },
     bannerSlot: {
-      flex: 1,
       minHeight: 0,
       overflow: "hidden",
       justifyContent: "center",
       alignItems: "center",
+      ...(isTablet ? {} : { flex: 1 }),
     },
     bannerFrame: {
       width: BANNER_WIDTH,

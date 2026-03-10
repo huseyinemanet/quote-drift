@@ -1,6 +1,11 @@
 export type WidgetTheme = "light" | "dark";
 
-export type WidgetDisplayFamily = "systemSmall" | "systemMedium";
+export type WidgetDisplayFamily =
+  | "systemSmall"
+  | "systemMedium"
+  | "accessoryRectangular"
+  | "accessoryInline"
+  | "accessoryCircular";
 
 export type WidgetQuotePayload = {
   quoteId: string;

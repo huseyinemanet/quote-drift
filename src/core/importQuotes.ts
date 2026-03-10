@@ -39,13 +39,16 @@ export async function importQuotesIfNeeded() {
 
     for (const quote of validation.data) {
       await tx.runAsync(
-        `INSERT INTO quotes(id, text, author, source, normalized_author, searchable_text, imported_at)
-         VALUES(?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO quotes(id, text, author, source, explanation, context, takeaway, normalized_author, searchable_text, imported_at)
+         VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           quote.id,
           quote.text,
           quote.author,
           quote.source ?? null,
+          quote.explanation ?? null,
+          quote.context ?? null,
+          quote.takeaway ?? null,
           normalizeText(quote.author),
           normalizeText(`${quote.text} ${quote.author}`),
           importedAt,
@@ -59,10 +62,16 @@ export async function importQuotesIfNeeded() {
         );
       }
     }
+
+    await tx.runAsync(
+      "INSERT INTO app_state(key, value) VALUES(?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+      [APP_STATE_KEYS.corpusHash, corpusHash]
+    );
+    await tx.runAsync("DELETE FROM app_state WHERE key = ?", [
+      APP_STATE_KEYS.corpusInvalidIssues,
+    ]);
   });
 
-  await setAppState(APP_STATE_KEYS.corpusHash, corpusHash);
-  await setAppState(APP_STATE_KEYS.corpusInvalidIssues, null);
   await ensureNotificationSettings();
 
   return { type: "success" as const };

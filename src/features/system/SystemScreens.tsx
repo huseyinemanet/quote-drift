@@ -5,7 +5,7 @@ import { useAppState } from "@/core/bootstrap";
 import { Button } from "@/ui/Button";
 import { EmptyState } from "@/ui/EmptyState";
 import { Screen } from "@/ui/Screen";
-import { ThemeTokens, useTheme } from "@/ui/theme";
+import { MAX_FONT_SIZE_MULTIPLIER, ThemeTokens, useTheme } from "@/ui/theme";
 
 export function LoadingScreen() {
   const { colors } = useTheme();
@@ -15,8 +15,8 @@ export function LoadingScreen() {
     <Screen scroll={false}>
       <View style={styles.center}>
         <ActivityIndicator size="large" color={colors.text} />
-        <Text style={styles.title}>Preparing your offline collection</Text>
-        <Text style={styles.body}>
+        <Text maxFontSizeMultiplier={MAX_FONT_SIZE_MULTIPLIER} style={styles.title}>Preparing your offline collection</Text>
+        <Text maxFontSizeMultiplier={MAX_FONT_SIZE_MULTIPLIER} style={styles.body}>
           Validating the bundled quote library and loading durable state.
         </Text>
       </View>
@@ -36,7 +36,7 @@ export function FatalCorpusScreen() {
         body="Scheduling stays disabled until the corpus is corrected. If an older library exists in the database, you can still browse it."
       />
       {invalidIssues.map((issue) => (
-        <Text key={issue} style={styles.issue}>
+        <Text key={issue} maxFontSizeMultiplier={MAX_FONT_SIZE_MULTIPLIER} style={styles.issue}>
           • {issue}
         </Text>
       ))}

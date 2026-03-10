@@ -4,6 +4,7 @@ import {
   Animated,
   Easing,
   Modal,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -11,6 +12,7 @@ import {
 } from "react-native";
 import { PlayCircle } from "lucide-react-native";
 
+import { useIsTablet } from "@/features/layout/useBreakpoint";
 import {
   BUTTON_BORDER_RADIUS,
   BUTTON_FONT_SIZE,
@@ -36,6 +38,7 @@ export function RewardedGateModal({
   onClose,
 }: Props) {
   const { colors } = useTheme();
+  const isTablet = useIsTablet();
   const styles = createStyles(colors);
   const isLoading = status === "loading" || isSubmitting;
   const isReady = status === "ready" && !isSubmitting;
@@ -47,7 +50,7 @@ export function RewardedGateModal({
     if (visible) {
       setIsMounted(true);
       overlayOpacity.setValue(0);
-      sheetTranslateY.setValue(64);
+      sheetTranslateY.setValue(isTablet ? 0 : 64);
 
       const a1 = Animated.timing(overlayOpacity, {
         toValue: 1,
@@ -60,7 +63,7 @@ export function RewardedGateModal({
         damping: 20,
         stiffness: 220,
         mass: 0.92,
-        delay: 42,
+        delay: isTablet ? 0 : 42,
         useNativeDriver: true,
       });
       a1.start();
@@ -73,7 +76,7 @@ export function RewardedGateModal({
 
     const closeSeq = Animated.sequence([
       Animated.timing(sheetTranslateY, {
-        toValue: 64,
+        toValue: isTablet ? 0 : 64,
         duration: 220,
         easing: Easing.in(Easing.cubic),
         useNativeDriver: true,
@@ -93,7 +96,7 @@ export function RewardedGateModal({
     return () => {
       closeSeq.stop();
     };
-  }, [overlayOpacity, sheetTranslateY, visible]);
+  }, [overlayOpacity, sheetTranslateY, visible, isTablet]);
 
   if (!isMounted) {
     return null;
@@ -105,12 +108,14 @@ export function RewardedGateModal({
       transparent
       animationType="none"
       onRequestClose={onClose}
+      {...(Platform.OS === "ios" && isTablet && { presentationStyle: "formSheet" })}
     >
-      <Animated.View style={[styles.backdrop, { opacity: overlayOpacity }]}>
+      <Animated.View style={[styles.backdrop, isTablet && styles.backdropCentered, { opacity: overlayOpacity }]}>
         <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
         <Animated.View
           style={[
             styles.card,
+            isTablet && styles.cardTablet,
             {
               transform: [{ translateY: sheetTranslateY }],
             },
@@ -139,6 +144,8 @@ export function RewardedGateModal({
           <View style={styles.actions}>
             <Pressable
               accessibilityRole="button"
+              accessibilityLabel="Watch ad"
+              accessibilityState={{ disabled: !isReady }}
               disabled={!isReady}
               onPress={onWatchAd}
               style={({ pressed }) => [
@@ -152,6 +159,8 @@ export function RewardedGateModal({
               </Text>
             </Pressable>
             <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Not now"
               style={({ pressed }) => [
                 styles.secondaryAction,
                 pressed && styles.secondaryActionPressed,
@@ -174,6 +183,10 @@ const createStyles = (colors: ThemeTokens) =>
       backgroundColor: "rgba(7, 9, 11, 0.56)",
       justifyContent: "flex-end",
     },
+    backdropCentered: {
+      justifyContent: "center",
+      alignItems: "center",
+    },
     card: {
       backgroundColor: colors.surface,
       borderTopLeftRadius: 16,
@@ -184,6 +197,13 @@ const createStyles = (colors: ThemeTokens) =>
       paddingTop: 24,
       paddingBottom: 24,
       gap: 14,
+    },
+    cardTablet: {
+      borderBottomLeftRadius: 16,
+      borderBottomRightRadius: 16,
+      borderRadius: 16,
+      maxWidth: 400,
+      width: "100%",
     },
     headerBlock: {
       gap: 6,

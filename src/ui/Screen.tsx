@@ -4,6 +4,7 @@ import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { useContentWidthConstraint } from "@/features/layout/useBreakpoint";
 import { useBottomChromeInset } from "@/features/layout/BottomChromeInset";
 
 import { ThemeTokens, useTheme } from "./theme";
@@ -29,6 +30,7 @@ const STICKY_FOOTER_PADDING_BOTTOM = 160;
 
 export function Screen({ children, scroll = true, padded = true, edges = ["top"], stickyFooter, useChromeInset = true, debugInsets = false }: Props) {
   const { colors } = useTheme();
+  const { maxWidth: contentMaxWidth } = useContentWidthConstraint();
   const headerHeight = useHeaderHeight();
   const bottomChromeInset = useBottomChromeInset();
   const effectiveBottomInset = useChromeInset
@@ -38,6 +40,9 @@ export function Screen({ children, scroll = true, padded = true, edges = ["top"]
     ? 24 + STICKY_FOOTER_PADDING_BOTTOM + effectiveBottomInset
     : 24 + effectiveBottomInset;
   const styles = createStyles(colors);
+  const contentWrapperStyle = contentMaxWidth != null
+    ? [styles.contentWrapper, { maxWidth: contentMaxWidth }]
+    : undefined;
 
   useEffect(() => {
     if (__DEV__ && (debugInsets || bottomChromeInset !== effectiveBottomInset)) {
@@ -72,17 +77,39 @@ export function Screen({ children, scroll = true, padded = true, edges = ["top"]
         },
       ]}
     >
-      {content}
+      {contentWrapperStyle ? (
+        <View style={styles.contentWrapperOuter}>
+          <View style={contentWrapperStyle}>{content}</View>
+        </View>
+      ) : (
+        content
+      )}
     </ScrollView>
   );
 
   return (
     <SafeAreaView edges={edges} style={styles.safeArea}>
-      {scroll ? (stickyFooter ? <View style={styles.scrollWrap}>{scrollContent}</View> : scrollContent) : content}
+      {scroll ? (stickyFooter ? <View style={styles.scrollWrap}>{scrollContent}</View> : scrollContent) : (
+        contentWrapperStyle ? (
+          <View style={styles.contentWrapperOuter}>
+            <View style={contentWrapperStyle}>{content}</View>
+          </View>
+        ) : (
+          content
+        )
+      )}
       {stickyFooter ? (
-        <View style={[styles.stickyFooter, { paddingBottom: 24 + effectiveBottomInset }]}>
-          {stickyFooter}
-        </View>
+        contentWrapperStyle ? (
+          <View style={styles.stickyFooterOuter}>
+            <View style={[styles.stickyFooter, { paddingBottom: 24 + effectiveBottomInset }, contentWrapperStyle]}>
+              {stickyFooter}
+            </View>
+          </View>
+        ) : (
+          <View style={[styles.stickyFooter, { paddingBottom: 24 + effectiveBottomInset }]}>
+            {stickyFooter}
+          </View>
+        )
       ) : null}
       {debugInsets ? (
         <View style={styles.debugBanner} pointerEvents="none">
@@ -110,10 +137,21 @@ const createStyles = (colors: ThemeTokens) =>
     scrollContent: {
       paddingBottom: 16,
     },
+    contentWrapperOuter: {
+      width: "100%",
+      alignItems: "center",
+    },
+    contentWrapper: {
+      alignSelf: "stretch",
+    },
     content: {
       paddingHorizontal: 16,
       paddingTop: 12,
       gap: 14,
+    },
+    stickyFooterOuter: {
+      width: "100%",
+      alignItems: "center",
     },
     stickyFooter: {
       paddingHorizontal: 16,

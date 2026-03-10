@@ -9,6 +9,9 @@ import {
 import { ColorSchemeName, useColorScheme } from "react-native";
 import * as SystemUI from "expo-system-ui";
 
+/** Caps system font scaling to avoid layout overflow on small devices and when accessibility text size is large. */
+export const MAX_FONT_SIZE_MULTIPLIER = 1.3;
+
 export type ThemeTokens = {
   background: string;
   surface: string;

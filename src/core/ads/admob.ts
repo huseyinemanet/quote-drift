@@ -75,6 +75,17 @@ export function hasBannerRuntimeConfig() {
   return Boolean(getBannerUnitId());
 }
 
+const INIT_TIMEOUT_MS = 8000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("AdMob init timeout")), ms)
+    ),
+  ]);
+}
+
 export async function initializeMobileAds() {
   if (initPromise) {
     return initPromise;
@@ -93,14 +104,21 @@ export async function initializeMobileAds() {
     const { default: mobileAds } = googleMobileAds;
 
     try {
-      await mobileAds().setRequestConfiguration({
-        testDeviceIdentifiers: admobConfig.isTestEnv
-          ? admobConfig.testDeviceIdentifiers
-          : undefined,
-      });
-      await mobileAds().initialize();
+      await withTimeout(
+        (async () => {
+          await mobileAds().setRequestConfiguration({
+            testDeviceIdentifiers: admobConfig.isTestEnv
+              ? admobConfig.testDeviceIdentifiers
+              : undefined,
+          });
+          await mobileAds().initialize();
+        })(),
+        INIT_TIMEOUT_MS
+      );
     } catch (error) {
-      console.info("AdMob initialization skipped.", error);
+      if (__DEV__) {
+        console.info("AdMob initialization skipped.", error);
+      }
     }
   })();
 

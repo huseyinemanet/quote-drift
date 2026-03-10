@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from "react-native";
 
 import { useBottomChromeInset } from "@/features/layout/BottomChromeInset";
-import { ThemeTokens, useTheme } from "@/ui/theme";
+import { MAX_FONT_SIZE_MULTIPLIER, ThemeTokens, useTheme } from "@/ui/theme";
 
 type Props = {
   message: string;
@@ -9,9 +9,9 @@ type Props = {
 };
 
 export function ToastMessage({ message, variant = "default" }: Props) {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const bottomChromeInset = useBottomChromeInset();
-  const styles = createStyles(colors);
+  const styles = createStyles(colors, isDark);
   const isHud = variant === "hud";
 
   return (
@@ -24,13 +24,13 @@ export function ToastMessage({ message, variant = "default" }: Props) {
       ]}
     >
       <View style={[styles.toast, isHud ? styles.toastHud : null]}>
-        <Text style={[styles.text, isHud ? styles.textHud : null]}>{message}</Text>
+        <Text maxFontSizeMultiplier={MAX_FONT_SIZE_MULTIPLIER} style={[styles.text, isHud ? styles.textHud : null]}>{message}</Text>
       </View>
     </View>
   );
 }
 
-const createStyles = (colors: ThemeTokens) =>
+const createStyles = (colors: ThemeTokens, isDark: boolean) =>
   StyleSheet.create({
     container: {
       position: "absolute",
@@ -52,7 +52,7 @@ const createStyles = (colors: ThemeTokens) =>
       minWidth: 180,
     },
     toastHud: {
-      backgroundColor: "rgba(24, 28, 32, 0.86)",
+      backgroundColor: isDark ? colors.surface : "rgba(24, 28, 32, 0.86)",
       borderWidth: 0,
       borderColor: "transparent",
       borderRadius: 999,
@@ -67,7 +67,7 @@ const createStyles = (colors: ThemeTokens) =>
       fontWeight: "600",
     },
     textHud: {
-      color: colors.background,
+      color: isDark ? colors.text : colors.background,
       fontSize: 13,
       fontWeight: "600",
     },

@@ -49,6 +49,7 @@ export function QuoteListItem({
           {onCopy ? (
             <Pressable
               accessibilityRole="button"
+              accessibilityLabel={isCopyConfirmed ? "Copied" : "Copy quote"}
               onPress={onCopy}
               style={({ pressed }) => [styles.iconButton, pressed && styles.iconButtonPressed]}
             >
@@ -62,6 +63,7 @@ export function QuoteListItem({
           {showShare && onShare ? (
             <Pressable
               accessibilityRole="button"
+              accessibilityLabel="Share quote"
               onPress={onShare}
               style={({ pressed }) => [styles.iconButton, pressed && styles.iconButtonPressed]}
             >
@@ -70,6 +72,8 @@ export function QuoteListItem({
           ) : null}
           <Pressable
             accessibilityRole="button"
+            accessibilityLabel={quote.saved ? "Remove from saved" : "Save quote"}
+            accessibilityState={{ disabled: saving }}
             disabled={saving}
             onPress={() => {
               void selectionHaptic();
@@ -95,6 +99,7 @@ export function QuoteListItem({
         onPressAuthor ? (
           <Pressable
             accessibilityRole="button"
+            accessibilityLabel={`View author, ${quote.author}`}
             onPress={onPressAuthor}
             style={({ pressed }) => [pressed && styles.authorLinkPressed]}
           >

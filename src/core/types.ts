@@ -4,6 +4,12 @@ export type QuoteRecord = {
   author: string;
   tags: string[];
   source?: string;
+  /** Quote meaning / interpretation */
+  explanation?: string;
+  /** Historical context */
+  context?: string;
+  /** Practical takeaway */
+  takeaway?: string;
 };
 
 export type Author = {
@@ -54,6 +60,21 @@ export type ShareableQuote = Pick<
   QuoteView,
   "id" | "text" | "author" | "source" | "primaryTag"
 >;
+
+export type Reflection = {
+  id: string;
+  quoteId: string;
+  dayKey: string;
+  text: string;
+  topic?: string | null;
+  createdAt: number;
+  updatedAt: number;
+};
+
+export type ReflectionWithQuote = {
+  reflection: Reflection;
+  quote: { id: string; text: string; author: string; topic?: string | null };
+};
 
 export type ExhaustedResult = {
   type: "exhausted";

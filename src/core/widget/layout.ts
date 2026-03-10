@@ -20,7 +20,9 @@ export const DAILY_QUOTE_WIDGET_LAYOUT = String.raw`function(props) {
         muted: "#5d675f",
         accent: "#8b5e3c"
       };
-  const family = props && props.family === "systemMedium" ? "systemMedium" : "systemSmall";
+  const family = (props && (props.family === "systemMedium" || props.family === "accessoryRectangular" || props.family === "accessoryInline" || props.family === "accessoryCircular"))
+    ? props.family
+    : "systemSmall";
   const quoteText = typeof props?.text === "string" && props.text.trim().length > 0
     ? props.text.replace(/\s+/g, " ").trim()
     : "Open Quotify to load today's quote.";
@@ -30,7 +32,7 @@ export const DAILY_QUOTE_WIDGET_LAYOUT = String.raw`function(props) {
   const category = typeof props?.category === "string" && props.category.trim().length > 0
     ? props.category.trim()
     : null;
-  const limit = family === "systemSmall" ? 120 : 200;
+  const limit = family === "systemSmall" ? 120 : family === "systemMedium" ? 200 : family === "accessoryRectangular" ? 100 : family === "accessoryCircular" ? 20 : 50;
   const normalizedQuote = quoteText.length <= limit
     ? quoteText
     : (function() {
@@ -40,6 +42,70 @@ export const DAILY_QUOTE_WIDGET_LAYOUT = String.raw`function(props) {
         return safeSlice.trimEnd() + "…";
       })();
 
+  if (family === "accessoryInline") {
+    return React.createElement(
+      Text,
+      {
+        modifiers: [
+          font({ size: 14, weight: "medium", design: "rounded" }),
+          foregroundStyle(theme.text),
+          lineLimit(1),
+          truncationMode("tail")
+        ]
+      },
+      normalizedQuote
+    );
+  }
+  if (family === "accessoryRectangular") {
+    return React.createElement(
+      VStack,
+      {
+        spacing: 6,
+        modifiers: [
+          frame({ maxWidth: 1000, maxHeight: 1000, alignment: "topLeading" }),
+          padding({ all: 10 })
+        ]
+      },
+      React.createElement(
+        Text,
+        {
+          modifiers: [
+            font({ size: 12, weight: "medium", design: "serif" }),
+            foregroundStyle(theme.text),
+            lineLimit(3),
+            truncationMode("tail")
+          ]
+        },
+        normalizedQuote
+      ),
+      React.createElement(
+        Text,
+        {
+          modifiers: [
+            font({ size: 10, weight: "regular", design: "rounded" }),
+            foregroundStyle(theme.muted),
+            lineLimit(1),
+            truncationMode("tail")
+          ]
+        },
+        authorName
+      )
+    );
+  }
+  if (family === "accessoryCircular") {
+    return React.createElement(
+      Text,
+      {
+        modifiers: [
+          font({ size: 11, weight: "semibold", design: "rounded" }),
+          foregroundStyle(theme.text),
+          lineLimit(1),
+          truncationMode("tail")
+        ]
+      },
+      quoteText === "Open Quotify to load today's quote." ? "Daily Quote" : normalizedQuote
+    );
+  }
   return React.createElement(
     VStack,
     {

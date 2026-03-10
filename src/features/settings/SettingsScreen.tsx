@@ -1,11 +1,13 @@
 import * as Application from "expo-application";
 import { router } from "expo-router";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   ActionSheetIOS,
   Linking,
+  Modal,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Switch,
   Text,
@@ -17,6 +19,7 @@ import { minutesToLabel } from "@/core/date";
 import { selectionHaptic } from "@/core/haptics";
 import { openSystemSettings } from "@/core/notifications";
 import { useAppState } from "@/core/bootstrap";
+import { useIsTablet } from "@/features/layout/useBreakpoint";
 import { Banner } from "@/ui/Banner";
 import { Screen } from "@/ui/Screen";
 import { ThemeTokens, useTheme } from "@/ui/theme";
@@ -27,9 +30,20 @@ const FREQUENCY_OPTIONS = [
   { value: 3 as const, label: "Three times a day" },
 ] as const;
 
+type OptionsModalState = {
+  title: string;
+  message?: string;
+  options: string[];
+  cancelButtonIndex: number;
+  destructiveButtonIndex?: number;
+  onSelect: (index: number) => void;
+} | null;
+
 export function SettingsScreen() {
   const { colors } = useTheme();
+  const isTablet = useIsTablet();
   const styles = createStyles(colors);
+  const [optionsModal, setOptionsModal] = useState<OptionsModalState>(null);
   const {
     notificationSettings,
     requestNotifications,
@@ -78,6 +92,20 @@ export function SettingsScreen() {
 
       void updateNotificationSettings({ frequency_per_day: option.value });
     };
+
+    if (Platform.OS === "ios" && isTablet) {
+      setOptionsModal({
+        title: "Reminder frequency",
+        message: "Choose how often reminders can appear each day.",
+        options,
+        cancelButtonIndex,
+        onSelect: (buttonIndex) => {
+          if (buttonIndex === cancelButtonIndex) return;
+          selectFrequency(buttonIndex);
+        },
+      });
+      return;
+    }
 
     if (Platform.OS === "ios") {
       ActionSheetIOS.showActionSheetWithOptions(
@@ -135,6 +163,20 @@ export function SettingsScreen() {
       }
     };
 
+    if (Platform.OS === "ios" && isTablet) {
+      setOptionsModal({
+        title: "Active hours",
+        message: "Reminders will only appear during the hours you choose.",
+        options,
+        cancelButtonIndex,
+        onSelect: (buttonIndex) => {
+          if (buttonIndex === cancelButtonIndex) return;
+          applySelection(buttonIndex);
+        },
+      });
+      return;
+    }
+
     if (Platform.OS === "ios") {
       ActionSheetIOS.showActionSheetWithOptions(
         {
@@ -182,6 +224,20 @@ export function SettingsScreen() {
       }
     };
 
+    if (Platform.OS === "ios" && isTablet) {
+      setOptionsModal({
+        title: "Pause reminders",
+        options: allOptions,
+        cancelButtonIndex,
+        destructiveButtonIndex,
+        onSelect: (buttonIndex) => {
+          if (buttonIndex === cancelButtonIndex) return;
+          applySelection(buttonIndex);
+        },
+      });
+      return;
+    }
+
     if (Platform.OS === "ios") {
       ActionSheetIOS.showActionSheetWithOptions(
         {
@@ -225,6 +281,60 @@ export function SettingsScreen() {
 
   return (
     <Screen edges={[]}>
+      {optionsModal ? (
+        <Modal
+          visible
+          transparent
+          animationType="fade"
+          onRequestClose={() => setOptionsModal(null)}
+          {...(Platform.OS === "ios" && isTablet && { presentationStyle: "formSheet" })}
+        >
+          <Pressable style={styles.optionsModalBackdrop} onPress={() => setOptionsModal(null)}>
+            <Pressable style={styles.optionsModalContent} onPress={(e) => e.stopPropagation()}>
+              <Text style={styles.optionsModalTitle}>{optionsModal.title}</Text>
+              {optionsModal.message ? (
+                <Text style={styles.optionsModalMessage}>{optionsModal.message}</Text>
+              ) : null}
+              <ScrollView style={styles.optionsModalScroll} keyboardShouldPersistTaps="handled">
+                {optionsModal.options.map((label, index) => {
+                  const isCancel = index === optionsModal.cancelButtonIndex;
+                  const isDestructive = index === optionsModal.destructiveButtonIndex;
+                  return (
+                    <Pressable
+                      key={index}
+                      accessibilityRole="button"
+                      accessibilityLabel={label}
+                      style={({ pressed }) => [
+                        styles.optionsModalRow,
+                        pressed && styles.optionsModalRowPressed,
+                        isCancel && styles.optionsModalRowCancel,
+                      ]}
+                      onPress={() => {
+                        if (isCancel) {
+                          setOptionsModal(null);
+                          return;
+                        }
+                        void selectionHaptic();
+                        optionsModal.onSelect(index);
+                        setOptionsModal(null);
+                      }}
+                    >
+                      <Text
+                        style={[
+                          styles.optionsModalRowLabel,
+                          isDestructive && styles.optionsModalRowDestructive,
+                        ]}
+                      >
+                        {label}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </ScrollView>
+            </Pressable>
+          </Pressable>
+        </Modal>
+      ) : null}
       {denied ? (
         <Banner
           title="Reminders are denied at the system level"
@@ -240,10 +350,14 @@ export function SettingsScreen() {
             onValueChange={handleSetNotificationsEnabled}
             trackColor={{ false: colors.surfaceMuted, true: colors.accent }}
             thumbColor={colors.background}
+            accessibilityLabel="Enable reminders"
+            accessibilityState={{ checked: notificationSettings.enabled }}
           />
         </View>
 
         <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`Frequency, ${frequencyLabel}`}
           style={({ pressed }) => [styles.settingRow, pressed && styles.settingRowPressed]}
           onPress={openFrequencyPicker}
         >
@@ -255,6 +369,8 @@ export function SettingsScreen() {
         </Pressable>
 
         <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`Active hours, ${activeHoursLabel}`}
           style={({ pressed }) => [styles.settingRow, pressed && styles.settingRowPressed]}
           onPress={openHoursPicker}
         >
@@ -266,6 +382,8 @@ export function SettingsScreen() {
         </Pressable>
 
         <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`Pause reminders, ${pauseSummary}`}
           style={({ pressed }) => [styles.settingRow, pressed && styles.settingRowPressed]}
           onPress={openPauseOptions}
         >
@@ -280,6 +398,8 @@ export function SettingsScreen() {
           <View style={styles.advancedBlock}>
             <Text style={styles.helperLabel}>Advanced</Text>
             <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Send test notification"
               style={({ pressed }) => [styles.linkRow, pressed && styles.linkRowPressed]}
               onPress={sendTestReminder}
             >
@@ -296,6 +416,8 @@ export function SettingsScreen() {
 
         {denied ? (
           <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Open system settings"
             style={({ pressed }) => [styles.linkRow, pressed && styles.linkRowPressed]}
             onPress={openSystemSettings}
           >
@@ -307,9 +429,30 @@ export function SettingsScreen() {
 
       <View style={[styles.section, styles.aboutSection]}>
         <Text style={styles.sectionTitle}>About</Text>
+        <Text style={styles.aboutCaption}>
+          Content sources and photo credits are listed under Sources and Photo credits.
+        </Text>
+
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="My reflections"
+          style={({ pressed }) => [styles.linkRow, pressed && styles.linkRowPressed]}
+          onPress={() => {
+            void selectionHaptic();
+            router.push("/(app)/reflections");
+          }}
+        >
+          <View style={styles.settingCopy}>
+            <Text style={styles.linkLabel}>My reflections</Text>
+            <Text style={styles.rowSubtitle}>Quotes you reflected on</Text>
+          </View>
+          <Text style={styles.linkChevron}>›</Text>
+        </Pressable>
 
         {appConfig.storeReviewUrl ? (
           <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Rate Quotify"
             style={({ pressed }) => [styles.linkRow, pressed && styles.linkRowPressed]}
             onPress={() => Linking.openURL(appConfig.storeReviewUrl!)}
           >
@@ -319,6 +462,8 @@ export function SettingsScreen() {
         ) : null}
 
         <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Show onboarding again"
           style={({ pressed }) => [styles.linkRow, pressed && styles.linkRowPressed]}
           onPress={handleShowOnboardingAgain}
         >
@@ -330,6 +475,8 @@ export function SettingsScreen() {
         </Pressable>
 
         <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Support"
           style={({ pressed }) => [styles.linkRow, pressed && styles.linkRowPressed]}
           onPress={() => Linking.openURL(appConfig.supportUrl)}
         >
@@ -338,6 +485,8 @@ export function SettingsScreen() {
         </Pressable>
 
         <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Privacy policy"
           style={({ pressed }) => [styles.linkRow, pressed && styles.linkRowPressed]}
           onPress={() => Linking.openURL(appConfig.privacyUrl)}
         >
@@ -346,19 +495,26 @@ export function SettingsScreen() {
         </Pressable>
 
         <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Sources"
           style={({ pressed }) => [styles.linkRow, pressed && styles.linkRowPressed]}
           onPress={() => Linking.openURL(appConfig.sourcesUrl)}
         >
-          <Text style={styles.linkLabel}>Sources</Text>
+          <View style={styles.settingCopy}>
+            <Text style={styles.linkLabel}>Sources</Text>
+            <Text style={styles.rowSubtitle}>Quotes & licenses</Text>
+          </View>
           <Text style={styles.linkChevron}>›</Text>
         </Pressable>
 
         <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Photo credits"
           style={({ pressed }) => [styles.linkRow, pressed && styles.linkRowPressed]}
-          onPress={() => Linking.openURL("https://unsplash.com")}
+          onPress={() => Linking.openURL(appConfig.photoCreditsUrl)}
         >
           <View style={styles.settingCopy}>
-            <Text style={styles.linkLabel}>Photo backgrounds</Text>
+            <Text style={styles.linkLabel}>Photo credits</Text>
             <Text style={styles.rowSubtitle}>Unsplash</Text>
           </View>
           <Text style={styles.linkChevron}>›</Text>
@@ -376,6 +532,57 @@ export function SettingsScreen() {
 
 const createStyles = (colors: ThemeTokens) =>
   StyleSheet.create({
+    optionsModalBackdrop: {
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.4)",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 24,
+    },
+    optionsModalContent: {
+      backgroundColor: colors.surface,
+      borderRadius: 16,
+      padding: 20,
+      maxWidth: 400,
+      width: "100%",
+      maxHeight: "80%",
+    },
+    optionsModalTitle: {
+      fontSize: 18,
+      fontWeight: "700",
+      color: colors.text,
+      marginBottom: 4,
+    },
+    optionsModalMessage: {
+      fontSize: 15,
+      lineHeight: 20,
+      color: colors.textMuted,
+      marginBottom: 16,
+    },
+    optionsModalScroll: {
+      maxHeight: 320,
+    },
+    optionsModalRow: {
+      paddingVertical: 14,
+      paddingHorizontal: 4,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: colors.border,
+    },
+    optionsModalRowPressed: {
+      opacity: 0.7,
+    },
+    optionsModalRowCancel: {
+      borderBottomWidth: 0,
+      marginTop: 8,
+    },
+    optionsModalRowLabel: {
+      fontSize: 17,
+      color: colors.text,
+    },
+    optionsModalRowDestructive: {
+      color: colors.accent,
+      fontWeight: "600",
+    },
     section: {
       backgroundColor: colors.surface,
       borderWidth: 1,
@@ -392,6 +599,12 @@ const createStyles = (colors: ThemeTokens) =>
     },
     aboutSection: {
       gap: 10,
+    },
+    aboutCaption: {
+      fontSize: 13,
+      lineHeight: 18,
+      color: colors.textMuted,
+      marginBottom: 4,
     },
     sectionTitle: {
       fontSize: 20,

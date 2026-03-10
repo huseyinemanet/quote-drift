@@ -97,6 +97,8 @@ export function TopicsScreen() {
         </View>
         {!hasSelection && (
           <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Skip"
             onPress={() => continueWithTopics([])}
             style={({ pressed }) => [
               styles.skipLink,

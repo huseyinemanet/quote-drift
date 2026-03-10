@@ -26,7 +26,8 @@ export function BottomChrome({
   const shouldShowBanner =
     currentRouteName !== "today" &&
     currentRouteName !== "library" &&
-    currentRouteName !== "settings";
+    currentRouteName !== "settings" &&
+    currentRouteName !== "reflections";
   const showBannerGap = shouldShowBanner && adBannerState.bannerHeight > 0;
   const chromeHeight =
     tabBarHeight + (showBannerGap ? adBannerState.bannerHeight + AD_GAP : 0);

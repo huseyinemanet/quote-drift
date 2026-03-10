@@ -6,6 +6,9 @@ export const quoteSchema = z.object({
   author: z.string().min(1),
   tags: z.array(z.string().min(1)).min(1),
   source: z.string().min(1).optional(),
+  explanation: z.string().min(1).optional(),
+  context: z.string().min(1).optional(),
+  takeaway: z.string().min(1).optional(),
 });
 
 export const quotesSchema = z

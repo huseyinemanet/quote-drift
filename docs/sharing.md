@@ -7,12 +7,17 @@ Quotify can generate a shareable Story image from the current Today quote. The i
 - The app renders a hidden `StoryCard` React Native view off-screen.
 - `react-native-view-shot` captures that view to a PNG file.
 - The image uses an opaque light background and fixed layout margins.
-- The file is stored in the cache directory under a `quotify-story-*.png` prefix.
+- The file is stored in the cache directory under `quotify-sharecards/Quotify Image.png`.
 
 ## Share Flow
-- Tapping `Share` prepares the image, copies that generated PNG to the clipboard on a best-effort basis, and opens the native OS share sheet.
+- Tapping `Share` prepares the image, opens the native OS share sheet with the generated PNG, then optionally copies the image to the clipboard (only if file size is under 2 MB to avoid memory spikes).
 - Instagram is handled by the native share destinations the user already has installed.
 - There is no in-app custom share menu; the app hands off directly to the platform share UI.
+
+## Risks and mitigations
+- **Image render fail:** Capture runs after layout is ready (onLayout + short timeout). One retry with an extra layout wait if the first capture fails. Errors are logged in dev; user sees specific toasts (“Image capture failed” vs “Sharing failed”).
+- **Blank image:** The exported file is validated by minimum size (~20 KB). If too small, we treat it as blank/corrupt, throw, and the hook can retry or show “Image came out empty. Please try again.”
+- **Memory crash:** Share sheet is opened first; clipboard is filled only after share and only when the file is under 2 MB, so we avoid loading a large base64 string into memory before or during share. Resolution can be reduced via `EXPO_PUBLIC_SHARE_CAPTURE_SCALE` (0.5–1) for low-RAM builds.
 
 ## Typography And Layout
 - Story rendering always uses the light Quotify share palette.
@@ -21,8 +26,8 @@ Quotify can generate a shareable Story image from the current Today quote. The i
 - Bottom padding is intentionally large so Instagram Story chrome is less likely to cover the text.
 
 ## Cleanup
-- Generated files are stored in cache, not documents.
-- Startup cleanup removes old `quotify-story-*.png` files.
+- Generated files are stored in cache (directory `quotify-sharecards`), not documents.
+- Startup cleanup removes old sharecard files.
 - After each share attempt, the app schedules best-effort deletion of the temp file after a short delay.
 
 ## Known Limitations

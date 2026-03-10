@@ -121,10 +121,13 @@ async function hydrateQuote(tx: SQLiteDatabase, quoteId: string): Promise<QuoteV
     text: string;
     author: string;
     source: string | null;
+    explanation: string | null;
+    context: string | null;
+    takeaway: string | null;
     tags: string;
     saved: number | null;
   }>(
-    `SELECT q.id, q.text, q.author, q.source,
+    `SELECT q.id, q.text, q.author, q.source, q.explanation, q.context, q.takeaway,
             GROUP_CONCAT(qt.tag, '|') AS tags,
             sq.quote_id AS saved
      FROM quotes q
@@ -147,6 +150,9 @@ async function hydrateQuote(tx: SQLiteDatabase, quoteId: string): Promise<QuoteV
     author: quote.author,
     authorId: getAuthorIdFromName(quote.author),
     source: quote.source ?? undefined,
+    explanation: quote.explanation ?? undefined,
+    context: quote.context ?? undefined,
+    takeaway: quote.takeaway ?? undefined,
     tags,
     primaryTag: tags[0] ?? null,
     saved: Boolean(quote.saved),
@@ -226,6 +232,17 @@ export async function getOrCreateTodayQuote(dayKey: string): Promise<Result<Quot
   }
 
   return withExclusiveTransaction(async (tx) => {
+    const existingInTx = await tx.getFirstAsync<{ quote_id: string }>(
+      "SELECT quote_id FROM today_state WHERE day_key = ?",
+      [dayKey]
+    );
+    if (existingInTx) {
+      return {
+        type: "success",
+        data: await hydrateQuote(tx, existingInTx.quote_id),
+      } satisfies SuccessResult<QuoteView>;
+    }
+
     const claimed = await claimQuoteInTransaction(tx, "today", { dayKey });
     if (claimed.type !== "success") {
       return claimed;
@@ -314,22 +331,14 @@ export async function reserveNotificationQuote(input: {
 
 export async function clearFutureNotificationReservations(fromTimestamp: number) {
   await withExclusiveTransaction(async (tx) => {
-    const futureRows = await tx.getAllAsync<{
-      notification_id: string;
-    }>(
-      `SELECT notification_id
-       FROM scheduled_notifications
-       WHERE fire_at >= ?`,
+    await tx.runAsync(
+      `DELETE FROM quote_usage
+       WHERE kind = 'notification'
+         AND notification_id IN (
+           SELECT notification_id FROM scheduled_notifications WHERE fire_at >= ?
+         )`,
       [fromTimestamp]
     );
-
-    for (const row of futureRows) {
-      await tx.runAsync(
-        "DELETE FROM quote_usage WHERE notification_id = ? AND kind = 'notification'",
-        [row.notification_id]
-      );
-    }
-
     await tx.runAsync(
       "DELETE FROM scheduled_notifications WHERE fire_at >= ?",
       [fromTimestamp]
@@ -363,22 +372,23 @@ export async function restartCollection() {
 }
 
 export async function toggleSavedQuote(quoteId: string) {
-  const db = await getDb();
-  const existing = await db.getFirstAsync<{ quote_id: string }>(
-    "SELECT quote_id FROM saved_quotes WHERE quote_id = ?",
-    [quoteId]
-  );
+  return withExclusiveTransaction(async (tx) => {
+    const existing = await tx.getFirstAsync<{ quote_id: string }>(
+      "SELECT quote_id FROM saved_quotes WHERE quote_id = ?",
+      [quoteId]
+    );
 
-  if (existing) {
-    await db.runAsync("DELETE FROM saved_quotes WHERE quote_id = ?", [quoteId]);
-    return false;
-  }
+    if (existing) {
+      await tx.runAsync("DELETE FROM saved_quotes WHERE quote_id = ?", [quoteId]);
+      return false;
+    }
 
-  await db.runAsync(
-    "INSERT INTO saved_quotes(quote_id, saved_at) VALUES(?, ?)",
-    [quoteId, Date.now()]
-  );
-  return true;
+    await tx.runAsync(
+      "INSERT INTO saved_quotes(quote_id, saved_at) VALUES(?, ?)",
+      [quoteId, Date.now()]
+    );
+    return true;
+  });
 }
 
 export async function getLibraryQuotes(filters: {
@@ -412,10 +422,13 @@ export async function getLibraryQuotes(filters: {
     text: string;
     author: string;
     source: string | null;
+    explanation: string | null;
+    context: string | null;
+    takeaway: string | null;
     tags: string;
     saved: number | null;
   }>(
-    `SELECT q.id, q.text, q.author, q.source,
+    `SELECT q.id, q.text, q.author, q.source, q.explanation, q.context, q.takeaway,
             GROUP_CONCAT(qt.tag, '|') AS tags,
             sq.quote_id AS saved
      FROM quotes q
@@ -436,6 +449,9 @@ export async function getLibraryQuotes(filters: {
       author: row.author,
       authorId: getAuthorIdFromName(row.author),
       source: row.source ?? undefined,
+      explanation: row.explanation ?? undefined,
+      context: row.context ?? undefined,
+      takeaway: row.takeaway ?? undefined,
       tags,
       primaryTag: tags[0] ?? null,
       saved: Boolean(row.saved),

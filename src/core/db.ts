@@ -48,6 +48,9 @@ export async function runMigrations() {
       text TEXT NOT NULL,
       author TEXT NOT NULL,
       source TEXT,
+      explanation TEXT,
+      context TEXT,
+      takeaway TEXT,
       normalized_author TEXT NOT NULL,
       searchable_text TEXT NOT NULL,
       imported_at INTEGER NOT NULL
@@ -103,12 +106,47 @@ export async function runMigrations() {
       FOREIGN KEY (extra_quote_id) REFERENCES quotes(id) ON DELETE CASCADE
     );
 
+    CREATE TABLE IF NOT EXISTS reflections (
+      id TEXT PRIMARY KEY,
+      quote_id TEXT NOT NULL,
+      day_key TEXT NOT NULL,
+      text TEXT NOT NULL,
+      topic TEXT,
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL,
+      UNIQUE(quote_id, day_key),
+      FOREIGN KEY (quote_id) REFERENCES quotes(id) ON DELETE CASCADE
+    );
+
     CREATE INDEX IF NOT EXISTS idx_quotes_normalized_author ON quotes(normalized_author);
     CREATE INDEX IF NOT EXISTS idx_quotes_searchable_text ON quotes(searchable_text);
     CREATE INDEX IF NOT EXISTS idx_quote_tags_tag ON quote_tags(tag);
     CREATE INDEX IF NOT EXISTS idx_scheduled_notifications_fire_at ON scheduled_notifications(fire_at);
     CREATE INDEX IF NOT EXISTS idx_quote_usage_kind_used_at ON quote_usage(kind, used_at);
+    CREATE INDEX IF NOT EXISTS idx_reflections_quote_id ON reflections(quote_id);
+    CREATE INDEX IF NOT EXISTS idx_reflections_day_key ON reflections(day_key);
   `);
+
+  // Migration: add explanation column to quotes if missing (existing installs)
+  const tableInfo = await db.getAllAsync<{ name: string }>("PRAGMA table_info(quotes)");
+  const hasExplanation = tableInfo.some((col) => col.name === "explanation");
+  if (!hasExplanation) {
+    await db.execAsync("ALTER TABLE quotes ADD COLUMN explanation TEXT");
+  }
+  const hasContext = tableInfo.some((col) => col.name === "context");
+  if (!hasContext) {
+    await db.execAsync("ALTER TABLE quotes ADD COLUMN context TEXT");
+  }
+  const hasTakeaway = tableInfo.some((col) => col.name === "takeaway");
+  if (!hasTakeaway) {
+    await db.execAsync("ALTER TABLE quotes ADD COLUMN takeaway TEXT");
+  }
+
+  const reflectionsInfo = await db.getAllAsync<{ name: string }>("PRAGMA table_info(reflections)");
+  const hasReflectionsTopic = reflectionsInfo.some((col) => col.name === "topic");
+  if (!hasReflectionsTopic) {
+    await db.execAsync("ALTER TABLE reflections ADD COLUMN topic TEXT");
+  }
 }
 
 export async function getAppState(key: string) {

@@ -7,7 +7,7 @@ import {
   BUTTON_PADDING_HORIZONTAL,
   BUTTON_PADDING_VERTICAL,
 } from "./buttonMetrics";
-import { ThemeTokens, useTheme } from "./theme";
+import { MAX_FONT_SIZE_MULTIPLIER, ThemeTokens, useTheme } from "./theme";
 
 type Props = {
   label: string;
@@ -35,6 +35,8 @@ export function Button({
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ disabled: isDisabled }}
       disabled={isDisabled}
       onPress={onPress}
       style={({ pressed }) => [
@@ -53,6 +55,7 @@ export function Button({
         />
       ) : (
         <Text
+          maxFontSizeMultiplier={MAX_FONT_SIZE_MULTIPLIER}
           style={[
             styles.label,
             variant === "ghost" ? styles.ghostLabel : null,

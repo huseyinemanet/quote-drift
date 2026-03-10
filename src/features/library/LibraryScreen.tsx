@@ -14,22 +14,35 @@ import { ThemeTokens, useTheme } from "@/ui/theme";
 export function LibraryScreen() {
   const { colors } = useTheme();
   const styles = createStyles(colors);
-  const { topics, loadLibrary, toggleSave, savedCount } = useAppState();
+  const { state: bootstrapState, topics, loadLibrary, toggleSave, savedCount } = useAppState();
   const [query, setQuery] = useState("");
   const [topic, setTopic] = useState<string | null>(null);
   const [savedOnly, setSavedOnly] = useState(false);
   const [results, setResults] = useState<QuoteView[]>([]);
   const [savingQuoteId, setSavingQuoteId] = useState<string | null>(null);
 
+  const libraryReady =
+    bootstrapState === "ready" ||
+    bootstrapState === "exhausted" ||
+    bootstrapState === "fatalCorpus";
+
   useEffect(() => {
+    if (!libraryReady) {
+      setResults([]);
+      return;
+    }
     let cancelled = false;
-    void loadLibrary({ query, topic, savedOnly }).then((data) => {
-      if (!cancelled) setResults(data);
-    });
+    loadLibrary({ query, topic, savedOnly })
+      .then((data) => {
+        if (!cancelled) setResults(data);
+      })
+      .catch(() => {
+        if (!cancelled) setResults([]);
+      });
     return () => {
       cancelled = true;
     };
-  }, [query, topic, savedOnly, loadLibrary]);
+  }, [libraryReady, query, topic, savedOnly, loadLibrary]);
 
   const handleToggleSave = async (quoteId: string) => {
     setSavingQuoteId(quoteId);
@@ -41,7 +54,7 @@ export function LibraryScreen() {
   };
 
   return (
-    <Screen scroll={results.length > 0} edges={[]}>
+    <Screen scroll edges={[]}>
       {results.length === 0 ? (
         <View style={styles.emptyStateRoot}>
           <View style={styles.header}>
@@ -75,6 +88,8 @@ export function LibraryScreen() {
             />
             {query.length > 0 ? (
               <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Clear search"
                 style={({ pressed }) => [styles.clearButton, pressed && styles.clearButtonPressed]}
                 onPress={() => setQuery("")}
                 hitSlop={8}
@@ -95,7 +110,7 @@ export function LibraryScreen() {
                 selected={topic === null}
                 onPress={() => setTopic(null)}
               />
-              {topics.map((value) => (
+              {(topics ?? []).map((value) => (
                 <ChoiceChip
                   key={value}
                   label={value}
@@ -151,6 +166,8 @@ export function LibraryScreen() {
             />
             {query.length > 0 ? (
               <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Clear search"
                 style={({ pressed }) => [styles.clearButton, pressed && styles.clearButtonPressed]}
                 onPress={() => setQuery("")}
                 hitSlop={8}
@@ -171,7 +188,7 @@ export function LibraryScreen() {
                 selected={topic === null}
                 onPress={() => setTopic(null)}
               />
-              {topics.map((value) => (
+              {(topics ?? []).map((value) => (
                 <ChoiceChip
                   key={value}
                   label={value}
