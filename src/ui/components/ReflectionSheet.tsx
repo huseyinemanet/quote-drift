@@ -41,8 +41,18 @@ export function ReflectionSheet({ visible, quote, onClose, dayKey: dayKeyProp }:
   const displayedQuote = displayedQuoteRef.current;
   const backdropOpacity = useRef(new Animated.Value(0)).current;
   const sheetTranslateY = useRef(new Animated.Value(600)).current;
+  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const effectiveDayKey = dayKeyProp ?? getDayKey();
+
+  useEffect(() => {
+    return () => {
+      if (closeTimeoutRef.current != null) {
+        clearTimeout(closeTimeoutRef.current);
+        closeTimeoutRef.current = null;
+      }
+    };
+  }, []);
 
   const loadInitialReflection = useCallback(async () => {
     if (!quote) return;
@@ -126,9 +136,10 @@ export function ReflectionSheet({ visible, quote, onClose, dayKey: dayKeyProp }:
       );
       setSaveSuccess(true);
       await successHaptic();
-      setTimeout(() => {
+      closeTimeoutRef.current = setTimeout(() => {
+        closeTimeoutRef.current = null;
         onClose();
-      }, 1200);
+      }, 1000);
     } finally {
       setIsSaving(false);
     }
@@ -217,7 +228,11 @@ export function ReflectionSheet({ visible, quote, onClose, dayKey: dayKeyProp }:
               ))}
             </View>
             {saveSuccess ? (
-              <View style={styles.successBlock}>
+              <View
+                style={styles.successBlock}
+                accessibilityLiveRegion="polite"
+                accessibilityLabel="Reflection saved"
+              >
                 <Text maxFontSizeMultiplier={MAX_FONT_SIZE_MULTIPLIER} style={styles.successText}>
                   ✔ Reflection saved
                 </Text>
